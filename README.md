@@ -1,2 +1,2 @@
-# super-app-boilerplate
+# Super App Boilerplate
 Super App Boilerplate
