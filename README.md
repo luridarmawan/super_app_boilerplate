@@ -152,7 +152,50 @@ flutter build ios
 
 ---
 
-## 📝 File Penting
+## � Menjalankan di Android Emulator
+
+### Langkah 1: Cek Emulator yang Tersedia
+```bash
+flutter emulators
+```
+
+### Langkah 2: Jalankan Emulator
+```bash
+# Ganti <emulator_id> dengan ID emulator yang tersedia
+flutter emulators --launch <emulator_id>
+
+# Contoh:
+flutter emulators --launch Medium_Phone_API_36.0
+```
+
+### Langkah 3: Tunggu Emulator Booting
+Tunggu sampai emulator Android selesai booting dan menampilkan home screen.
+
+### Langkah 4: Cek Device Terdeteksi
+```bash
+flutter devices
+```
+
+### Langkah 5: Jalankan Aplikasi
+```bash
+# Jalankan di device yang terdeteksi
+flutter run
+
+# Atau spesifik ke device ID
+flutter run -d emulator-5554
+```
+
+### Keyboard Shortcuts saat Running
+| Key | Action |
+|-----|--------|
+| `r` | Hot Reload |
+| `R` | Hot Restart |
+| `q` | Quit |
+| `h` | Help |
+
+---
+
+## �📝 File Penting
 
 - `lib/main.dart` - Entry point aplikasi
 - `lib/core/config/app_config.dart` - Konfigurasi & Riverpod providers
