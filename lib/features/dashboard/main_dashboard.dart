@@ -1,0 +1,446 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/config/app_config.dart';
+import '../../shared/widgets/custom_header.dart';
+import '../../shared/widgets/custom_sidebar.dart';
+import '../../shared/widgets/custom_footer.dart';
+import 'widgets/banner_carousel.dart';
+import 'widgets/menu_grid.dart';
+import 'widgets/article_list.dart';
+
+/// Index navigasi saat ini
+final currentNavIndexProvider = StateProvider<int>((ref) => 0);
+
+/// Main Dashboard - Halaman utama aplikasi
+class MainDashboard extends ConsumerStatefulWidget {
+  final VoidCallback? onSettingsTap;
+  final VoidCallback? onProfileTap;
+  final VoidCallback? onHelpTap;
+  final VoidCallback? onLogoutTap;
+
+  const MainDashboard({
+    super.key,
+    this.onSettingsTap,
+    this.onProfileTap,
+    this.onHelpTap,
+    this.onLogoutTap,
+  });
+
+  @override
+  ConsumerState<MainDashboard> createState() => _MainDashboardState();
+}
+
+class _MainDashboardState extends ConsumerState<MainDashboard> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    // Set system UI untuk edge-to-edge
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final sidebarPosition = ref.watch(sidebarPositionProvider);
+    final currentIndex = ref.watch(currentNavIndexProvider);
+
+    return Scaffold(
+      key: _scaffoldKey,
+      appBar: CustomHeader(
+        title: 'Super App',
+        showLogo: true,
+        logo: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.apps_rounded,
+            color: colorScheme.primary,
+            size: 24,
+          ),
+        ),
+        onMenuTap: () => _openDrawer(sidebarPosition),
+        onNotificationTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No new notifications'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
+      ),
+      // Sidebar dengan posisi yang dapat dikonfigurasi
+      drawer: sidebarPosition == SidebarPosition.left
+          ? CustomSidebar(
+              onProfileTap: widget.onProfileTap,
+              onSettingsTap: widget.onSettingsTap,
+              onHelpTap: widget.onHelpTap,
+              onLogoutTap: widget.onLogoutTap,
+            )
+          : null,
+      endDrawer: sidebarPosition == SidebarPosition.right
+          ? CustomSidebar(
+              onProfileTap: widget.onProfileTap,
+              onSettingsTap: widget.onSettingsTap,
+              onHelpTap: widget.onHelpTap,
+              onLogoutTap: widget.onLogoutTap,
+            )
+          : null,
+      body: _buildBody(currentIndex),
+      bottomNavigationBar: CustomFooter(
+        selectedIndex: currentIndex,
+        onDestinationSelected: (index) {
+          ref.read(currentNavIndexProvider.notifier).state = index;
+        },
+        items: CustomFooter.defaultItems,
+        onCenterButtonTap: () => _showScanDialog(context),
+      ),
+      // Floating Action Button tambahan
+      floatingActionButton: currentIndex == 0
+          ? FloatingActionButton.small(
+              heroTag: 'fab_chat',
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Chat support'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              child: const Icon(Icons.chat_outlined),
+            )
+          : null,
+    );
+  }
+
+  void _openDrawer(SidebarPosition position) {
+    if (position == SidebarPosition.left) {
+      _scaffoldKey.currentState?.openDrawer();
+    } else {
+      _scaffoldKey.currentState?.openEndDrawer();
+    }
+  }
+
+  Widget _buildBody(int currentIndex) {
+    switch (currentIndex) {
+      case 0:
+        return _buildHomeContent();
+      case 1:
+        return _buildExploreContent();
+      case 2:
+        return _buildActivityContent();
+      case 3:
+        return _buildProfileContent();
+      default:
+        return _buildHomeContent();
+    }
+  }
+
+  Widget _buildHomeContent() {
+    return RefreshIndicator(
+      onRefresh: () async {
+        // Simulasi refresh
+        await Future.delayed(const Duration(seconds: 1));
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16),
+
+            // Banner Carousel
+            BannerCarousel(
+              items: BannerCarousel.sampleItems,
+            ),
+
+            const SizedBox(height: 24),
+
+            // Quick Actions
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'Quick Actions',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            MenuGrid(
+              items: MenuGrid.sampleItems,
+            ),
+
+            const SizedBox(height: 24),
+
+            // Articles Horizontal
+            ArticleList(
+              title: 'Latest News',
+              seeAllText: 'See All',
+              articles: ArticleList.sampleArticles.take(3).toList(),
+              isHorizontal: true,
+              onSeeAllTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('See all news'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 24),
+
+            // Articles Vertical
+            ArticleList(
+              title: 'Recommended for You',
+              articles: ArticleList.sampleArticles.skip(1).toList(),
+              isHorizontal: false,
+            ),
+
+            const SizedBox(height: 100), // Space for bottom nav
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExploreContent() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.explore_outlined,
+            size: 80,
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Explore',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Discover new services and features',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActivityContent() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.history_outlined,
+            size: 80,
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Activity',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'View your recent transactions',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileContent() {
+    final user = ref.watch(currentUserProvider);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          const SizedBox(height: 24),
+          // Avatar
+          CircleAvatar(
+            radius: 50,
+            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+            child: Icon(
+              Icons.person,
+              size: 50,
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            user?.displayName ?? 'Guest User',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          Text(
+            user?.email ?? 'Please login to continue',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+          ),
+          const SizedBox(height: 32),
+          // Profile Actions
+          _buildProfileAction(
+            icon: Icons.person_outline,
+            title: 'Edit Profile',
+            onTap: widget.onProfileTap,
+          ),
+          _buildProfileAction(
+            icon: Icons.settings_outlined,
+            title: 'Settings',
+            onTap: widget.onSettingsTap,
+          ),
+          _buildProfileAction(
+            icon: Icons.help_outline,
+            title: 'Help & Support',
+            onTap: widget.onHelpTap,
+          ),
+          _buildProfileAction(
+            icon: Icons.logout,
+            title: 'Logout',
+            isDestructive: true,
+            onTap: widget.onLogoutTap,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileAction({
+    required IconData icon,
+    required String title,
+    VoidCallback? onTap,
+    bool isDestructive = false,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: isDestructive ? colorScheme.error : colorScheme.onSurface,
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isDestructive ? colorScheme.error : colorScheme.onSurface,
+          ),
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onTap,
+      ),
+    );
+  }
+
+  void _showScanDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Scan & Pay',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildScanOption(
+                  context,
+                  icon: Icons.qr_code_scanner,
+                  label: 'Scan QR',
+                ),
+                _buildScanOption(
+                  context,
+                  icon: Icons.camera_alt_outlined,
+                  label: 'Take Photo',
+                ),
+                _buildScanOption(
+                  context,
+                  icon: Icons.file_upload_outlined,
+                  label: 'Upload',
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScanOption(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return InkWell(
+      onTap: () {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$label selected'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(
+                icon,
+                size: 32,
+                color: colorScheme.onPrimaryContainer,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelMedium,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
