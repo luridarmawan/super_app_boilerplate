@@ -26,6 +26,20 @@ class BannerItem {
       subtitle: model.subtitle,
     );
   }
+
+  /// Default banner items for offline mode or when API fails
+  static List<BannerItem> get defaultItems => [
+    const BannerItem(
+      imageUrl: 'https://picsum.photos/800/400?random=1',
+      title: 'Offline Mode',
+      subtitle: 'You are in offline mode',
+    ),
+    const BannerItem(
+      imageUrl: 'https://picsum.photos/800/400?random=2',
+      title: 'Special Promo',
+      subtitle: 'Get 50% off on first transaction',
+    ),
+  ];
 }
 
 /// Widget to display banner carousel from API
@@ -129,40 +143,16 @@ class BannerCarouselFromApi extends ConsumerWidget {
     );
   }
 
+  /// Display default banners when offline or API fails
   Widget _buildError(BuildContext context, String error, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
+    // Show default banners instead of error UI for better UX
+    return BannerCarousel(
+      items: BannerItem.defaultItems,
       height: height,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 32,
-              color: colorScheme.onErrorContainer,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Failed to load banners',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onErrorContainer,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            FilledButton.tonal(
-              onPressed: () => ref.read(bannersProvider.notifier).refresh(),
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      ),
+      autoPlay: autoPlay,
+      autoPlayInterval: autoPlayInterval,
+      enlargeCenterPage: enlargeCenterPage,
+      viewportFraction: viewportFraction,
     );
   }
 }
