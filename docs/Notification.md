@@ -276,11 +276,19 @@ apply plugin: 'com.google.gms.google-services'
 
 ### 2. Update App ID
 
-File: `lib/core/notification/onesignal_notification_service.dart`
+File: `lib/core/constants/app_info.dart`
 
 ```dart
 // Ganti dengan App ID dari OneSignal Dashboard
-static const String _oneSignalAppId = 'YOUR_ONESIGNAL_APP_ID';
+static const String oneSignalAppId = 'YOUR_ONESIGNAL_APP_ID';
+```
+
+### 3. Set Provider ke OneSignal
+
+File: `lib/core/constants/app_info.dart`
+
+```dart
+static const String notificationProvider = 'onesignal';
 ```
 
 ---

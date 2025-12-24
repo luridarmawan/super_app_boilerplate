@@ -163,10 +163,11 @@ apply plugin: 'com.google.gms.google-services'
 
 1. Create a OneSignal account at [OneSignal](https://onesignal.com)
 2. Get your App ID from the OneSignal dashboard
-3. Update `lib/core/notification/onesignal_notification_service.dart`:
+3. Update `lib/core/constants/app_info.dart`:
 
 ```dart
-static const String _oneSignalAppId = 'YOUR_ONESIGNAL_APP_ID';
+static const String oneSignalAppId = 'YOUR_ONESIGNAL_APP_ID';
+static const String notificationProvider = 'onesignal';
 ```
 
 ## Testing with MockNotificationService

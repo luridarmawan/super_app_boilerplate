@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import '../constants/app_info.dart';
 import 'notification_interface.dart';
 
 /// OneSignal implementation of BaseNotificationService
@@ -15,9 +16,6 @@ class OneSignalNotificationService implements BaseNotificationService {
 
   bool _isInitialized = false;
 
-  // Your OneSignal App ID - replace with your actual App ID
-  static const String _oneSignalAppId = 'YOUR_ONESIGNAL_APP_ID';
-
   // Android notification channel
   static const String _defaultChannelId = 'high_importance_channel';
   static const String _defaultChannelName = 'High Importance Notifications';
@@ -29,9 +27,9 @@ class OneSignalNotificationService implements BaseNotificationService {
     if (_isInitialized) return;
 
     try {
-      // Initialize OneSignal
+      // Initialize OneSignal with App ID from AppInfo
       OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
-      OneSignal.initialize(_oneSignalAppId);
+      OneSignal.initialize(AppInfo.oneSignalAppId);
 
       // Set up notification handlers
       OneSignal.Notifications.addForegroundWillDisplayListener((event) {
