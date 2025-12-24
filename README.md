@@ -72,6 +72,7 @@ lib/
 | **Routing** | ✅ | GoRouter |
 | **Edge-to-Edge** | ✅ | SystemUiMode.edgeToEdge |
 | **Network Layer** | ✅ | Dio + Retrofit dengan Repository Pattern (lihat [docs/API.md](docs/API.md)) |
+| **Push Notification** | ✅ | Multi-provider (FCM, OneSignal, Mock) dengan abstraction layer (lihat [docs/Notification.md](docs/Notification.md)) |
 
 ---
 
@@ -95,6 +96,10 @@ dependencies:
   permission_handler: ^11.3.1   # Permission management
   image_picker: ^1.0.7          # Camera & Gallery
   geolocator: ^13.0.2           # GPS & Location
+  firebase_core: ^3.8.1         # Firebase Core
+  firebase_messaging: ^15.2.1   # Push Notifications (FCM)
+  flutter_local_notifications: ^18.0.1  # Local notifications
+  onesignal_flutter: ^5.2.7     # Push Notifications (OneSignal)
 ```
 
 ---
@@ -329,7 +334,7 @@ flutter run -d emulator-5554
 - [x] Network Layer dengan Dio + Retrofit (lihat `docs/API.md`)
 - [x] Implementasi persistent storage untuk settings (menggunakan SharedPreferences)
 - [ ] Tambahkan unit tests dan widget tests
-- [ ] Implementasi push notifications
+- [x] Implementasi push notifications (lihat `docs/Notification.md`)
 - [ ] Tambahkan analytics
 
 ---

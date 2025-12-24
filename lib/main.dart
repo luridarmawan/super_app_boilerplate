@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'core/config/app_config.dart';
 import 'core/routes/app_router.dart';
 import 'core/l10n/app_localizations.dart';
+import 'core/constants/app_info.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Set preferred orientations
@@ -25,12 +27,22 @@ void main() {
     ),
   );
 
+  // Initialize Firebase if notifications are enabled
+  if (AppInfo.enableNotification) {
+    try {
+      await Firebase.initializeApp();
+    } catch (e) {
+      debugPrint('Firebase initialization error: $e');
+    }
+  }
+
   runApp(
     const ProviderScope(
       child: SuperApp(),
     ),
   );
 }
+
 
 class SuperApp extends ConsumerWidget {
   const SuperApp({super.key});

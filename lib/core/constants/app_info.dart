@@ -36,6 +36,8 @@ class AppInfo {
   /// Enable/disable gallery upload feature
   static const bool enableGalleryUpload = true;
 
+  static const bool enableNotification = true;
+
   static const bool enableDangerZone = true;
   static const bool enableDeleteAccount = true;
 }

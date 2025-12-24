@@ -10,6 +10,8 @@ import '../../core/constants/app_info.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/network/repository/article_repository.dart';
 import '../../core/network/repository/banner_repository.dart';
+import '../../core/notification/notification_provider.dart';
+import '../../core/notification/notification_interface.dart';
 import '../../shared/widgets/custom_header.dart';
 import '../../shared/widgets/custom_sidebar.dart';
 import '../../shared/widgets/custom_footer.dart';
@@ -47,7 +49,47 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
     super.initState();
     // Set system UI for edge-to-edge
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    
+    // Initialize notifications
+    _initializeNotifications();
   }
+
+  /// Initialize push notification service
+  Future<void> _initializeNotifications() async {
+    if (!AppInfo.enableNotification) return;
+
+    // Initialize and request permission
+    await ref.read(notificationProvider.notifier).initialize();
+    await ref.read(notificationProvider.notifier).requestPermission();
+    
+    // Check for initial message (app opened from notification)
+    final initialMessage = await ref.read(notificationProvider.notifier).getInitialMessage();
+    if (initialMessage != null && mounted) {
+      _handleNotificationTap(initialMessage);
+    }
+  }
+
+  /// Handle notification tap
+  void _handleNotificationTap(NotificationMessage message) {
+    // Handle navigation based on notification data
+    final data = message.data;
+    if (data != null) {
+      // Example: navigate to specific screen based on notification data
+      // You can customize this based on your app's requirements
+      debugPrint('Notification tapped: ${message.title}');
+    }
+    
+    // Show snackbar for demonstration
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Notification: ${message.title ?? 'New notification'}'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
