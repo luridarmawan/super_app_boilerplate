@@ -54,6 +54,11 @@ dependencies:
   # Local Storage
   shared_preferences: ^2.3.4
 
+  # Network
+  dio: ^5.4.0
+  retrofit: ^4.1.0
+  json_annotation: ^4.8.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -61,6 +66,11 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.14.2
   flutter_native_splash: ^2.4.4
+
+  # Code Generation (for Retrofit)
+  build_runner: ^2.4.8
+  retrofit_generator: ^8.1.0
+  json_serializable: ^6.7.1
 
 # Flutter Launcher Icons Configuration
 flutter_launcher_icons:
