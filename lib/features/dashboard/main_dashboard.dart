@@ -16,6 +16,7 @@ import '../../core/notification/notification_test_panel.dart';
 import '../../shared/widgets/custom_header.dart';
 import '../../shared/widgets/custom_sidebar.dart';
 import '../../shared/widgets/custom_footer.dart';
+import '../../shared/widgets/notification_banner.dart';
 import 'widgets/banner_carousel.dart';
 import 'widgets/menu_grid.dart';
 import 'widgets/article_list.dart';
@@ -99,10 +100,23 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
     final currentIndex = ref.watch(currentNavIndexProvider);
     final l10n = context.l10n;
 
-    // Listen for foreground messages and increment unread count
+    // Listen for foreground messages and show banner + increment count
     ref.listen(foregroundMessageProvider, (previous, next) {
       next.whenData((message) {
         ref.read(notificationProvider.notifier).onMessageReceived(message);
+
+        // Show in-app notification banner
+        if (mounted) {
+          NotificationBanner.show(
+            context,
+            title: message.title ?? 'New Notification',
+            body: message.body,
+            icon: Icons.notifications_active,
+            onTap: () {
+              _handleNotificationTap(message);
+            },
+          );
+        }
       });
     });
 
