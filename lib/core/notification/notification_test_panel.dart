@@ -261,7 +261,8 @@ class _NotificationTestPanelState extends ConsumerState<NotificationTestPanel> {
                       );
                       _addLog('🎭 Simulated foreground notification');
                     },
-                    color: colorScheme.secondary,
+                    color: colorScheme.secondaryContainer,
+                    foregroundColor: colorScheme.onSecondaryContainer,
                   ),
                   _buildActionButton(
                     'Simulate Tap',
@@ -276,7 +277,8 @@ class _NotificationTestPanelState extends ConsumerState<NotificationTestPanel> {
                       ));
                       _addLog('🎭 Simulated notification tap');
                     },
-                    color: colorScheme.secondary,
+                    color: colorScheme.tertiaryContainer,
+                    foregroundColor: colorScheme.onTertiaryContainer,
                   ),
                   _buildActionButton(
                     'Simulate Token Refresh',
@@ -286,7 +288,8 @@ class _NotificationTestPanelState extends ConsumerState<NotificationTestPanel> {
                       _mockService?.simulateTokenRefresh(newToken);
                       _addLog('🎭 Simulated token refresh');
                     },
-                    color: colorScheme.secondary,
+                    color: colorScheme.primaryContainer,
+                    foregroundColor: colorScheme.onPrimaryContainer,
                   ),
                   _buildActionButton(
                     'Set Permission Denied',
@@ -295,7 +298,8 @@ class _NotificationTestPanelState extends ConsumerState<NotificationTestPanel> {
                       _mockService?.setPermissionStatus(NotificationPermissionStatus.denied);
                       _addLog('🎭 Set permission to denied');
                     },
-                    color: colorScheme.error,
+                    color: colorScheme.errorContainer,
+                    foregroundColor: colorScheme.onErrorContainer,
                   ),
                   _buildActionButton(
                     'Set Permission Granted',
@@ -304,7 +308,8 @@ class _NotificationTestPanelState extends ConsumerState<NotificationTestPanel> {
                       _mockService?.setPermissionStatus(NotificationPermissionStatus.authorized);
                       _addLog('🎭 Set permission to authorized');
                     },
-                    color: colorScheme.primary,
+                    color: Colors.green.shade100,
+                    foregroundColor: Colors.green.shade900,
                   ),
                 ],
               ),
@@ -397,13 +402,17 @@ class _NotificationTestPanelState extends ConsumerState<NotificationTestPanel> {
     IconData icon, 
     VoidCallback onPressed, {
     Color? color,
+    Color? foregroundColor,
   }) {
     return ElevatedButton.icon(
       onPressed: onPressed,
       icon: Icon(icon, size: 18),
       label: Text(label),
       style: color != null
-          ? ElevatedButton.styleFrom(backgroundColor: color)
+          ? ElevatedButton.styleFrom(
+              backgroundColor: color,
+              foregroundColor: foregroundColor ?? Colors.white,
+            )
           : null,
     );
   }
