@@ -5,6 +5,7 @@ import '../../core/config/app_config.dart';
 import '../../core/constants/assets.dart';
 import '../../core/constants/app_info.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/network/repository/article_repository.dart';
 import '../../shared/widgets/custom_header.dart';
 import '../../shared/widgets/custom_sidebar.dart';
 import '../../shared/widgets/custom_footer.dart';
@@ -158,8 +159,8 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
   Widget _buildHomeContent() {
     return RefreshIndicator(
       onRefresh: () async {
-        // Simulasi refresh
-        await Future.delayed(const Duration(seconds: 1));
+        // Refresh articles dari API
+        await ref.read(articlesProvider.notifier).refresh();
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -192,11 +193,11 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
 
             const SizedBox(height: 24),
 
-            // Articles Horizontal
-            ArticleList(
+            // Articles dari API (Horizontal)
+            // Menggunakan ArticleListFromApi yang fetch dari https://api.carik.id/dummy/article.json
+            ArticleListFromApi(
               title: context.l10n.latestNews,
               seeAllText: context.l10n.seeAll,
-              articles: ArticleList.sampleArticles.take(3).toList(),
               isHorizontal: true,
               onSeeAllTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -206,15 +207,30 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
                   ),
                 );
               },
+              onArticleTap: (article) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Selected: ${article.title}'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
             ),
 
             const SizedBox(height: 24),
 
-            // Articles Vertical
-            ArticleList(
+            // Articles dari API (Vertical)
+            ArticleListFromApi(
               title: context.l10n.recommendedForYou,
-              articles: ArticleList.sampleArticles.skip(1).toList(),
               isHorizontal: false,
+              onArticleTap: (article) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Selected: ${article.title}'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
             ),
 
             const SizedBox(height: 100), // Space for bottom nav

@@ -20,6 +20,7 @@ export 'interceptors/error_interceptor.dart';
 // Repository
 export 'repository/base_repository.dart';
 export 'repository/user_repository.dart';
+export 'repository/article_repository.dart';
 
 // Services (Retrofit)
 export 'services/api_service.dart';

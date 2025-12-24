@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../core/network/repository/article_repository.dart';
 
-/// Model untuk artikel
+/// Model untuk artikel (backward compatible dengan existing code)
 class Article {
   final String id;
   final String title;
@@ -20,6 +22,161 @@ class Article {
     this.publishedAt,
     this.category,
   });
+
+  /// Convert dari ArticleModel (dari API)
+  factory Article.fromModel(ArticleModel model) {
+    return Article(
+      id: model.id,
+      title: model.title,
+      excerpt: model.excerpt,
+      imageUrl: model.imageUrl,
+      author: model.author,
+      publishedAt: model.publishedAt,
+      category: model.category,
+    );
+  }
+}
+
+/// Widget untuk menampilkan artikel dari API
+/// 
+/// Contoh penggunaan:
+/// ```dart
+/// // Menggunakan data dari API (recommended)
+/// const ArticleListFromApi(
+///   title: 'Latest Articles',
+///   seeAllText: 'See All',
+/// )
+/// 
+/// // Atau dengan data manual (ArticleList biasa)
+/// ArticleList(
+///   articles: myArticles,
+///   title: 'My Articles',
+/// )
+/// ```
+class ArticleListFromApi extends ConsumerWidget {
+  final String? title;
+  final String? seeAllText;
+  final VoidCallback? onSeeAllTap;
+  final ValueChanged<Article>? onArticleTap;
+  final bool isHorizontal;
+  final double? horizontalHeight;
+
+  const ArticleListFromApi({
+    super.key,
+    this.title,
+    this.seeAllText,
+    this.onSeeAllTap,
+    this.onArticleTap,
+    this.isHorizontal = false,
+    this.horizontalHeight = 220,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch articles provider untuk mendapatkan data dari API
+    final articlesAsync = ref.watch(articlesProvider);
+
+    return articlesAsync.when(
+      // Loading state
+      loading: () => _buildLoading(context),
+
+      // Error state
+      error: (error, stack) => _buildError(context, error.toString(), ref),
+
+      // Success state
+      data: (articles) {
+        // Convert ArticleModel ke Article
+        final articleList = articles.map(Article.fromModel).toList();
+
+        return ArticleList(
+          articles: articleList,
+          title: title,
+          seeAllText: seeAllText,
+          onSeeAllTap: onSeeAllTap,
+          onArticleTap: onArticleTap,
+          isHorizontal: isHorizontal,
+          horizontalHeight: horizontalHeight,
+        );
+      },
+    );
+  }
+
+  Widget _buildLoading(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (title != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              title!,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ),
+        const SizedBox(height: 16),
+        const Center(
+          child: Padding(
+            padding: EdgeInsets.all(32),
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildError(BuildContext context, String error, WidgetRef ref) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (title != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              title!,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ),
+        const SizedBox(height: 16),
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 48,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Failed to load articles',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  error,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: () => ref.read(articlesProvider.notifier).refresh(),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 /// List artikel untuk dashboard
@@ -43,7 +200,7 @@ class ArticleList extends StatelessWidget {
     this.horizontalHeight = 220,
   });
 
-  /// Sample articles untuk demo
+  /// Sample articles untuk demo (fallback jika API tidak tersedia)
   static List<Article> get sampleArticles => [
         Article(
           id: '1',
