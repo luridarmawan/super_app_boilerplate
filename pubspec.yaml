@@ -60,6 +60,7 @@ dev_dependencies:
 
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.14.2
+  flutter_native_splash: ^2.4.4
 
 # Flutter Launcher Icons Configuration
 flutter_launcher_icons:
@@ -120,3 +121,45 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Flutter Native Splash Configuration
+# Jalankan: dart run flutter_native_splash:create
+flutter_native_splash:
+  # Warna background splash screen
+  color: "#1565C0"
+  
+  # Gambar logo di tengah splash screen
+  image: assets/images/logo/carik_blue_logo.png
+  
+  # Opsi untuk branding image di bagian bawah (opsional)
+  # branding: assets/images/branding.png
+  # branding_mode: bottom
+  
+  # Background image full screen (opsional, jika ingin pakai gambar penuh)
+  # background_image: assets/images/splash_background.png
+  
+  # Dark mode settings
+  color_dark: "#0D47A1"
+  image_dark: assets/images/logo/carik_blue_logo.png
+  
+  # Android specific
+  android: true
+  android_12:
+    # Warna background untuk Android 12+
+    color: "#1565C0"
+    color_dark: "#0D47A1"
+    # Icon untuk Android 12+ (akan dipotong jadi lingkaran)
+    image: assets/images/logo/carik_blue_logo.png
+    image_dark: assets/images/logo/carik_blue_logo.png
+    # Icon background (opsional)
+    # icon_background_color: "#FFFFFF"
+    # icon_background_color_dark: "#1a1a2e"
+  
+  # iOS specific
+  ios: true
+  
+  # Web specific
+  web: true
+  
+  # Full screen mode (hide status bar and navigation bar)
+  fullscreen: false
