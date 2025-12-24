@@ -29,7 +29,7 @@ class MenuGrid extends StatelessWidget {
     required this.items,
     this.crossAxisCount = 4,
     this.spacing = 12,
-    this.childAspectRatio = 0.9,
+    this.childAspectRatio = 0.8,
     this.shrinkWrap = true,
     this.physics,
   });
@@ -125,13 +125,14 @@ class _MenuItemCard extends StatelessWidget {
         },
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(6),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   color: itemColor.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(12),
@@ -139,18 +140,20 @@ class _MenuItemCard extends StatelessWidget {
                 child: Icon(
                   item.icon,
                   color: itemColor,
-                  size: 28,
+                  size: 24,
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                item.label,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
+              const SizedBox(height: 6),
+              Flexible(
+                child: Text(
+                  item.label,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
