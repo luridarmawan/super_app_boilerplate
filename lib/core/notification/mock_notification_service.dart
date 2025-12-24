@@ -24,7 +24,7 @@ class MockNotificationService implements BaseNotificationService {
     // Simulate initialization delay
     await Future.delayed(const Duration(milliseconds: 100));
     _isInitialized = true;
-    print('MockNotificationService initialized');
+    // print('MockNotificationService initialized');
   }
 
   @override
@@ -48,13 +48,13 @@ class MockNotificationService implements BaseNotificationService {
   @override
   Future<void> subscribeToTopic(String topic) async {
     _subscribedTopics.add(topic);
-    print('MockNotificationService: Subscribed to topic "$topic"');
+    // print('MockNotificationService: Subscribed to topic "$topic"');
   }
 
   @override
   Future<void> unsubscribeFromTopic(String topic) async {
     _subscribedTopics.remove(topic);
-    print('MockNotificationService: Unsubscribed from topic "$topic"');
+    // print('MockNotificationService: Unsubscribed from topic "$topic"');
   }
 
   @override
@@ -89,18 +89,18 @@ class MockNotificationService implements BaseNotificationService {
       receivedAt: DateTime.now(),
     );
     _notifications.add(notification);
-    print('MockNotificationService: Local notification shown - $title');
+    // print('MockNotificationService: Local notification shown - $title');
   }
 
   @override
   Future<void> cancelNotification(int id) async {
-    print('MockNotificationService: Cancelled notification $id');
+    // print('MockNotificationService: Cancelled notification $id');
   }
 
   @override
   Future<void> cancelAllNotifications() async {
     _notifications.clear();
-    print('MockNotificationService: All notifications cancelled');
+    // print('MockNotificationService: All notifications cancelled');
   }
 
   @override

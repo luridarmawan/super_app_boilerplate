@@ -9,7 +9,7 @@ import 'notification_interface.dart';
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   // Handle background message here if needed
-  print('Handling background message: ${message.messageId}');
+  // print('Handling background message: ${message.messageId}');
 }
 
 /// Firebase Cloud Messaging implementation of BaseNotificationService
@@ -81,7 +81,7 @@ class FcmNotificationService implements BaseNotificationService {
 
       _isInitialized = true;
     } catch (e) {
-      print('FCM initialization error: $e');
+      // print('FCM initialization error: $e');
       rethrow;
     }
   }

@@ -74,7 +74,7 @@ class OneSignalNotificationService implements BaseNotificationService {
 
       _isInitialized = true;
     } catch (e) {
-      print('OneSignal initialization error: $e');
+      // print('OneSignal initialization error: $e');
       rethrow;
     }
   }
