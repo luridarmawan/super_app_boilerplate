@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config/app_config.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/l10n/app_localizations.dart';
 
 /// Setting Screen - Pengaturan bahasa, template, dan konfigurasi lainnya
+/// Menggunakan lokalisasi multi-bahasa
 class SettingScreen extends ConsumerWidget {
   final VoidCallback? onBackTap;
 
@@ -16,10 +18,11 @@ class SettingScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final config = ref.watch(appConfigProvider);
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(l10n.settings),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: onBackTap ?? () => Navigator.of(context).pop(),
@@ -29,7 +32,7 @@ class SettingScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         children: [
           // Appearance Section
-          _buildSectionHeader(context, 'Appearance'),
+          _buildSectionHeader(context, l10n.appearance),
           const SizedBox(height: 8),
           
           // Theme Template
@@ -49,10 +52,10 @@ class SettingScreen extends ConsumerWidget {
                       color: colorScheme.onPrimaryContainer,
                     ),
                   ),
-                  title: const Text('Theme Template'),
-                  subtitle: Text(AppTheme.getTemplateName(config.currentTemplate)),
+                  title: Text(l10n.themeTemplate),
+                  subtitle: Text(_getLocalizedTemplateName(l10n, config.currentTemplate)),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _showTemplateDialog(context, ref),
+                  onTap: () => _showTemplateDialog(context, ref, l10n),
                 ),
                 const Divider(height: 1),
                 SwitchListTile(
@@ -68,8 +71,8 @@ class SettingScreen extends ConsumerWidget {
                       color: colorScheme.onPrimaryContainer,
                     ),
                   ),
-                  title: const Text('Dark Mode'),
-                  subtitle: Text(config.isDarkMode ? 'On' : 'Off'),
+                  title: Text(l10n.darkMode),
+                  subtitle: Text(config.isDarkMode ? l10n.on : l10n.off),
                   value: config.isDarkMode,
                   onChanged: (value) {
                     ref.read(appConfigProvider.notifier).setDarkMode(value);
@@ -82,7 +85,7 @@ class SettingScreen extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // Language Section
-          _buildSectionHeader(context, 'Language & Region'),
+          _buildSectionHeader(context, l10n.languageAndRegion),
           const SizedBox(height: 8),
           
           Card(
@@ -99,17 +102,17 @@ class SettingScreen extends ConsumerWidget {
                   color: colorScheme.onPrimaryContainer,
                 ),
               ),
-              title: const Text('Language'),
-              subtitle: Text(_getLocaleName(config.selectedLocale)),
+              title: Text(l10n.language),
+              subtitle: Text(_getLocaleName(l10n, config.selectedLocale)),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => _showLanguageDialog(context, ref),
+              onTap: () => _showLanguageDialog(context, ref, l10n),
             ),
           ),
 
           const SizedBox(height: 24),
 
           // Layout Section
-          _buildSectionHeader(context, 'Layout'),
+          _buildSectionHeader(context, l10n.layout),
           const SizedBox(height: 8),
           
           Card(
@@ -126,19 +129,19 @@ class SettingScreen extends ConsumerWidget {
                   color: colorScheme.onPrimaryContainer,
                 ),
               ),
-              title: const Text('Sidebar Position'),
+              title: Text(l10n.sidebarPosition),
               subtitle: Text(
-                config.sidebarPosition == SidebarPosition.left ? 'Left' : 'Right',
+                config.sidebarPosition == SidebarPosition.left ? l10n.left : l10n.right,
               ),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => _showSidebarPositionDialog(context, ref),
+              onTap: () => _showSidebarPositionDialog(context, ref, l10n),
             ),
           ),
 
           const SizedBox(height: 24),
 
           // Auth Section
-          _buildSectionHeader(context, 'Authentication'),
+          _buildSectionHeader(context, l10n.authentication),
           const SizedBox(height: 8),
           
           Card(
@@ -155,21 +158,21 @@ class SettingScreen extends ConsumerWidget {
                   color: colorScheme.onPrimaryContainer,
                 ),
               ),
-              title: const Text('Auth Provider'),
+              title: Text(l10n.authProvider),
               subtitle: Text(
                 config.authStrategy == AuthStrategy.firebase 
-                    ? 'Firebase Auth' 
-                    : 'Custom API',
+                    ? l10n.firebaseAuth 
+                    : l10n.customApi,
               ),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => _showAuthStrategyDialog(context, ref),
+              onTap: () => _showAuthStrategyDialog(context, ref, l10n),
             ),
           ),
 
           const SizedBox(height: 24),
 
           // About Section
-          _buildSectionHeader(context, 'About'),
+          _buildSectionHeader(context, l10n.about),
           const SizedBox(height: 8),
           
           Card(
@@ -177,7 +180,7 @@ class SettingScreen extends ConsumerWidget {
               children: [
                 ListTile(
                   leading: const Icon(Icons.info_outline),
-                  title: const Text('App Version'),
+                  title: Text(l10n.appVersion),
                   trailing: Text(
                     '1.0.0',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -188,7 +191,7 @@ class SettingScreen extends ConsumerWidget {
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.code),
-                  title: const Text('Build Number'),
+                  title: Text(l10n.buildNumber),
                   trailing: Text(
                     '1',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -217,29 +220,44 @@ class SettingScreen extends ConsumerWidget {
     );
   }
 
-  String _getLocaleName(Locale locale) {
+  String _getLocaleName(AppLocalizations l10n, Locale locale) {
     switch (locale.languageCode) {
       case 'id':
-        return 'Bahasa Indonesia';
+        return l10n.bahasaIndonesia;
       case 'en':
-        return 'English';
+        return l10n.english;
       default:
         return locale.languageCode;
     }
   }
 
-  void _showTemplateDialog(BuildContext context, WidgetRef ref) {
+  String _getLocalizedTemplateName(AppLocalizations l10n, AppTemplate template) {
+    switch (template) {
+      case AppTemplate.defaultBlue:
+        return l10n.defaultBlue;
+      case AppTemplate.modernPurple:
+        return l10n.modernPurple;
+      case AppTemplate.elegantGreen:
+        return l10n.elegantGreen;
+      case AppTemplate.warmOrange:
+        return l10n.warmOrange;
+      case AppTemplate.darkMode:
+        return l10n.darkModeTheme;
+    }
+  }
+
+  void _showTemplateDialog(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     final config = ref.read(appConfigProvider);
     
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Select Theme'),
+        title: Text(l10n.selectTheme),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: AppTemplate.values.map((template) {
             return RadioListTile<AppTemplate>(
-              title: Text(AppTheme.getTemplateName(template)),
+              title: Text(_getLocalizedTemplateName(l10n, template)),
               value: template,
               groupValue: config.currentTemplate,
               onChanged: (value) {
@@ -255,18 +273,18 @@ class SettingScreen extends ConsumerWidget {
     );
   }
 
-  void _showLanguageDialog(BuildContext context, WidgetRef ref) {
+  void _showLanguageDialog(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     final config = ref.read(appConfigProvider);
     
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Select Language'),
+        title: Text(l10n.selectLanguage),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             RadioListTile<Locale>(
-              title: const Text('Bahasa Indonesia'),
+              title: Text(l10n.bahasaIndonesia),
               value: const Locale('id', 'ID'),
               groupValue: config.selectedLocale,
               onChanged: (value) {
@@ -277,7 +295,7 @@ class SettingScreen extends ConsumerWidget {
               },
             ),
             RadioListTile<Locale>(
-              title: const Text('English'),
+              title: Text(l10n.english),
               value: const Locale('en', 'US'),
               groupValue: config.selectedLocale,
               onChanged: (value) {
@@ -293,18 +311,18 @@ class SettingScreen extends ConsumerWidget {
     );
   }
 
-  void _showSidebarPositionDialog(BuildContext context, WidgetRef ref) {
+  void _showSidebarPositionDialog(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     final config = ref.read(appConfigProvider);
     
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sidebar Position'),
+        title: Text(l10n.sidebarPosition),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             RadioListTile<SidebarPosition>(
-              title: const Text('Left'),
+              title: Text(l10n.left),
               value: SidebarPosition.left,
               groupValue: config.sidebarPosition,
               onChanged: (value) {
@@ -315,7 +333,7 @@ class SettingScreen extends ConsumerWidget {
               },
             ),
             RadioListTile<SidebarPosition>(
-              title: const Text('Right'),
+              title: Text(l10n.right),
               value: SidebarPosition.right,
               groupValue: config.sidebarPosition,
               onChanged: (value) {
@@ -331,19 +349,19 @@ class SettingScreen extends ConsumerWidget {
     );
   }
 
-  void _showAuthStrategyDialog(BuildContext context, WidgetRef ref) {
+  void _showAuthStrategyDialog(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     final config = ref.read(appConfigProvider);
     
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Auth Provider'),
+        title: Text(l10n.authProvider),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             RadioListTile<AuthStrategy>(
-              title: const Text('Firebase Auth'),
-              subtitle: const Text('Use Firebase Authentication'),
+              title: Text(l10n.firebaseAuth),
+              subtitle: Text(l10n.useFirebaseAuth),
               value: AuthStrategy.firebase,
               groupValue: config.authStrategy,
               onChanged: (value) {
@@ -354,8 +372,8 @@ class SettingScreen extends ConsumerWidget {
               },
             ),
             RadioListTile<AuthStrategy>(
-              title: const Text('Custom API'),
-              subtitle: const Text('Use custom backend API'),
+              title: Text(l10n.customApi),
+              subtitle: Text(l10n.useCustomApi),
               value: AuthStrategy.customApi,
               groupValue: config.authStrategy,
               onChanged: (value) {

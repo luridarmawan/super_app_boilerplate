@@ -210,7 +210,7 @@ flutter run -d emulator-5554
 
 - [ ] Implementasi Firebase Auth sebenarnya (tambah firebase_core, firebase_auth)
 - [ ] Implementasi Google Sign-In (tambah google_sign_in)
-- [ ] Tambahkan localization strings untuk multi-bahasa
+- [x] Tambahkan localization strings untuk multi-bahasa (lihat `docs/LOCALIZATION.md`)
 - [ ] Implementasi persistent storage untuk settings
 - [ ] Tambahkan unit tests dan widget tests
 - [ ] Implementasi push notifications
