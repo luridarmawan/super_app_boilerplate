@@ -99,6 +99,20 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
     final currentIndex = ref.watch(currentNavIndexProvider);
     final l10n = context.l10n;
 
+    // Listen for foreground messages and increment unread count
+    ref.listen(foregroundMessageProvider, (previous, next) {
+      next.whenData((message) {
+        ref.read(notificationProvider.notifier).onMessageReceived(message);
+      });
+    });
+
+    // Listen for notification taps
+    ref.listen(notificationTapProvider, (previous, next) {
+      next.whenData((message) {
+        _handleNotificationTap(message);
+      });
+    });
+
     return Scaffold(
       key: _scaffoldKey,
       appBar: CustomHeader(
@@ -128,6 +142,9 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
         ),
         onMenuTap: () => _openDrawer(sidebarPosition),
         onNotificationTap: () {
+          // Clear unread count when user taps notification
+          ref.read(notificationProvider.notifier).clearUnreadCount();
+          
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.noNewNotifications),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:super_app/core/network/connectivity/connectivity_provider.dart';
+import 'package:super_app/core/notification/notification_provider.dart';
+import 'package:super_app/core/constants/app_info.dart';
 
 /// Custom Header yang dinamis menggunakan SliverAppBar atau AppBar Material 3
 class CustomHeader extends ConsumerWidget implements PreferredSizeWidget {
@@ -41,6 +43,9 @@ class CustomHeader extends ConsumerWidget implements PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final isOffline = showOfflineIndicator ? ref.watch(isOfflineProvider) : false;
+    final unreadCount = AppInfo.enableNotification 
+        ? ref.watch(unreadNotificationCountProvider) 
+        : 0;
     
     return AppBar(
       elevation: elevation ?? 0,
@@ -118,7 +123,11 @@ class CustomHeader extends ConsumerWidget implements PreferredSizeWidget {
         if (showNotification)
           IconButton(
             icon: Badge(
-              smallSize: 8,
+              isLabelVisible: unreadCount > 0,
+              label: Text(
+                unreadCount > 99 ? '99+' : unreadCount.toString(),
+                style: const TextStyle(fontSize: 10),
+              ),
               child: const Icon(Icons.notifications_outlined),
             ),
             onPressed: onNotificationTap,
@@ -172,6 +181,9 @@ class CustomSliverHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final isOffline = showOfflineIndicator ? ref.watch(isOfflineProvider) : false;
+    final unreadCount = AppInfo.enableNotification 
+        ? ref.watch(unreadNotificationCountProvider) 
+        : 0;
     
     return SliverAppBar(
       expandedHeight: expandedHeight,
@@ -232,7 +244,11 @@ class CustomSliverHeader extends ConsumerWidget {
         if (showNotification)
           IconButton(
             icon: Badge(
-              smallSize: 8,
+              isLabelVisible: unreadCount > 0,
+              label: Text(
+                unreadCount > 99 ? '99+' : unreadCount.toString(),
+                style: const TextStyle(fontSize: 10),
+              ),
               child: const Icon(Icons.notifications_outlined),
             ),
             onPressed: onNotificationTap,

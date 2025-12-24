@@ -55,6 +55,7 @@ class NotificationState {
   final NotificationMessage? lastMessage;
   final bool isLoading;
   final String? error;
+  final int unreadCount;
 
   const NotificationState({
     this.isInitialized = false,
@@ -63,6 +64,7 @@ class NotificationState {
     this.lastMessage,
     this.isLoading = false,
     this.error,
+    this.unreadCount = 0,
   });
 
   NotificationState copyWith({
@@ -72,6 +74,7 @@ class NotificationState {
     NotificationMessage? lastMessage,
     bool? isLoading,
     String? error,
+    int? unreadCount,
   }) {
     return NotificationState(
       isInitialized: isInitialized ?? this.isInitialized,
@@ -80,6 +83,7 @@ class NotificationState {
       lastMessage: lastMessage ?? this.lastMessage,
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      unreadCount: unreadCount ?? this.unreadCount,
     );
   }
 }
@@ -228,6 +232,29 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
   void clearError() {
     state = state.copyWith(error: null);
   }
+
+  /// Increment unread notification count
+  void incrementUnreadCount() {
+    state = state.copyWith(unreadCount: state.unreadCount + 1);
+  }
+
+  /// Clear unread notification count (when user views notifications)
+  void clearUnreadCount() {
+    state = state.copyWith(unreadCount: 0);
+  }
+
+  /// Set unread count to specific value
+  void setUnreadCount(int count) {
+    state = state.copyWith(unreadCount: count);
+  }
+
+  /// Handle received message - update lastMessage and increment count
+  void onMessageReceived(NotificationMessage message) {
+    state = state.copyWith(
+      lastMessage: message,
+      unreadCount: state.unreadCount + 1,
+    );
+  }
 }
 
 /// Provider untuk notification notifier
@@ -258,4 +285,9 @@ final foregroundMessageProvider = StreamProvider<NotificationMessage>((ref) {
   }
   final service = ref.watch(notificationServiceProvider);
   return service.onForegroundMessage;
+});
+
+/// Provider untuk unread notification count
+final unreadNotificationCountProvider = Provider<int>((ref) {
+  return ref.watch(notificationProvider).unreadCount;
 });
