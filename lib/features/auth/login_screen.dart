@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config/app_config.dart';
+import '../../core/constants/app_info.dart';
 import '../../core/constants/assets.dart';
 
 /// Login Screen
@@ -191,39 +192,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       : const Text('Sign In'),
                 ),
 
-                const SizedBox(height: 24),
+                // Google Login Section (conditional)
+                if (AppInfo.enableGoogleLogin) ...[
+                  const SizedBox(height: 24),
 
-                // Divider
-                Row(
-                  children: [
-                    Expanded(child: Divider(color: colorScheme.outline)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'or continue with',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
+                  // Divider
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: colorScheme.outline)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'or continue with',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                        ),
                       ),
-                    ),
-                    Expanded(child: Divider(color: colorScheme.outline)),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                // Social Login Buttons
-                OutlinedButton.icon(
-                  onPressed: _isLoading ? null : _handleGoogleLogin,
-                  icon: Image.network(
-                    'https://www.google.com/favicon.ico',
-                    width: 24,
-                    height: 24,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.g_mobiledata),
+                      Expanded(child: Divider(color: colorScheme.outline)),
+                    ],
                   ),
-                  label: const Text('Continue with Google'),
-                ),
+
+                  const SizedBox(height: 24),
+
+                  // Social Login Buttons
+                  OutlinedButton.icon(
+                    onPressed: _isLoading ? null : _handleGoogleLogin,
+                    icon: Image.network(
+                      'https://www.google.com/favicon.ico',
+                      width: 24,
+                      height: 24,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.g_mobiledata),
+                    ),
+                    label: const Text('Continue with Google'),
+                  ),
+                ],
 
                 const SizedBox(height: 32),
 

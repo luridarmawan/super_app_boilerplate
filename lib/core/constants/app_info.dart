@@ -36,7 +36,10 @@ class AppInfo {
   /// Enable/disable gallery upload feature
   static const bool enableGalleryUpload = true;
 
-  static const bool enableNotification = true;
+  /// Enable/disable Google login/register feature
+  static const bool enableGoogleLogin = true;
+
+  static const bool enableNotification = false;
   static const String notificationProvider = 'firebase'; // 'firebase', 'onesignal', 'mock'
   static const bool enableNotificationBanner = false;
 

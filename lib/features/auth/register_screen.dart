@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config/app_config.dart';
+import '../../core/constants/app_info.dart';
 
 /// Register Screen
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -240,6 +241,43 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                 const SizedBox(height: 24),
 
+                // Google Sign Up Section (conditional)
+                if (AppInfo.enableGoogleLogin) ...[
+                  // Divider
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: colorScheme.outline)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'or continue with',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                        ),
+                      ),
+                      Expanded(child: Divider(color: colorScheme.outline)),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Google Sign Up Button
+                  OutlinedButton.icon(
+                    onPressed: _isLoading ? null : _handleGoogleSignUp,
+                    icon: Image.network(
+                      'https://www.google.com/favicon.ico',
+                      width: 24,
+                      height: 24,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.g_mobiledata),
+                    ),
+                    label: const Text('Continue with Google'),
+                  ),
+
+                  const SizedBox(height: 24),
+                ],
+
                 // Login Link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -289,6 +327,45 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(result.errorMessage ?? 'Registration failed'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleGoogleSignUp() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final authService = ref.read(authServiceProvider);
+      final result = await authService.signInWithGoogle();
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+
+        if (result.success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Account created successfully with Google!'),
+            ),
+          );
+          widget.onRegisterSuccess?.call();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.errorMessage ?? 'Google sign up failed'),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
