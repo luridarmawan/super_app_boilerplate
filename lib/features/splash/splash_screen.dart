@@ -13,7 +13,7 @@ class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({
     super.key,
     this.onComplete,
-    this.splashDuration = const Duration(seconds: 3),
+    this.splashDuration = AppInfo.splashScreenDuration,
   });
 
   @override

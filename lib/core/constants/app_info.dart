@@ -23,6 +23,8 @@ class AppInfo {
 
   static const double bottomMargin = 58;
 
+  static const Duration splashScreenDuration = Duration(seconds: 4);
+
   // ============================================
   // FEATURE FLAGS
   // ============================================
