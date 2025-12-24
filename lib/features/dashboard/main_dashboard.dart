@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config/app_config.dart';
+import '../../core/l10n/app_localizations.dart';
 import '../../shared/widgets/custom_header.dart';
 import '../../shared/widgets/custom_sidebar.dart';
 import '../../shared/widgets/custom_footer.dart';
@@ -46,11 +47,12 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
     final colorScheme = Theme.of(context).colorScheme;
     final sidebarPosition = ref.watch(sidebarPositionProvider);
     final currentIndex = ref.watch(currentNavIndexProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       key: _scaffoldKey,
       appBar: CustomHeader(
-        title: 'Super App',
+        title: l10n.appName,
         showLogo: true,
         logo: Container(
           width: 36,
@@ -68,8 +70,8 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
         onMenuTap: () => _openDrawer(sidebarPosition),
         onNotificationTap: () {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('No new notifications'),
+            SnackBar(
+              content: Text(l10n.noNewNotifications),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -107,8 +109,8 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
               heroTag: 'fab_chat',
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Chat support'),
+                  SnackBar(
+                    content: Text(l10n.chatSupport),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
@@ -166,7 +168,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Quick Actions',
+                context.l10n.quickActions,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -181,14 +183,14 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
 
             // Articles Horizontal
             ArticleList(
-              title: 'Latest News',
-              seeAllText: 'See All',
+              title: context.l10n.latestNews,
+              seeAllText: context.l10n.seeAll,
               articles: ArticleList.sampleArticles.take(3).toList(),
               isHorizontal: true,
               onSeeAllTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('See all news'),
+                  SnackBar(
+                    content: Text(context.l10n.seeAll),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
@@ -199,7 +201,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
 
             // Articles Vertical
             ArticleList(
-              title: 'Recommended for You',
+              title: context.l10n.recommendedForYou,
               articles: ArticleList.sampleArticles.skip(1).toList(),
               isHorizontal: false,
             ),
@@ -223,12 +225,12 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Explore',
+            context.l10n.explore,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            'Discover new services and features',
+            context.l10n.discoverNewServices,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -250,12 +252,12 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Activity',
+            context.l10n.activity,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            'View your recent transactions',
+            context.l10n.viewRecentTransactions,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -267,6 +269,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
 
   Widget _buildProfileContent() {
     final user = ref.watch(currentUserProvider);
+    final l10n = context.l10n;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -285,11 +288,11 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
           ),
           const SizedBox(height: 16),
           Text(
-            user?.displayName ?? 'Guest User',
+            user?.displayName ?? l10n.guestUser,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           Text(
-            user?.email ?? 'Please login to continue',
+            user?.email ?? l10n.pleaseLoginToContinue,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -298,22 +301,22 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
           // Profile Actions
           _buildProfileAction(
             icon: Icons.person_outline,
-            title: 'Edit Profile',
+            title: l10n.editProfile,
             onTap: widget.onProfileTap,
           ),
           _buildProfileAction(
             icon: Icons.settings_outlined,
-            title: 'Settings',
+            title: l10n.settings,
             onTap: widget.onSettingsTap,
           ),
           _buildProfileAction(
             icon: Icons.help_outline,
-            title: 'Help & Support',
+            title: l10n.helpAndSupport,
             onTap: widget.onHelpTap,
           ),
           _buildProfileAction(
             icon: Icons.logout,
-            title: 'Logout',
+            title: l10n.logout,
             isDestructive: true,
             onTap: widget.onLogoutTap,
           ),
@@ -350,9 +353,10 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
   }
 
   void _showScanDialog(BuildContext context) {
+    final l10n = context.l10n;
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
+      builder: (dialogContext) => Container(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -361,33 +365,33 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.outlineVariant,
+                color: Theme.of(dialogContext).colorScheme.outlineVariant,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(height: 24),
             Text(
-              'Scan & Pay',
-              style: Theme.of(context).textTheme.titleLarge,
+              l10n.scanAndPay,
+              style: Theme.of(dialogContext).textTheme.titleLarge,
             ),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildScanOption(
-                  context,
+                  dialogContext,
                   icon: Icons.qr_code_scanner,
-                  label: 'Scan QR',
+                  label: l10n.scanQr,
                 ),
                 _buildScanOption(
-                  context,
+                  dialogContext,
                   icon: Icons.camera_alt_outlined,
-                  label: 'Take Photo',
+                  label: l10n.takePhoto,
                 ),
                 _buildScanOption(
-                  context,
+                  dialogContext,
                   icon: Icons.file_upload_outlined,
-                  label: 'Upload',
+                  label: l10n.upload,
                 ),
               ],
             ),
