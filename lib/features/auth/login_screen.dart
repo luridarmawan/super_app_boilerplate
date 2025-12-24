@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config/app_config.dart';
+import '../../core/constants/assets.dart';
 
 /// Login Screen
 class LoginScreen extends ConsumerStatefulWidget {
@@ -72,10 +73,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ],
                     ),
-                    child: Icon(
-                      Icons.apps_rounded,
-                      size: 56,
-                      color: colorScheme.onPrimary,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.asset(
+                        Assets.logo,
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.apps_rounded,
+                          size: 56,
+                          color: colorScheme.onPrimary,
+                        ),
+                      ),
                     ),
                   ),
                 ),

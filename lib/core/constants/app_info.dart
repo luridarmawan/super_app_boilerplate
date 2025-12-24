@@ -4,7 +4,7 @@ class AppInfo {
   AppInfo._();
 
   /// Nama aplikasi
-  static const String name = 'Super App';
+  static const String name = 'Super X App';
 
   /// Deskripsi aplikasi
   static const String description = 'A Super App Project.';

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config/app_config.dart';
+import '../../core/constants/assets.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../shared/widgets/custom_header.dart';
 import '../../shared/widgets/custom_sidebar.dart';
@@ -54,17 +55,26 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
       appBar: CustomHeader(
         title: l10n.appName,
         showLogo: true,
-        logo: Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            Icons.apps_rounded,
-            color: colorScheme.primary,
-            size: 24,
+        logo: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.asset(
+            Assets.logo,
+            width: 36,
+            height: 36,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.apps_rounded,
+                color: colorScheme.primary,
+                size: 24,
+              ),
+            ),
           ),
         ),
         onMenuTap: () => _openDrawer(sidebarPosition),
