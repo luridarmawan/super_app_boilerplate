@@ -21,6 +21,7 @@ export 'interceptors/error_interceptor.dart';
 export 'repository/base_repository.dart';
 export 'repository/user_repository.dart';
 export 'repository/article_repository.dart';
+export 'repository/banner_repository.dart';
 
 // Services (Retrofit)
 export 'services/api_service.dart';

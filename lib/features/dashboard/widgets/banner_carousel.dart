@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../core/network/repository/banner_repository.dart';
 
 /// Model untuk banner item
 class BannerItem {
@@ -15,6 +17,245 @@ class BannerItem {
     this.subtitle,
     this.onTap,
   });
+
+  /// Convert dari BannerModel (dari API)
+  factory BannerItem.fromModel(BannerModel model) {
+    return BannerItem(
+      imageUrl: model.imageUrl,
+      title: model.title,
+      subtitle: model.subtitle,
+    );
+  }
+}
+
+/// Widget untuk menampilkan banner carousel dari API
+/// 
+/// Contoh penggunaan:
+/// ```dart
+/// // Menggunakan data dari API (recommended)
+/// const BannerCarouselFromApi()
+/// 
+/// // Atau dengan data manual (BannerCarousel biasa)
+/// BannerCarousel(
+///   items: myBanners,
+/// )
+/// ```
+class BannerCarouselFromApi extends ConsumerWidget {
+  final double height;
+  final bool autoPlay;
+  final Duration autoPlayInterval;
+  final bool enlargeCenterPage;
+  final double viewportFraction;
+  final ValueChanged<BannerItem>? onBannerTap;
+
+  const BannerCarouselFromApi({
+    super.key,
+    this.height = 180,
+    this.autoPlay = true,
+    this.autoPlayInterval = const Duration(seconds: 4),
+    this.enlargeCenterPage = true,
+    this.viewportFraction = 0.92,
+    this.onBannerTap,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch banners provider untuk mendapatkan data dari API
+    final bannersAsync = ref.watch(bannersProvider);
+
+    return bannersAsync.when(
+      // Loading state - Shimmer skeleton untuk UX yang lebih baik
+      loading: () => _buildShimmerLoading(context),
+
+      // Error state
+      error: (error, stack) => _buildError(context, error.toString(), ref),
+
+      // Success state
+      data: (banners) {
+        // Convert BannerModel ke BannerItem
+        final bannerItems = banners.map((model) {
+          final item = BannerItem.fromModel(model);
+          // Wrap dengan onTap callback
+          return BannerItem(
+            imageUrl: item.imageUrl,
+            title: item.title,
+            subtitle: item.subtitle,
+            onTap: onBannerTap != null ? () => onBannerTap!(item) : null,
+          );
+        }).toList();
+
+        return BannerCarousel(
+          items: bannerItems,
+          height: height,
+          autoPlay: autoPlay,
+          autoPlayInterval: autoPlayInterval,
+          enlargeCenterPage: enlargeCenterPage,
+          viewportFraction: viewportFraction,
+        );
+      },
+    );
+  }
+
+  /// Shimmer skeleton loading untuk UX yang lebih interaktif
+  Widget _buildShimmerLoading(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      children: [
+        // Shimmer banner
+        Container(
+          height: height,
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          child: _BannerShimmer(colorScheme: colorScheme),
+        ),
+        const SizedBox(height: 12),
+        // Shimmer indicators
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            3,
+            (index) => Container(
+              width: index == 0 ? 24 : 8,
+              height: 8,
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: colorScheme.surfaceContainerHighest,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildError(BuildContext context, String error, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      height: height,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 32,
+              color: colorScheme.onErrorContainer,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Failed to load banners',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onErrorContainer,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            FilledButton.tonal(
+              onPressed: () => ref.read(bannersProvider.notifier).refresh(),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Banner shimmer skeleton dengan animasi
+class _BannerShimmer extends StatefulWidget {
+  final ColorScheme colorScheme;
+
+  const _BannerShimmer({required this.colorScheme});
+
+  @override
+  State<_BannerShimmer> createState() => _BannerShimmerState();
+}
+
+class _BannerShimmerState extends State<_BannerShimmer>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat();
+    _animation = Tween<double>(begin: -2, end: 2).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOutSine),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final shimmerColor = widget.colorScheme.surfaceContainerHighest;
+
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment(_animation.value - 1, 0),
+              end: Alignment(_animation.value + 1, 0),
+              colors: [
+                shimmerColor,
+                shimmerColor.withAlpha(120),
+                shimmerColor,
+              ],
+            ),
+          ),
+          child: Stack(
+            children: [
+              // Shimmer text placeholders
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 16,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 200,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: shimmerColor.withAlpha(180),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: 140,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: shimmerColor.withAlpha(180),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
 
 /// Banner Carousel untuk dashboard dengan Material 3 styling
@@ -35,25 +276,6 @@ class BannerCarousel extends StatefulWidget {
     this.enlargeCenterPage = true,
     this.viewportFraction = 0.92,
   });
-
-  /// Sample banner items untuk demo
-  static List<BannerItem> get sampleItems => [
-        BannerItem(
-          imageUrl: 'https://picsum.photos/800/400?random=1',
-          title: 'Welcome to Super App',
-          subtitle: 'Your all-in-one solution',
-        ),
-        BannerItem(
-          imageUrl: 'https://picsum.photos/800/400?random=2',
-          title: 'Special Promo',
-          subtitle: 'Get 50% off on first transaction',
-        ),
-        BannerItem(
-          imageUrl: 'https://picsum.photos/800/400?random=3',
-          title: 'New Features',
-          subtitle: 'Discover amazing new features',
-        ),
-      ];
 
   @override
   State<BannerCarousel> createState() => _BannerCarouselState();
@@ -124,7 +346,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: colorScheme.shadow.withOpacity(0.1),
+              color: colorScheme.shadow.withAlpha(26),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -170,7 +392,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
                   gradient: LinearGradient(
                     colors: [
                       Colors.transparent,
-                      Colors.black.withOpacity(0.6),
+                      Colors.black.withAlpha(153),
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -199,7 +421,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
                       Text(
                         item.subtitle!,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withAlpha(230),
                             ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -227,7 +449,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
             borderRadius: BorderRadius.circular(4),
             color: _currentIndex == entry.key
                 ? colorScheme.primary
-                : colorScheme.primary.withOpacity(0.3),
+                : colorScheme.primary.withAlpha(77),
           ),
         );
       }).toList(),

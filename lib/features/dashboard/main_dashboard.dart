@@ -6,6 +6,7 @@ import '../../core/constants/assets.dart';
 import '../../core/constants/app_info.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/network/repository/article_repository.dart';
+import '../../core/network/repository/banner_repository.dart';
 import '../../shared/widgets/custom_header.dart';
 import '../../shared/widgets/custom_sidebar.dart';
 import '../../shared/widgets/custom_footer.dart';
@@ -159,8 +160,11 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
   Widget _buildHomeContent() {
     return RefreshIndicator(
       onRefresh: () async {
-        // Refresh articles dari API
-        await ref.read(articlesProvider.notifier).refresh();
+        // Refresh banners dan articles dari API
+        await Future.wait([
+          ref.read(bannersProvider.notifier).refresh(),
+          ref.read(articlesProvider.notifier).refresh(),
+        ]);
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -169,9 +173,17 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
           children: [
             const SizedBox(height: 16),
 
-            // Banner Carousel
-            BannerCarousel(
-              items: BannerCarousel.sampleItems,
+            // Banner Carousel dari API
+            // Menggunakan BannerCarouselFromApi yang fetch dari https://api.carik.id/dummy/banner.json
+            BannerCarouselFromApi(
+              onBannerTap: (banner) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Banner: ${banner.title}'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
             ),
 
             const SizedBox(height: 24),
