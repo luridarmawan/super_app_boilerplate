@@ -242,33 +242,6 @@ static const String notificationProvider = 'firebase';
 | `onesignal` | OneSignal | Alternatif populer |
 | `mock` / `test` | Mock Service | Untuk testing |
 
-### 📖 Quick Example
-
-```dart
-// Sudah otomatis diinisialisasi di MainDashboard
-// Untuk manual initialization:
-
-// 1. Initialize & request permission
-await ref.read(notificationProvider.notifier).initialize();
-await ref.read(notificationProvider.notifier).requestPermission();
-
-// 2. Show local notification
-await ref.read(notificationProvider.notifier).showLocalNotification(
-  title: 'Hello!',
-  body: 'This is a notification',
-);
-
-// 3. Subscribe to topic
-await ref.read(notificationProvider.notifier).subscribeToTopic('news');
-
-// 4. Listen to notification tap
-ref.listen(notificationTapProvider, (prev, next) {
-  next.whenData((message) {
-    // Navigate based on message.data
-  });
-});
-```
-
 📚 **Dokumentasi lengkap:** [`docs/Notification.md`](docs/Notification.md)
 
 ## 📱 Screen List

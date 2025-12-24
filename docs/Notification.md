@@ -139,6 +139,83 @@ lib/core/notification/
 
 ---
 
+## 📖 Quick Example
+
+### Inisialisasi (Sudah Otomatis)
+
+Notification sudah **otomatis diinisialisasi** di `MainDashboard`. Untuk manual:
+
+```dart
+// 1. Initialize & request permission
+await ref.read(notificationProvider.notifier).initialize();
+await ref.read(notificationProvider.notifier).requestPermission();
+```
+
+### Show Local Notification
+
+```dart
+// 2. Show local notification
+await ref.read(notificationProvider.notifier).showLocalNotification(
+  title: 'Hello!',
+  body: 'This is a notification',
+  data: {'route': '/details', 'id': '123'},
+);
+```
+
+### Subscribe to Topic
+
+```dart
+// 3. Subscribe to topic
+await ref.read(notificationProvider.notifier).subscribeToTopic('news');
+await ref.read(notificationProvider.notifier).subscribeToTopic('promotions');
+
+// Unsubscribe
+await ref.read(notificationProvider.notifier).unsubscribeFromTopic('news');
+```
+
+### Listen to Notification Tap
+
+```dart
+// 4. Listen to notification tap
+ref.listen(notificationTapProvider, (prev, next) {
+  next.whenData((message) {
+    // Navigate based on message.data
+    if (message.data?['route'] != null) {
+      context.go(message.data!['route']);
+    }
+  });
+});
+```
+
+### Listen to Foreground Message
+
+```dart
+// 5. Listen to foreground messages
+ref.listen(foregroundMessageProvider, (prev, next) {
+  next.whenData((message) {
+    // Show in-app notification
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message.title ?? 'New notification')),
+    );
+  });
+});
+```
+
+### Get Device Token
+
+```dart
+// 6. Get device token (untuk kirim ke backend)
+final state = ref.read(notificationProvider);
+
+if (state.hasPermission && state.deviceToken != null) {
+  print('Token: ${state.deviceToken}');
+  // Send to your backend
+  await api.registerDeviceToken(state.deviceToken!);
+}
+```
+
+---
+
 ## Setup Firebase Cloud Messaging (FCM)
 
 ### 1. Buat Project Firebase
