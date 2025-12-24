@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config/app_config.dart';
+import '../../core/constants/app_info.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/l10n/app_localizations.dart';
 
@@ -151,7 +152,7 @@ class SettingScreen extends ConsumerWidget {
                   leading: const Icon(Icons.info_outline),
                   title: Text(l10n.appVersion),
                   trailing: Text(
-                    '1.0.0',
+                    AppInfo.version,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -162,7 +163,7 @@ class SettingScreen extends ConsumerWidget {
                   leading: const Icon(Icons.code),
                   title: Text(l10n.buildNumber),
                   trailing: Text(
-                    '1',
+                    AppInfo.buildNumber.toString(),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
