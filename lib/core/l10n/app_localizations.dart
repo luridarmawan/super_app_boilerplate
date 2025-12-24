@@ -28,7 +28,7 @@ class AppLocalizations {
   /// Helper method untuk mendapatkan instance dari BuildContext
   static AppLocalizations of(BuildContext context) {
     return Localizations.of<AppLocalizations>(context, AppLocalizations) ??
-        AppLocalizations(const Locale('id', 'ID'));
+        AppLocalizations(const Locale('en', 'US'));
   }
 
   /// Delegate untuk digunakan di MaterialApp

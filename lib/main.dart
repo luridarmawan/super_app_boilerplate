@@ -51,8 +51,8 @@ class SuperApp extends ConsumerWidget {
       // Locale
       locale: locale,
       supportedLocales: const [
-        Locale('id', 'ID'),
         Locale('en', 'US'),
+        Locale('id', 'ID'),
       ],
       localizationsDelegates: const [
         AppLocalizations.delegate,

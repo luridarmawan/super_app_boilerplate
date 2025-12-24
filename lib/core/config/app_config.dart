@@ -22,7 +22,7 @@ class AppConfigState {
   const AppConfigState({
     this.authStrategy = AuthStrategy.firebase,
     this.sidebarPosition = SidebarPosition.left,
-    this.selectedLocale = const Locale('id', 'ID'),
+    this.selectedLocale = const Locale('en', 'US'),
     this.currentTemplate = AppTemplate.defaultBlue,
     this.isDarkMode = false,
   });
