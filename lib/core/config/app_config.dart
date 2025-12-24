@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
 import '../auth/auth_interface.dart';
 import '../auth/firebase_provider.dart';
 import '../auth/custom_api_provider.dart';
+
+/// Keys untuk SharedPreferences
+class _PrefsKeys {
+  static const String locale = 'app_locale';
+  static const String localeCountry = 'app_locale_country';
+  static const String template = 'app_template';
+  static const String isDarkMode = 'app_is_dark_mode';
+  static const String sidebarPosition = 'app_sidebar_position';
+}
 
 /// Enum untuk menentukan strategi autentikasi
 enum AuthStrategy { firebase, customApi }
@@ -50,32 +60,91 @@ class AppConfigState {
       );
 }
 
-/// Notifier untuk mengelola konfigurasi aplikasi
+/// Notifier untuk mengelola konfigurasi aplikasi dengan persistensi
 class AppConfigNotifier extends StateNotifier<AppConfigState> {
-  AppConfigNotifier() : super(const AppConfigState());
+  SharedPreferences? _prefs;
+
+  AppConfigNotifier() : super(const AppConfigState()) {
+    _loadFromPrefs();
+  }
+
+  /// Memuat pengaturan dari SharedPreferences
+  Future<void> _loadFromPrefs() async {
+    _prefs = await SharedPreferences.getInstance();
+
+    // Load locale
+    final localeCode = _prefs?.getString(_PrefsKeys.locale);
+    final localeCountry = _prefs?.getString(_PrefsKeys.localeCountry);
+    Locale? savedLocale;
+    if (localeCode != null) {
+      savedLocale = Locale(localeCode, localeCountry ?? '');
+    }
+
+    // Load template
+    final templateIndex = _prefs?.getInt(_PrefsKeys.template);
+    AppTemplate? savedTemplate;
+    if (templateIndex != null && templateIndex < AppTemplate.values.length) {
+      savedTemplate = AppTemplate.values[templateIndex];
+    }
+
+    // Load dark mode
+    final savedDarkMode = _prefs?.getBool(_PrefsKeys.isDarkMode);
+
+    // Load sidebar position
+    final sidebarIndex = _prefs?.getInt(_PrefsKeys.sidebarPosition);
+    SidebarPosition? savedSidebarPosition;
+    if (sidebarIndex != null && sidebarIndex < SidebarPosition.values.length) {
+      savedSidebarPosition = SidebarPosition.values[sidebarIndex];
+    }
+
+    // Update state dengan pengaturan tersimpan
+    state = state.copyWith(
+      selectedLocale: savedLocale,
+      currentTemplate: savedTemplate,
+      isDarkMode: savedDarkMode,
+      sidebarPosition: savedSidebarPosition,
+    );
+  }
+
+  /// Menyimpan pengaturan ke SharedPreferences
+  Future<void> _saveToPrefs() async {
+    _prefs ??= await SharedPreferences.getInstance();
+
+    await _prefs?.setString(_PrefsKeys.locale, state.selectedLocale.languageCode);
+    await _prefs?.setString(_PrefsKeys.localeCountry, state.selectedLocale.countryCode ?? '');
+    await _prefs?.setInt(_PrefsKeys.template, state.currentTemplate.index);
+    await _prefs?.setBool(_PrefsKeys.isDarkMode, state.isDarkMode);
+    await _prefs?.setInt(_PrefsKeys.sidebarPosition, state.sidebarPosition.index);
+  }
 
   void setAuthStrategy(AuthStrategy strategy) {
     state = state.copyWith(authStrategy: strategy);
+    // AuthStrategy tidak perlu disimpan ke prefs karena dikonfigurasi dari kode
   }
 
   void setSidebarPosition(SidebarPosition position) {
     state = state.copyWith(sidebarPosition: position);
+    _saveToPrefs();
   }
 
   void setLocale(Locale locale) {
     state = state.copyWith(selectedLocale: locale);
+    _saveToPrefs();
   }
 
   void setTemplate(AppTemplate template) {
     state = state.copyWith(currentTemplate: template);
+    _saveToPrefs();
   }
 
   void toggleDarkMode() {
     state = state.copyWith(isDarkMode: !state.isDarkMode);
+    _saveToPrefs();
   }
 
   void setDarkMode(bool isDark) {
     state = state.copyWith(isDarkMode: isDark);
+    _saveToPrefs();
   }
 }
 
