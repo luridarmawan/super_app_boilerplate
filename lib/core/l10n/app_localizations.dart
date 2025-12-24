@@ -160,6 +160,8 @@ class AppLocalizations {
   String get photoCaptured => translate('photoCaptured');
   String get photoCapturedSuccessfully => translate('photoCapturedSuccessfully');
   String get photoSaved => translate('photoSaved');
+  String get imageSelectionCancelled => translate('imageSelectionCancelled');
+  String get galleryError => translate('galleryError');
 
   // ============================================
   // SETTINGS STRINGS
@@ -398,6 +400,8 @@ const Map<String, String> _idStrings = {
   'photoCaptured': 'Foto Diambil',
   'photoCapturedSuccessfully': 'Foto berhasil diambil!',
   'photoSaved': 'Foto berhasil disimpan',
+  'imageSelectionCancelled': 'Pemilihan gambar dibatalkan',
+  'galleryError': 'Kesalahan galeri',
 
   // Settings
   'appearance': 'Tampilan',
@@ -620,6 +624,8 @@ const Map<String, String> _enStrings = {
   'photoCaptured': 'Photo Captured',
   'photoCapturedSuccessfully': 'Photo captured successfully!',
   'photoSaved': 'Photo saved successfully',
+  'imageSelectionCancelled': 'Image selection cancelled',
+  'galleryError': 'Gallery error',
 
   // Settings
   'appearance': 'Appearance',

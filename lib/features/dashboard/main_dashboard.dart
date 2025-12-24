@@ -449,12 +449,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
                   label: l10n.upload,
                   onTap: () {
                     Navigator.pop(dialogContext);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${l10n.upload} selected'),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
+                    _pickFromGallery();
                   },
                 ),
               ],
@@ -500,6 +495,47 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${l10n.cameraError}: $e'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Picks an image from the device gallery
+  Future<void> _pickFromGallery() async {
+    final l10n = context.l10n;
+    final ImagePicker picker = ImagePicker();
+
+    try {
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+
+      if (image != null) {
+        // Image selected successfully
+        if (mounted) {
+          _showPhotoPreviewDialog(image);
+        }
+      } else {
+        // User cancelled the selection
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.imageSelectionCancelled),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Handle any errors
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${l10n.galleryError}: $e'),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
