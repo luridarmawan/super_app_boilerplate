@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/config/app_config.dart';
+import '../../core/constants/app_info.dart';
 import '../../core/l10n/app_localizations.dart';
 
 /// Profile Screen - Detail profil user
@@ -202,30 +203,31 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
-
-                  // Danger Zone
-                  _buildSectionHeader(context, l10n.dangerZone),
-                  const SizedBox(height: 8),
-                  Card(
-                    child: ListTile(
-                      leading: Icon(
-                        Icons.delete_outline,
-                        color: colorScheme.error,
+                  // Danger Zone - only show if enabled
+                  if (AppInfo.enableDangerZone) ...[
+                    const SizedBox(height: 24),
+                    _buildSectionHeader(context, l10n.dangerZone),
+                    const SizedBox(height: 8),
+                    Card(
+                      child: ListTile(
+                        leading: Icon(
+                          Icons.delete_outline,
+                          color: colorScheme.error,
+                        ),
+                        title: Text(
+                          l10n.deleteAccount,
+                          style: TextStyle(color: colorScheme.error),
+                        ),
+                        trailing: Icon(
+                          Icons.chevron_right,
+                          color: colorScheme.error,
+                        ),
+                        onTap: () => _showDeleteAccountDialog(context, l10n),
                       ),
-                      title: Text(
-                        l10n.deleteAccount,
-                        style: TextStyle(color: colorScheme.error),
-                      ),
-                      trailing: Icon(
-                        Icons.chevron_right,
-                        color: colorScheme.error,
-                      ),
-                      onTap: () => _showDeleteAccountDialog(context, l10n),
                     ),
-                  ),
+                  ],
 
-                  const SizedBox(height: 32),
+                  SizedBox(height: AppInfo.bottomMargin),
                 ],
               ),
             ),

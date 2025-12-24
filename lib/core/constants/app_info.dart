@@ -21,6 +21,8 @@ class AppInfo {
   /// Full version with build number
   static const String fullVersion = '$version+$buildNumber';
 
+  static const double bottomMargin = 58;
+
   // ============================================
   // FEATURE FLAGS
   // ============================================
@@ -33,4 +35,7 @@ class AppInfo {
 
   /// Enable/disable gallery upload feature
   static const bool enableGalleryUpload = true;
+
+  static const bool enableDangerZone = true;
+  static const bool enableDeleteAccount = true;
 }
