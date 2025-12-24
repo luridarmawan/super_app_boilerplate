@@ -2,6 +2,7 @@
 /// This file stores constants that correspond to data in pubspec.yaml
 class AppInfo {
   AppInfo._();
+  static const bool enableDemo = true;
 
   /// Application name
   static const String name = 'Super X App';
@@ -41,6 +42,11 @@ class AppInfo {
   /// Enable/disable Google login/register feature
   static const bool enableGoogleLogin = true;
 
+  /// Auth provider strategy: 'firebase' or 'customApi'
+  /// - 'firebase': Use Firebase Auth + Google Sign-In (requires firebase configuration)
+  /// - 'customApi': Use Google Sign-In + Custom Backend API (no Firebase needed)
+  static const String authProvider = 'customApi'; // 'firebase', 'customApi'
+
   static const bool enableNotification = false;
   static const String notificationProvider = 'firebase'; // 'firebase', 'onesignal', 'mock'
   static const bool enableNotificationBanner = false;
@@ -50,4 +56,7 @@ class AppInfo {
 
   static const bool enableDangerZone = true;
   static const bool enableDeleteAccount = true;
+
+  static const String emailSupport = "support@yourdomain.com";
+  static const String phoneSupport = "+62 890 1234 567";
 }

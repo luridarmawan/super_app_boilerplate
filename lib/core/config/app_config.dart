@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../auth/auth_interface.dart';
 import '../auth/firebase_provider.dart';
 import '../auth/custom_api_provider.dart';
+import '../constants/app_info.dart';
 
 /// Keys untuk SharedPreferences
 class _PrefsKeys {
@@ -21,6 +22,18 @@ enum AuthStrategy { firebase, customApi }
 /// Enum untuk posisi Sidebar
 enum SidebarPosition { left, right }
 
+/// Helper untuk mendapatkan default auth strategy dari AppInfo
+AuthStrategy _getDefaultAuthStrategy() {
+  switch (AppInfo.authProvider) {
+    case 'firebase':
+      return AuthStrategy.firebase;
+    case 'customApi':
+      return AuthStrategy.customApi;
+    default:
+      return AuthStrategy.customApi;
+  }
+}
+
 /// State class untuk konfigurasi aplikasi
 class AppConfigState {
   final AuthStrategy authStrategy;
@@ -29,13 +42,13 @@ class AppConfigState {
   final AppTemplate currentTemplate;
   final bool isDarkMode;
 
-  const AppConfigState({
-    this.authStrategy = AuthStrategy.firebase,
+  AppConfigState({
+    AuthStrategy? authStrategy,
     this.sidebarPosition = SidebarPosition.left,
     this.selectedLocale = const Locale('en', 'US'),
     this.currentTemplate = AppTemplate.defaultBlue,
     this.isDarkMode = false,
-  });
+  }) : authStrategy = authStrategy ?? _getDefaultAuthStrategy();
 
   AppConfigState copyWith({
     AuthStrategy? authStrategy,
@@ -64,7 +77,7 @@ class AppConfigState {
 class AppConfigNotifier extends StateNotifier<AppConfigState> {
   SharedPreferences? _prefs;
 
-  AppConfigNotifier() : super(const AppConfigState()) {
+  AppConfigNotifier() : super(AppConfigState()) {
     _loadFromPrefs();
   }
 

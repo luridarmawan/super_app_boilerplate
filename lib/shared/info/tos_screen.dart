@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:super_app/core/constants/app_info.dart';
 
 /// Terms of Service Screen
 class TosScreen extends StatelessWidget {
@@ -136,7 +137,7 @@ class TosScreen extends StatelessWidget {
               context,
               title: '10. Contact Information',
               content:
-                  'If you have any questions about these Terms, please contact us at:\n\nEmail: legal@superapp.com\nPhone: 1500-123\nAddress: Jakarta, Indonesia',
+                  'If you have any questions about these Terms, please contact us at:\n\nEmail: ${AppInfo.emailSupport}\nPhone: ${AppInfo.phoneSupport}\nAddress: Jakarta, Indonesia',
             ),
 
             const SizedBox(height: 32),

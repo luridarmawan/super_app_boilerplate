@@ -71,6 +71,10 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   onesignal_flutter: ^5.2.7
 
+  # Authentication
+  google_sign_in: ^6.2.1
+  firebase_auth: ^5.3.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

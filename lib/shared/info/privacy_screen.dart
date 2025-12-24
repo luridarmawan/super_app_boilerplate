@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:super_app/core/constants/app_info.dart';
 
 /// Privacy Policy Screen
 class PrivacyScreen extends StatelessWidget {
@@ -53,7 +54,7 @@ class PrivacyScreen extends StatelessWidget {
                                   ),
                         ),
                         Text(
-                          'Last updated: December 2024',
+                          'Last updated: Mei 2025',
                           style:
                               Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: colorScheme.onPrimaryContainer
@@ -155,8 +156,8 @@ class PrivacyScreen extends StatelessWidget {
               title: 'Contact Us',
               content:
                   'If you have any questions about this Privacy Policy, please contact us at:\n\n'
-                  'Email: privacy@superapp.com\n'
-                  'Phone: 1500-123\n'
+                  'Email: ${AppInfo.emailSupport}\n'
+                  'Phone: ${AppInfo.phoneSupport}\n'
                   'Address: Jakarta, Indonesia',
             ),
 

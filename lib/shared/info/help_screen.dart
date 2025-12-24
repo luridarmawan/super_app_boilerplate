@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:super_app/core/constants/app_info.dart';
 
 /// Help & Report Screen
 class HelpScreen extends StatelessWidget {
@@ -118,7 +119,7 @@ class HelpScreen extends StatelessWidget {
                     ),
                   ),
                   title: const Text('Email Support'),
-                  subtitle: const Text('support@superapp.com'),
+                  subtitle: Text(AppInfo.emailSupport),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _showContactDialog(context, 'Email'),
                 ),
@@ -137,7 +138,7 @@ class HelpScreen extends StatelessWidget {
                     ),
                   ),
                   title: const Text('Call Center'),
-                  subtitle: const Text('1500-123 (24 hours)'),
+                  subtitle: Text('${AppInfo.phoneSupport} (24 hours)'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _showContactDialog(context, 'Phone'),
                 ),
