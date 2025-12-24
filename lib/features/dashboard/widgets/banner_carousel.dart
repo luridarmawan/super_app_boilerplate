@@ -34,11 +34,6 @@ class BannerItem {
       title: 'Offline Mode',
       subtitle: 'You are in offline mode',
     ),
-    const BannerItem(
-      imageUrl: 'https://picsum.photos/800/400?random=2',
-      title: 'Special Promo',
-      subtitle: 'Get 50% off on first transaction',
-    ),
   ];
 }
 
