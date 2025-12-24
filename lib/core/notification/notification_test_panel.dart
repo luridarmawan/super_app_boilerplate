@@ -57,7 +57,7 @@ class _NotificationTestPanelState extends ConsumerState<NotificationTestPanel> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('🧪 Notification Test Panel'),
+        title: const Text('Notification Test Panel'),
         backgroundColor: colorScheme.primaryContainer,
       ),
       body: SingleChildScrollView(

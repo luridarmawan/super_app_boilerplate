@@ -4,6 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/config/app_config.dart';
 import '../../core/auth/auth_interface.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/constants/app_info.dart';
+import '../../core/notification/notification_test_panel.dart';
 
 /// Custom Sidebar menggunakan Material 3 NavigationDrawer
 class CustomSidebar extends ConsumerWidget {
@@ -129,6 +131,16 @@ class CustomSidebar extends ConsumerWidget {
           selectedIcon: const Icon(Icons.help),
           label: Text(l10n.helpAndSupport),
         ),
+        
+        // Notification Test (only when notification enabled AND mock provider)
+        if (AppInfo.enableNotification &&
+            (AppInfo.notificationProvider.toLowerCase() == 'mock' ||
+             AppInfo.notificationProvider.toLowerCase() == 'test'))
+          const NavigationDrawerDestination(
+            icon: Icon(Icons.bug_report_outlined),
+            selectedIcon: Icon(Icons.bug_report),
+            label: Text('Notification Test'),
+          ),
         
         const SizedBox(height: 16),
         
@@ -284,6 +296,15 @@ class CustomSidebar extends ConsumerWidget {
         break;
       case 7: // Help
         onHelpTap?.call();
+        break;
+      case 8: // Notification Test (only if shown)
+        if (AppInfo.enableNotification &&
+            (AppInfo.notificationProvider.toLowerCase() == 'mock' ||
+             AppInfo.notificationProvider.toLowerCase() == 'test')) {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const NotificationTestPanel()),
+          );
+        }
         break;
     }
   }
