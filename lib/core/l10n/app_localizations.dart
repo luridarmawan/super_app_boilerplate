@@ -154,6 +154,12 @@ class AppLocalizations {
   String get scanQr => translate('scanQr');
   String get takePhoto => translate('takePhoto');
   String get upload => translate('upload');
+  String get photoCaptureCancelled => translate('photoCaptureCancelled');
+  String get cameraError => translate('cameraError');
+  String get photoPreview => translate('photoPreview');
+  String get photoCaptured => translate('photoCaptured');
+  String get photoCapturedSuccessfully => translate('photoCapturedSuccessfully');
+  String get photoSaved => translate('photoSaved');
 
   // ============================================
   // SETTINGS STRINGS
@@ -386,6 +392,12 @@ const Map<String, String> _idStrings = {
   'scanQr': 'Scan QR',
   'takePhoto': 'Ambil Foto',
   'upload': 'Unggah',
+  'photoCaptureCancelled': 'Pengambilan foto dibatalkan',
+  'cameraError': 'Kesalahan kamera',
+  'photoPreview': 'Pratinjau Foto',
+  'photoCaptured': 'Foto Diambil',
+  'photoCapturedSuccessfully': 'Foto berhasil diambil!',
+  'photoSaved': 'Foto berhasil disimpan',
 
   // Settings
   'appearance': 'Tampilan',
@@ -602,6 +614,12 @@ const Map<String, String> _enStrings = {
   'scanQr': 'Scan QR',
   'takePhoto': 'Take Photo',
   'upload': 'Upload',
+  'photoCaptureCancelled': 'Photo capture cancelled',
+  'cameraError': 'Camera error',
+  'photoPreview': 'Photo Preview',
+  'photoCaptured': 'Photo Captured',
+  'photoCapturedSuccessfully': 'Photo captured successfully!',
+  'photoSaved': 'Photo saved successfully',
 
   // Settings
   'appearance': 'Appearance',
