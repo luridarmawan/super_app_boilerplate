@@ -303,7 +303,7 @@ flutter run -d emulator-5554
 - [ ] Implementasi Google Sign-In (tambah google_sign_in)
 - [x] Tambahkan localization strings untuk multi-bahasa (lihat `docs/LOCALIZATION.md`)
 - [x] Network Layer dengan Dio + Retrofit (lihat `docs/API.md`)
-- [ ] Implementasi persistent storage untuk settings
+- [x] Implementasi persistent storage untuk settings (menggunakan SharedPreferences)
 - [ ] Tambahkan unit tests dan widget tests
 - [ ] Implementasi push notifications
 - [ ] Tambahkan analytics
