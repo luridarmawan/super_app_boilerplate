@@ -26,3 +26,5 @@ export 'repository/banner_repository.dart';
 // Services (Retrofit)
 export 'services/api_service.dart';
 
+// Connectivity
+export 'connectivity/connectivity_provider.dart';
