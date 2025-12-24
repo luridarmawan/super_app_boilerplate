@@ -105,8 +105,8 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
       next.whenData((message) {
         ref.read(notificationProvider.notifier).onMessageReceived(message);
 
-        // Show in-app notification banner
-        if (mounted) {
+        // Show in-app notification banner (if enabled)
+        if (mounted && AppInfo.enableNotificationBanner) {
           NotificationBanner.show(
             context,
             title: message.title ?? 'New Notification',
