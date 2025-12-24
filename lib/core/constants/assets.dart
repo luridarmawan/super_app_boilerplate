@@ -6,6 +6,9 @@ class Assets {
   // static const String logo = 'assets/images/logo.png';
   static const String logo = 'assets/images/logo/carik_blue_logo.png';
   static const String logoWhite = 'assets/images/logo/carik_green_Logo.png.png';
+
+  // Banner
+  static const String offlineModeBanner = 'assets/images/banners/offline_mode.png';
   
   // Splash Screen
   // static const String splashImage = 'assets/images/splash.png';

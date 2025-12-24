@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../core/constants/assets.dart';
 import '../../../core/network/repository/banner_repository.dart';
 
 /// Model for banner item
@@ -33,7 +34,7 @@ class BannerItem {
   /// Default banner items for offline mode or when API fails
   static List<BannerItem> get defaultItems => [
     const BannerItem(
-      imageUrl: 'assets/images/banners/offline_mode.png',
+      imageUrl: Assets.offlineModeBanner,
       title: 'Offline Mode',
       subtitle: 'You are in offline mode',
       isAsset: true,

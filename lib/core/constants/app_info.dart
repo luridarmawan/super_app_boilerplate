@@ -1,23 +1,23 @@
-/// Informasi aplikasi dari pubspec.yaml
-/// File ini menyimpan konstanta yang sesuai dengan data di pubspec.yaml
+/// Application information from pubspec.yaml
+/// This file stores constants that correspond to data in pubspec.yaml
 class AppInfo {
   AppInfo._();
 
-  /// Nama aplikasi
+  /// Application name
   static const String name = 'Super X App';
 
-  /// Deskripsi aplikasi
+  /// Application description
   static const String description = 'A Super App Project.';
 
-  /// Tagline aplikasi
+  /// Application tagline
   static const String tagline = 'Your All-in-One Solution..';
 
-  /// Versi aplikasi
-  static const String version = '1.0.1';
+  /// Application version
+  static const String version = '3.3.1';
 
   /// Build number
   static const int buildNumber = 17;
 
-  /// Versi lengkap dengan build number
+  /// Full version with build number
   static const String fullVersion = '$version+$buildNumber';
 }
