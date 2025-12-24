@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/constants/assets.dart';
+import '../../core/constants/app_info.dart';
 
 /// Splash Screen full screen dengan gambar utama
 class SplashScreen extends ConsumerStatefulWidget {
@@ -166,7 +167,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
                     // App Name
                     Text(
-                      'Super App',
+                      AppInfo.name,
                       style:
                           Theme.of(context).textTheme.headlineLarge?.copyWith(
                                 color: Colors.white,
@@ -178,7 +179,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
                     // Tagline
                     Text(
-                      'Your All-in-One Solution',
+                      AppInfo.tagline,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: Colors.white.withOpacity(0.9),
                           ),
@@ -225,7 +226,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               left: 0,
               right: 0,
               child: Text(
-                'v1.0.0',
+                'v${AppInfo.version}',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Colors.white.withOpacity(0.5),
