@@ -105,7 +105,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               child: CachedNetworkImage(
                 imageUrl: Assets.remoteSplashUrl,
                 fit: BoxFit.cover,
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 colorBlendMode: BlendMode.darken,
                 placeholder: (context, url) => Container(
                   color: colorScheme.primary,
@@ -150,7 +150,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -190,7 +190,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     Text(
                       AppInfo.tagline,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                           ),
                     ),
                   ],
@@ -213,7 +213,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       child: CircularProgressIndicator(
                         strokeWidth: 3,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.white.withOpacity(0.8),
+                          Colors.white.withValues(alpha: 0.8),
                         ),
                       ),
                     ),
@@ -221,7 +221,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     Text(
                       'Loading...',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.white.withOpacity(0.7),
+                            color: Colors.white.withValues(alpha: 0.7),
                           ),
                     ),
                   ],
@@ -238,7 +238,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 'v${AppInfo.version}',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                     ),
               ),
             ),
