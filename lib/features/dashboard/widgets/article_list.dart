@@ -77,8 +77,8 @@ class ArticleListFromApi extends ConsumerWidget {
     final articlesAsync = ref.watch(articlesProvider);
 
     return articlesAsync.when(
-      // Loading state
-      loading: () => _buildLoading(context),
+      // Loading state - Shimmer skeleton untuk UX yang lebih baik
+      loading: () => _buildShimmerLoading(context),
 
       // Error state
       error: (error, stack) => _buildError(context, error.toString(), ref),
@@ -101,28 +101,73 @@ class ArticleListFromApi extends ConsumerWidget {
     );
   }
 
-  Widget _buildLoading(BuildContext context) {
+  /// Shimmer skeleton loading untuk UX yang lebih interaktif
+  Widget _buildShimmerLoading(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (title != null)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              title!,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title!,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+                if (seeAllText != null)
+                  _ShimmerBox(
+                    width: 60,
+                    height: 20,
+                    color: colorScheme.surfaceContainerHighest,
                   ),
+              ],
             ),
           ),
-        const SizedBox(height: 16),
-        const Center(
-          child: Padding(
-            padding: EdgeInsets.all(32),
-            child: CircularProgressIndicator(),
-          ),
-        ),
+        const SizedBox(height: 12),
+        if (isHorizontal)
+          _buildHorizontalShimmer(context, colorScheme)
+        else
+          _buildVerticalShimmer(context, colorScheme),
       ],
+    );
+  }
+
+  Widget _buildHorizontalShimmer(BuildContext context, ColorScheme colorScheme) {
+    return SizedBox(
+      height: horizontalHeight,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: 3, // Show 3 skeleton items
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: EdgeInsets.only(right: index < 2 ? 12 : 0),
+            child: SizedBox(
+              width: 280,
+              child: _HorizontalArticleShimmer(colorScheme: colorScheme),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildVerticalShimmer(BuildContext context, ColorScheme colorScheme) {
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: 3, // Show 3 skeleton items
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        return _VerticalArticleShimmer(colorScheme: colorScheme);
+      },
     );
   }
 
@@ -179,6 +224,194 @@ class ArticleListFromApi extends ConsumerWidget {
   }
 }
 
+/// Shimmer box widget dengan animasi
+class _ShimmerBox extends StatefulWidget {
+  final double width;
+  final double height;
+  final Color color;
+  final double borderRadius;
+
+  const _ShimmerBox({
+    required this.width,
+    required this.height,
+    required this.color,
+    this.borderRadius = 4,
+  });
+
+  @override
+  State<_ShimmerBox> createState() => _ShimmerBoxState();
+}
+
+class _ShimmerBoxState extends State<_ShimmerBox>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat();
+    _animation = Tween<double>(begin: -2, end: 2).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOutSine),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Container(
+          width: widget.width,
+          height: widget.height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+            gradient: LinearGradient(
+              begin: Alignment(_animation.value - 1, 0),
+              end: Alignment(_animation.value + 1, 0),
+              colors: [
+                widget.color,
+                widget.color.withAlpha(120),
+                widget.color,
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Horizontal article shimmer skeleton
+class _HorizontalArticleShimmer extends StatelessWidget {
+  final ColorScheme colorScheme;
+
+  const _HorizontalArticleShimmer({required this.colorScheme});
+
+  @override
+  Widget build(BuildContext context) {
+    final shimmerColor = colorScheme.surfaceContainerHighest;
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Image placeholder
+          Expanded(
+            flex: 3,
+            child: _ShimmerBox(
+              width: double.infinity,
+              height: double.infinity,
+              color: shimmerColor,
+              borderRadius: 0,
+            ),
+          ),
+          // Content placeholder
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _ShimmerBox(
+                    width: double.infinity,
+                    height: 16,
+                    color: shimmerColor,
+                  ),
+                  const SizedBox(height: 8),
+                  _ShimmerBox(
+                    width: 180,
+                    height: 14,
+                    color: shimmerColor,
+                  ),
+                  const Spacer(),
+                  _ShimmerBox(
+                    width: 100,
+                    height: 12,
+                    color: shimmerColor,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Vertical article shimmer skeleton
+class _VerticalArticleShimmer extends StatelessWidget {
+  final ColorScheme colorScheme;
+
+  const _VerticalArticleShimmer({required this.colorScheme});
+
+  @override
+  Widget build(BuildContext context) {
+    final shimmerColor = colorScheme.surfaceContainerHighest;
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Row(
+        children: [
+          // Image placeholder
+          _ShimmerBox(
+            width: 100,
+            height: 100,
+            color: shimmerColor,
+            borderRadius: 0,
+          ),
+          // Content placeholder
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _ShimmerBox(
+                    width: 50,
+                    height: 16,
+                    color: shimmerColor,
+                  ),
+                  const SizedBox(height: 8),
+                  _ShimmerBox(
+                    width: double.infinity,
+                    height: 14,
+                    color: shimmerColor,
+                  ),
+                  const SizedBox(height: 4),
+                  _ShimmerBox(
+                    width: 150,
+                    height: 14,
+                    color: shimmerColor,
+                  ),
+                  const SizedBox(height: 8),
+                  _ShimmerBox(
+                    width: 80,
+                    height: 12,
+                    color: shimmerColor,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// List artikel untuk dashboard
 class ArticleList extends StatelessWidget {
   final List<Article> articles;
@@ -199,50 +432,6 @@ class ArticleList extends StatelessWidget {
     this.isHorizontal = false,
     this.horizontalHeight = 220,
   });
-
-  /// Sample articles untuk demo (fallback jika API tidak tersedia)
-  static List<Article> get sampleArticles => [
-        Article(
-          id: '1',
-          title: 'How to Maximize Your Super App Experience',
-          excerpt:
-              'Learn the tips and tricks to get the most out of your Super App...',
-          imageUrl: 'https://picsum.photos/400/200?random=10',
-          author: 'John Doe',
-          publishedAt: DateTime.now().subtract(const Duration(hours: 2)),
-          category: 'Tips',
-        ),
-        Article(
-          id: '2',
-          title: 'New Payment Features Released',
-          excerpt:
-              'We have added new payment methods to make your transactions easier...',
-          imageUrl: 'https://picsum.photos/400/200?random=11',
-          author: 'Jane Smith',
-          publishedAt: DateTime.now().subtract(const Duration(days: 1)),
-          category: 'News',
-        ),
-        Article(
-          id: '3',
-          title: 'Security Tips for Mobile Banking',
-          excerpt:
-              'Keep your account safe with these essential security practices...',
-          imageUrl: 'https://picsum.photos/400/200?random=12',
-          author: 'Security Team',
-          publishedAt: DateTime.now().subtract(const Duration(days: 2)),
-          category: 'Security',
-        ),
-        Article(
-          id: '4',
-          title: 'Introducing Loyalty Points Program',
-          excerpt:
-              'Earn points on every transaction and redeem exciting rewards...',
-          imageUrl: 'https://picsum.photos/400/200?random=13',
-          author: 'Marketing Team',
-          publishedAt: DateTime.now().subtract(const Duration(days: 3)),
-          category: 'Promo',
-        ),
-      ];
 
   @override
   Widget build(BuildContext context) {
