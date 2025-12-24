@@ -81,7 +81,7 @@ class ArticleListFromApi extends ConsumerWidget {
       loading: () => _buildShimmerLoading(context),
 
       // Error state
-      error: (error, stack) => _buildError(context, error.toString(), ref),
+      error: (error, stack) => _buildError(context, ref),
 
       // Success state
       data: (articles) {
@@ -171,7 +171,7 @@ class ArticleListFromApi extends ConsumerWidget {
     );
   }
 
-  Widget _buildError(BuildContext context, String error, WidgetRef ref) {
+  Widget _buildError(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -200,14 +200,6 @@ class ArticleListFromApi extends ConsumerWidget {
                 Text(
                   'Failed to load articles',
                   style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  error,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 FilledButton.icon(
