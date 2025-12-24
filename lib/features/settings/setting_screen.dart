@@ -140,37 +140,6 @@ class SettingScreen extends ConsumerWidget {
 
           const SizedBox(height: 24),
 
-          // Auth Section
-          _buildSectionHeader(context, l10n.authentication),
-          const SizedBox(height: 8),
-          
-          Card(
-            child: ListTile(
-              leading: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.security_outlined,
-                  color: colorScheme.onPrimaryContainer,
-                ),
-              ),
-              title: Text(l10n.authProvider),
-              subtitle: Text(
-                config.authStrategy == AuthStrategy.firebase 
-                    ? l10n.firebaseAuth 
-                    : l10n.customApi,
-              ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _showAuthStrategyDialog(context, ref, l10n),
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
           // About Section
           _buildSectionHeader(context, l10n.about),
           const SizedBox(height: 8),
@@ -339,46 +308,6 @@ class SettingScreen extends ConsumerWidget {
               onChanged: (value) {
                 if (value != null) {
                   ref.read(appConfigProvider.notifier).setSidebarPosition(value);
-                  Navigator.of(context).pop();
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showAuthStrategyDialog(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
-    final config = ref.read(appConfigProvider);
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.authProvider),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<AuthStrategy>(
-              title: Text(l10n.firebaseAuth),
-              subtitle: Text(l10n.useFirebaseAuth),
-              value: AuthStrategy.firebase,
-              groupValue: config.authStrategy,
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(appConfigProvider.notifier).setAuthStrategy(value);
-                  Navigator.of(context).pop();
-                }
-              },
-            ),
-            RadioListTile<AuthStrategy>(
-              title: Text(l10n.customApi),
-              subtitle: Text(l10n.useCustomApi),
-              value: AuthStrategy.customApi,
-              groupValue: config.authStrategy,
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(appConfigProvider.notifier).setAuthStrategy(value);
                   Navigator.of(context).pop();
                 }
               },
