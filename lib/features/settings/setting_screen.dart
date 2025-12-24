@@ -223,21 +223,23 @@ class SettingScreen extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.selectTheme),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: AppTemplate.values.map((template) {
-            return RadioListTile<AppTemplate>(
-              title: Text(_getLocalizedTemplateName(l10n, template)),
-              value: template,
-              groupValue: config.currentTemplate,
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(appConfigProvider.notifier).setTemplate(value);
-                  Navigator.of(context).pop();
-                }
-              },
-            );
-          }).toList(),
+        content: RadioGroup<AppTemplate>(
+          groupValue: config.currentTemplate,
+          onChanged: (value) {
+            if (value != null) {
+              ref.read(appConfigProvider.notifier).setTemplate(value);
+              Navigator.of(context).pop();
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: AppTemplate.values.map((template) {
+              return RadioListTile<AppTemplate>.adaptive(
+                title: Text(_getLocalizedTemplateName(l10n, template)),
+                value: template,
+              );
+            }).toList(),
+          ),
         ),
       ),
     );
@@ -250,32 +252,27 @@ class SettingScreen extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.selectLanguage),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<Locale>(
-              title: Text(l10n.bahasaIndonesia),
-              value: const Locale('id', 'ID'),
-              groupValue: config.selectedLocale,
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(appConfigProvider.notifier).setLocale(value);
-                  Navigator.of(context).pop();
-                }
-              },
-            ),
-            RadioListTile<Locale>(
-              title: Text(l10n.english),
-              value: const Locale('en', 'US'),
-              groupValue: config.selectedLocale,
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(appConfigProvider.notifier).setLocale(value);
-                  Navigator.of(context).pop();
-                }
-              },
-            ),
-          ],
+        content: RadioGroup<Locale>(
+          groupValue: config.selectedLocale,
+          onChanged: (value) {
+            if (value != null) {
+              ref.read(appConfigProvider.notifier).setLocale(value);
+              Navigator.of(context).pop();
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<Locale>.adaptive(
+                title: Text(l10n.bahasaIndonesia),
+                value: const Locale('id', 'ID'),
+              ),
+              RadioListTile<Locale>.adaptive(
+                title: Text(l10n.english),
+                value: const Locale('en', 'US'),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -288,32 +285,27 @@ class SettingScreen extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.sidebarPosition),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<SidebarPosition>(
-              title: Text(l10n.left),
-              value: SidebarPosition.left,
-              groupValue: config.sidebarPosition,
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(appConfigProvider.notifier).setSidebarPosition(value);
-                  Navigator.of(context).pop();
-                }
-              },
-            ),
-            RadioListTile<SidebarPosition>(
-              title: Text(l10n.right),
-              value: SidebarPosition.right,
-              groupValue: config.sidebarPosition,
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(appConfigProvider.notifier).setSidebarPosition(value);
-                  Navigator.of(context).pop();
-                }
-              },
-            ),
-          ],
+        content: RadioGroup<SidebarPosition>(
+          groupValue: config.sidebarPosition,
+          onChanged: (value) {
+            if (value != null) {
+              ref.read(appConfigProvider.notifier).setSidebarPosition(value);
+              Navigator.of(context).pop();
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<SidebarPosition>.adaptive(
+                title: Text(l10n.left),
+                value: SidebarPosition.left,
+              ),
+              RadioListTile<SidebarPosition>.adaptive(
+                title: Text(l10n.right),
+                value: SidebarPosition.right,
+              ),
+            ],
+          ),
         ),
       ),
     );
