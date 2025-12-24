@@ -51,7 +51,7 @@ class AppLocalizations {
   // ============================================
   // GENERAL APP STRINGS
   // ============================================
-  String get appName => translate('appName');
+  // String get appName => translate('appName');
   String get appTagline => translate('appTagline');
   String get loading => translate('loading');
   String get error => translate('error');
@@ -293,7 +293,7 @@ class AppLocalizations {
 // ============================================
 const Map<String, String> _idStrings = {
   // General
-  'appName': 'Super App',
+  // 'appName': 'Super App',
   'appTagline': 'Solusi All-in-One Anda',
   'loading': 'Memuat...',
   'error': 'Kesalahan',
@@ -509,7 +509,7 @@ const Map<String, String> _idStrings = {
 // ============================================
 const Map<String, String> _enStrings = {
   // General
-  'appName': 'Super App',
+  // 'appName': 'Super App',
   'appTagline': 'Your All-in-One Solution',
   'loading': 'Loading...',
   'error': 'Error',

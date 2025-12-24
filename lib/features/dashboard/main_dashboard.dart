@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config/app_config.dart';
 import '../../core/constants/assets.dart';
+import '../../core/constants/app_info.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../shared/widgets/custom_header.dart';
 import '../../shared/widgets/custom_sidebar.dart';
@@ -53,7 +54,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: CustomHeader(
-        title: l10n.appName,
+        title: AppInfo.name,
         showLogo: true,
         logo: ClipRRect(
           borderRadius: BorderRadius.circular(8),
