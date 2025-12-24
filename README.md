@@ -91,7 +91,31 @@ dependencies:
   dio: ^5.4.0                   # HTTP Client
   retrofit: ^4.1.0              # Type-safe API
   json_annotation: ^4.8.1       # JSON serialization
+  connectivity_plus: ^6.1.1     # Network connectivity
+  permission_handler: ^11.3.1   # Permission management
+  image_picker: ^1.0.7          # Camera & Gallery
+  geolocator: ^13.0.2           # GPS & Location
 ```
+
+---
+
+## 🔐 Permissions
+
+Aplikasi ini membutuhkan beberapa permission untuk berfungsi dengan baik:
+
+### Android Permissions (AndroidManifest.xml)
+
+| Permission | Kategori | Deskripsi |
+|------------|----------|-----------|
+| `READ_EXTERNAL_STORAGE` | Storage | Membaca file dari penyimpanan |
+| `WRITE_EXTERNAL_STORAGE` | Storage | Menulis file ke penyimpanan |
+| `MANAGE_EXTERNAL_STORAGE` | Storage | Akses penuh storage (Android 11+) |
+| `CAMERA` | Kamera | Mengambil foto menggunakan kamera |
+| `READ_MEDIA_IMAGES` | Gallery | Akses gambar dari gallery (Android 13+) |
+| `ACCESS_FINE_LOCATION` | GPS | Lokasi presisi tinggi (GPS) |
+| `ACCESS_COARSE_LOCATION` | GPS | Lokasi perkiraan (Network) |
+
+📚 **Panduan penggunaan Permission Helper:** [`docs/Permission Helper.md`](docs/Permission%20Helper.md)
 
 ---
 
