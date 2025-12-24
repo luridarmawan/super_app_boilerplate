@@ -4,7 +4,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/network/repository/banner_repository.dart';
 
-/// Model untuk banner item
+/// Model for banner item
 class BannerItem {
   final String imageUrl;
   final String title;
@@ -18,7 +18,7 @@ class BannerItem {
     this.onTap,
   });
 
-  /// Convert dari BannerModel (dari API)
+  /// Convert from BannerModel (from API)
   factory BannerItem.fromModel(BannerModel model) {
     return BannerItem(
       imageUrl: model.imageUrl,
@@ -28,14 +28,14 @@ class BannerItem {
   }
 }
 
-/// Widget untuk menampilkan banner carousel dari API
-/// 
-/// Contoh penggunaan:
+/// Widget to display banner carousel from API
+///
+/// Usage example:
 /// ```dart
-/// // Menggunakan data dari API (recommended)
+/// // Using data from API (recommended)
 /// const BannerCarouselFromApi()
-/// 
-/// // Atau dengan data manual (BannerCarousel biasa)
+///
+/// // Or with manual data (regular BannerCarousel)
 /// BannerCarousel(
 ///   items: myBanners,
 /// )
@@ -60,11 +60,11 @@ class BannerCarouselFromApi extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch banners provider untuk mendapatkan data dari API
+    // Watch banners provider to get data from API
     final bannersAsync = ref.watch(bannersProvider);
 
     return bannersAsync.when(
-      // Loading state - Shimmer skeleton untuk UX yang lebih baik
+      // Loading state - Shimmer skeleton for better UX
       loading: () => _buildShimmerLoading(context),
 
       // Error state
@@ -72,10 +72,10 @@ class BannerCarouselFromApi extends ConsumerWidget {
 
       // Success state
       data: (banners) {
-        // Convert BannerModel ke BannerItem
+        // Convert BannerModel to BannerItem
         final bannerItems = banners.map((model) {
           final item = BannerItem.fromModel(model);
-          // Wrap dengan onTap callback
+          // Wrap with onTap callback
           return BannerItem(
             imageUrl: item.imageUrl,
             title: item.title,
@@ -96,7 +96,7 @@ class BannerCarouselFromApi extends ConsumerWidget {
     );
   }
 
-  /// Shimmer skeleton loading untuk UX yang lebih interaktif
+  /// Shimmer skeleton loading for more interactive UX
   Widget _buildShimmerLoading(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -167,7 +167,7 @@ class BannerCarouselFromApi extends ConsumerWidget {
   }
 }
 
-/// Banner shimmer skeleton dengan animasi
+/// Banner shimmer skeleton with animation
 class _BannerShimmer extends StatefulWidget {
   final ColorScheme colorScheme;
 
@@ -258,7 +258,7 @@ class _BannerShimmerState extends State<_BannerShimmer>
   }
 }
 
-/// Banner Carousel untuk dashboard dengan Material 3 styling
+/// Banner Carousel for dashboard with Material 3 styling
 class BannerCarousel extends StatefulWidget {
   final List<BannerItem> items;
   final double height;

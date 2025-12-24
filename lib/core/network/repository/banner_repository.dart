@@ -4,7 +4,7 @@ import '../repository/base_repository.dart';
 import '../models/base_response.dart';
 
 /// Banner Model
-/// Model untuk data banner dari API
+/// Model for banner data from API
 class BannerModel {
   final String imageUrl;
   final String title;
@@ -34,17 +34,17 @@ class BannerModel {
 }
 
 /// Banner Repository
-/// Repository untuk mengambil data banner dari API
+/// Repository to fetch banner data from API
 class BannerRepository extends BaseRepository {
-  /// Base URL untuk API banner
-  /// Ganti dengan URL API Anda
+  /// Base URL for banner API
+  /// Replace with your API URL
   static const String _bannerApiUrl = 'https://api.carik.id/dummy/banner.json';
 
   BannerRepository({required super.apiClient});
 
-  /// Ambil semua banner
-  /// 
-  /// Contoh penggunaan:
+  /// Get all banners
+  ///
+  /// Usage example:
   /// ```dart
   /// final response = await bannerRepository.getBanners();
   /// if (response.success && response.data != null) {
@@ -55,13 +55,13 @@ class BannerRepository extends BaseRepository {
   /// ```
   Future<BaseResponse<List<BannerModel>>> getBanners() async {
     try {
-      // Fetch langsung dari URL eksternal
+      // Fetch directly from external URL
       final response = await dio.get(_bannerApiUrl);
 
       if (response.statusCode == 200 && response.data != null) {
         final List<BannerModel> banners = [];
 
-        // Parse response (array langsung)
+        // Parse response (direct array)
         if (response.data is List) {
           for (final item in response.data) {
             if (item is Map<String, dynamic>) {
@@ -89,22 +89,22 @@ class BannerRepository extends BaseRepository {
 }
 
 /// Banner Repository Provider
-/// Menggunakan Riverpod untuk dependency injection
+/// Using Riverpod for dependency injection
 final bannerRepositoryProvider = Provider<BannerRepository>((ref) {
   return BannerRepository(apiClient: ref.watch(apiClientProvider));
 });
 
 /// Banners State Provider
-/// StateNotifier untuk mengelola state banner dengan loading, error, dan data
+/// StateNotifier to manage banner state with loading, error, and data
 class BannersNotifier extends StateNotifier<AsyncValue<List<BannerModel>>> {
   final BannerRepository _repository;
 
   BannersNotifier(this._repository) : super(const AsyncValue.loading()) {
-    // Auto-fetch saat provider dibuat
+    // Auto-fetch when provider is created
     fetchBanners();
   }
 
-  /// Fetch banners dari API
+  /// Fetch banners from API
   Future<void> fetchBanners() async {
     state = const AsyncValue.loading();
 
@@ -127,7 +127,7 @@ class BannersNotifier extends StateNotifier<AsyncValue<List<BannerModel>>> {
 }
 
 /// Banners Provider
-/// Provider untuk mengakses daftar banner dengan auto-fetch
+/// Provider to access banner list with auto-fetch
 final bannersProvider =
     StateNotifierProvider<BannersNotifier, AsyncValue<List<BannerModel>>>(
   (ref) => BannersNotifier(ref.watch(bannerRepositoryProvider)),

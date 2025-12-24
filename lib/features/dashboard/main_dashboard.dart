@@ -14,10 +14,10 @@ import 'widgets/banner_carousel.dart';
 import 'widgets/menu_grid.dart';
 import 'widgets/article_list.dart';
 
-/// Index navigasi saat ini
+/// Current navigation index
 final currentNavIndexProvider = StateProvider<int>((ref) => 0);
 
-/// Main Dashboard - Halaman utama aplikasi
+/// Main Dashboard - Main page of the application
 class MainDashboard extends ConsumerStatefulWidget {
   final VoidCallback? onSettingsTap;
   final VoidCallback? onProfileTap;
@@ -42,7 +42,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
   @override
   void initState() {
     super.initState();
-    // Set system UI untuk edge-to-edge
+    // Set system UI for edge-to-edge
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
 
@@ -90,7 +90,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
           );
         },
       ),
-      // Sidebar dengan posisi yang dapat dikonfigurasi
+      // Sidebar with configurable position
       drawer: sidebarPosition == SidebarPosition.left
           ? CustomSidebar(
               onProfileTap: widget.onProfileTap,
@@ -116,7 +116,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
         items: CustomFooter.defaultItems,
         onCenterButtonTap: () => _showScanDialog(context),
       ),
-      // Floating Action Button tambahan
+      // Additional Floating Action Button
       floatingActionButton: currentIndex == 0
           ? FloatingActionButton.small(
               heroTag: 'fab_chat',
@@ -160,7 +160,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
   Widget _buildHomeContent() {
     return RefreshIndicator(
       onRefresh: () async {
-        // Refresh banners dan articles dari API
+        // Refresh banners and articles from API
         await Future.wait([
           ref.read(bannersProvider.notifier).refresh(),
           ref.read(articlesProvider.notifier).refresh(),
@@ -173,8 +173,8 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
           children: [
             const SizedBox(height: 16),
 
-            // Banner Carousel dari API
-            // Menggunakan BannerCarouselFromApi yang fetch dari https://api.carik.id/dummy/banner.json
+            // Banner Carousel from API
+            // Using BannerCarouselFromApi that fetches from https://api.carik.id/dummy/banner.json
             BannerCarouselFromApi(
               onBannerTap: (banner) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -205,8 +205,8 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
 
             const SizedBox(height: 24),
 
-            // Articles dari API (Horizontal)
-            // Menggunakan ArticleListFromApi yang fetch dari https://api.carik.id/dummy/article.json
+            // Articles from API (Horizontal)
+            // Using ArticleListFromApi that fetches from https://api.carik.id/dummy/article.json
             ArticleListFromApi(
               title: context.l10n.latestNews,
               seeAllText: context.l10n.seeAll,
@@ -231,7 +231,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
 
             const SizedBox(height: 24),
 
-            // Articles dari API (Vertical)
+            // Articles from API (Vertical)
             ArticleListFromApi(
               title: context.l10n.recommendedForYou,
               isHorizontal: false,
