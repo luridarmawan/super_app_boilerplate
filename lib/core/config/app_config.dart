@@ -117,11 +117,6 @@ class AppConfigNotifier extends StateNotifier<AppConfigState> {
     await _prefs?.setInt(_PrefsKeys.sidebarPosition, state.sidebarPosition.index);
   }
 
-  void setAuthStrategy(AuthStrategy strategy) {
-    state = state.copyWith(authStrategy: strategy);
-    // AuthStrategy tidak perlu disimpan ke prefs karena dikonfigurasi dari kode
-  }
-
   void setSidebarPosition(SidebarPosition position) {
     state = state.copyWith(sidebarPosition: position);
     _saveToPrefs();
