@@ -10,12 +10,14 @@ class BannerItem {
   final String title;
   final String? subtitle;
   final VoidCallback? onTap;
+  final bool isAsset;
 
   const BannerItem({
     required this.imageUrl,
     required this.title,
     this.subtitle,
     this.onTap,
+    this.isAsset = false,
   });
 
   /// Convert from BannerModel (from API)
@@ -24,15 +26,17 @@ class BannerItem {
       imageUrl: model.imageUrl,
       title: model.title,
       subtitle: model.subtitle,
+      isAsset: false,
     );
   }
 
   /// Default banner items for offline mode or when API fails
   static List<BannerItem> get defaultItems => [
     const BannerItem(
-      imageUrl: 'https://picsum.photos/800/400?random=1',
+      imageUrl: 'assets/images/banners/offline_mode.png',
       title: 'Offline Mode',
       subtitle: 'You are in offline mode',
+      isAsset: true,
     ),
   ];
 }
@@ -342,34 +346,57 @@ class _BannerCarouselState extends State<BannerCarousel> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Background Image
-              CachedNetworkImage(
-                imageUrl: item.imageUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  color: colorScheme.surfaceContainerHighest,
-                  child: const Center(
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        colorScheme.primaryContainer,
-                        colorScheme.secondaryContainer,
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+              // Background Image - supports both asset and network images
+              if (item.isAsset)
+                Image.asset(
+                  item.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          colorScheme.primaryContainer,
+                          colorScheme.secondaryContainer,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.image_not_supported_outlined,
+                      color: colorScheme.onPrimaryContainer,
+                      size: 48,
                     ),
                   ),
-                  child: Icon(
-                    Icons.image_not_supported_outlined,
-                    color: colorScheme.onPrimaryContainer,
-                    size: 48,
+                )
+              else
+                CachedNetworkImage(
+                  imageUrl: item.imageUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: colorScheme.surfaceContainerHighest,
+                    child: const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          colorScheme.primaryContainer,
+                          colorScheme.secondaryContainer,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.image_not_supported_outlined,
+                      color: colorScheme.onPrimaryContainer,
+                      size: 48,
+                    ),
                   ),
                 ),
-              ),
 
               // Gradient overlay
               Container(
