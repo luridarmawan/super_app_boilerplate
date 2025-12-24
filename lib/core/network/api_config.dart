@@ -1,3 +1,5 @@
+import '../constants/app_info.dart';
+
 /// API Configuration
 /// Contains base URLs and environment-specific configurations
 class ApiConfig {
@@ -28,7 +30,8 @@ class ApiConfig {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'X-Platform': 'mobile',
-        'X-App-Version': '1.0.0',
+        'X-App-Version': AppInfo.version,
+        'User-Agent': '${AppInfo.name.replaceAll(' ', '')}/${AppInfo.version}',
       };
 
   /// Environment configuration
