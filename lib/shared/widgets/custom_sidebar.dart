@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/config/app_config.dart';
 import '../../core/auth/auth_interface.dart';
+import '../../core/l10n/app_localizations.dart';
 
 /// Custom Sidebar menggunakan Material 3 NavigationDrawer
 class CustomSidebar extends ConsumerWidget {
@@ -23,10 +24,11 @@ class CustomSidebar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final user = ref.watch(currentUserProvider);
+    final l10n = context.l10n;
     
     return NavigationDrawer(
       selectedIndex: null,
-      onDestinationSelected: (index) => _handleNavigation(context, index),
+      onDestinationSelected: (index) => _handleNavigation(context, index, l10n),
       children: [
         // Header dengan profil user
         _buildDrawerHeader(context, user, colorScheme),
@@ -37,11 +39,11 @@ class CustomSidebar extends ConsumerWidget {
         ),
         
         // Menu items
-        const Padding(
-          padding: EdgeInsets.fromLTRB(28, 16, 16, 8),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(28, 16, 16, 8),
           child: Text(
-            'Menu',
-            style: TextStyle(
+            l10n.menuLabel,
+            style: const TextStyle(
               fontWeight: FontWeight.w500,
               fontSize: 12,
             ),
@@ -51,19 +53,19 @@ class CustomSidebar extends ConsumerWidget {
         NavigationDrawerDestination(
           icon: const Icon(Icons.home_outlined),
           selectedIcon: const Icon(Icons.home),
-          label: const Text('Dashboard'),
+          label: Text(l10n.dashboard),
         ),
         
         NavigationDrawerDestination(
           icon: const Icon(Icons.person_outline),
           selectedIcon: const Icon(Icons.person),
-          label: const Text('Profile'),
+          label: Text(l10n.profile),
         ),
         
         NavigationDrawerDestination(
           icon: const Icon(Icons.notifications_outlined),
           selectedIcon: const Icon(Icons.notifications),
-          label: const Text('Notifications'),
+          label: Text(l10n.notifications),
         ),
         
         const Padding(
@@ -71,11 +73,11 @@ class CustomSidebar extends ConsumerWidget {
           child: Divider(),
         ),
         
-        const Padding(
-          padding: EdgeInsets.fromLTRB(28, 16, 16, 8),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(28, 16, 16, 8),
           child: Text(
-            'Activity',
-            style: TextStyle(
+            l10n.activityLabel,
+            style: const TextStyle(
               fontWeight: FontWeight.w500,
               fontSize: 12,
             ),
@@ -85,19 +87,19 @@ class CustomSidebar extends ConsumerWidget {
         NavigationDrawerDestination(
           icon: const Icon(Icons.history_outlined),
           selectedIcon: const Icon(Icons.history),
-          label: const Text('History'),
+          label: Text(l10n.history),
         ),
         
         NavigationDrawerDestination(
           icon: const Icon(Icons.favorite_outline),
           selectedIcon: const Icon(Icons.favorite),
-          label: const Text('Favorites'),
+          label: Text(l10n.favorites),
         ),
         
         NavigationDrawerDestination(
           icon: const Icon(Icons.bookmark_outline),
           selectedIcon: const Icon(Icons.bookmark),
-          label: const Text('Saved'),
+          label: Text(l10n.saved),
         ),
         
         const Padding(
@@ -105,11 +107,11 @@ class CustomSidebar extends ConsumerWidget {
           child: Divider(),
         ),
         
-        const Padding(
-          padding: EdgeInsets.fromLTRB(28, 16, 16, 8),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(28, 16, 16, 8),
           child: Text(
-            'Settings',
-            style: TextStyle(
+            l10n.settingsLabel,
+            style: const TextStyle(
               fontWeight: FontWeight.w500,
               fontSize: 12,
             ),
@@ -119,13 +121,13 @@ class CustomSidebar extends ConsumerWidget {
         NavigationDrawerDestination(
           icon: const Icon(Icons.settings_outlined),
           selectedIcon: const Icon(Icons.settings),
-          label: const Text('Settings'),
+          label: Text(l10n.settings),
         ),
         
         NavigationDrawerDestination(
           icon: const Icon(Icons.help_outline),
           selectedIcon: const Icon(Icons.help),
-          label: const Text('Help & Support'),
+          label: Text(l10n.helpAndSupport),
         ),
         
         const SizedBox(height: 16),
@@ -136,7 +138,7 @@ class CustomSidebar extends ConsumerWidget {
           child: FilledButton.icon(
             onPressed: onLogoutTap,
             icon: const Icon(Icons.logout),
-            label: const Text('Logout'),
+            label: Text(l10n.logout),
             style: FilledButton.styleFrom(
               backgroundColor: colorScheme.errorContainer,
               foregroundColor: colorScheme.onErrorContainer,
@@ -211,7 +213,7 @@ class CustomSidebar extends ConsumerWidget {
           
           // Name
           Text(
-            user?.displayName ?? 'Guest User',
+            user?.displayName ?? context.l10n.guestUser,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: colorScheme.onPrimaryContainer,
               fontWeight: FontWeight.w600,
@@ -233,7 +235,7 @@ class CustomSidebar extends ConsumerWidget {
           TextButton.icon(
             onPressed: onProfileTap,
             icon: const Icon(Icons.arrow_forward, size: 16),
-            label: const Text('View Profile'),
+            label: Text(context.l10n.viewProfile),
             style: TextButton.styleFrom(
               padding: EdgeInsets.zero,
               minimumSize: const Size(0, 32),
@@ -245,7 +247,7 @@ class CustomSidebar extends ConsumerWidget {
     );
   }
 
-  void _handleNavigation(BuildContext context, int index) {
+  void _handleNavigation(BuildContext context, int index, AppLocalizations l10n) {
     Navigator.of(context).pop(); // Close drawer
     
     switch (index) {
@@ -257,22 +259,22 @@ class CustomSidebar extends ConsumerWidget {
         break;
       case 2: // Notifications
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Notifications')),
+          SnackBar(content: Text(l10n.notifications)),
         );
         break;
       case 3: // History
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('History')),
+          SnackBar(content: Text(l10n.history)),
         );
         break;
       case 4: // Favorites
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Favorites')),
+          SnackBar(content: Text(l10n.favorites)),
         );
         break;
       case 5: // Saved
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Saved')),
+          SnackBar(content: Text(l10n.saved)),
         );
         break;
       case 6: // Settings
