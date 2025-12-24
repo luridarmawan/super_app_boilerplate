@@ -277,6 +277,15 @@ class AppLocalizations {
   String get changePassword => translate('changePassword');
   String get notificationSettings => translate('notificationSettings');
   String get linkedAccounts => translate('linkedAccounts');
+  String get accountInformation => translate('accountInformation');
+  String get emailVerified => translate('emailVerified');
+  String get notSet => translate('notSet');
+  String get notLoggedIn => translate('notLoggedIn');
+  String get privacyAndSecurity => translate('privacyAndSecurity');
+  String get dangerZone => translate('dangerZone');
+  String get deleteAccount => translate('deleteAccount');
+  String get deleteAccountConfirm => translate('deleteAccountConfirm');
+  String get accountDeletionRequested => translate('accountDeletionRequested');
 }
 
 // ============================================
@@ -484,6 +493,15 @@ const Map<String, String> _idStrings = {
   'changePassword': 'Ubah Kata Sandi',
   'notificationSettings': 'Pengaturan Notifikasi',
   'linkedAccounts': 'Akun Tertaut',
+  'accountInformation': 'Informasi Akun',
+  'emailVerified': 'Email Terverifikasi',
+  'notSet': 'Belum diatur',
+  'notLoggedIn': 'Belum masuk',
+  'privacyAndSecurity': 'Privasi & Keamanan',
+  'dangerZone': 'Zona Berbahaya',
+  'deleteAccount': 'Hapus Akun',
+  'deleteAccountConfirm': 'Apakah Anda yakin ingin menghapus akun? Tindakan ini tidak dapat dibatalkan.',
+  'accountDeletionRequested': 'Permintaan penghapusan akun terkirim',
 };
 
 // ============================================
@@ -691,6 +709,15 @@ const Map<String, String> _enStrings = {
   'changePassword': 'Change Password',
   'notificationSettings': 'Notification Settings',
   'linkedAccounts': 'Linked Accounts',
+  'accountInformation': 'Account Information',
+  'emailVerified': 'Email Verified',
+  'notSet': 'Not set',
+  'notLoggedIn': 'Not logged in',
+  'privacyAndSecurity': 'Privacy & Security',
+  'dangerZone': 'Danger Zone',
+  'deleteAccount': 'Delete Account',
+  'deleteAccountConfirm': 'Are you sure you want to delete your account? This action cannot be undone.',
+  'accountDeletionRequested': 'Account deletion requested',
 };
 
 /// Extension untuk akses mudah lokalisasi dari BuildContext

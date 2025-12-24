@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/config/app_config.dart';
+import '../../core/l10n/app_localizations.dart';
 
 /// Profile Screen - Detail profil user
 class ProfileScreen extends ConsumerWidget {
@@ -18,6 +19,7 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
 
     return Scaffold(
       body: CustomScrollView(
@@ -86,7 +88,7 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        user?.displayName ?? 'Guest User',
+                        user?.displayName ?? l10n.guestUser,
                         style:
                             Theme.of(context).textTheme.headlineSmall?.copyWith(
                                   color: Colors.white,
@@ -95,7 +97,7 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        user?.email ?? 'Not logged in',
+                        user?.email ?? l10n.notLoggedIn,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Colors.white.withOpacity(0.9),
                             ),
@@ -115,7 +117,7 @@ class ProfileScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Account Info Section
-                  _buildSectionHeader(context, 'Account Information'),
+                  _buildSectionHeader(context, l10n.accountInformation),
                   const SizedBox(height: 8),
                   Card(
                     child: Column(
@@ -123,22 +125,22 @@ class ProfileScreen extends ConsumerWidget {
                         _buildInfoTile(
                           context,
                           icon: Icons.person_outline,
-                          title: 'Full Name',
-                          value: user?.displayName ?? 'Not set',
+                          title: l10n.fullName,
+                          value: user?.displayName ?? l10n.notSet,
                         ),
                         const Divider(height: 1),
                         _buildInfoTile(
                           context,
                           icon: Icons.email_outlined,
-                          title: 'Email',
-                          value: user?.email ?? 'Not set',
+                          title: l10n.email,
+                          value: user?.email ?? l10n.notSet,
                         ),
                         const Divider(height: 1),
                         _buildInfoTile(
                           context,
                           icon: Icons.verified_outlined,
-                          title: 'Email Verified',
-                          value: user?.isEmailVerified == true ? 'Yes' : 'No',
+                          title: l10n.emailVerified,
+                          value: user?.isEmailVerified == true ? l10n.yes : l10n.no,
                           valueColor: user?.isEmailVerified == true
                               ? Colors.green
                               : colorScheme.error,
@@ -150,19 +152,19 @@ class ProfileScreen extends ConsumerWidget {
                   const SizedBox(height: 24),
 
                   // Quick Actions
-                  _buildSectionHeader(context, 'Quick Actions'),
+                  _buildSectionHeader(context, l10n.quickActions),
                   const SizedBox(height: 8),
                   Card(
                     child: Column(
                       children: [
                         ListTile(
                           leading: const Icon(Icons.lock_outline),
-                          title: const Text('Change Password'),
+                          title: Text(l10n.changePassword),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Change password'),
+                              SnackBar(
+                                content: Text(l10n.changePassword),
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
@@ -171,12 +173,12 @@ class ProfileScreen extends ConsumerWidget {
                         const Divider(height: 1),
                         ListTile(
                           leading: const Icon(Icons.notifications_outlined),
-                          title: const Text('Notification Settings'),
+                          title: Text(l10n.notificationSettings),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Notification settings'),
+                              SnackBar(
+                                content: Text(l10n.notificationSettings),
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
@@ -185,12 +187,12 @@ class ProfileScreen extends ConsumerWidget {
                         const Divider(height: 1),
                         ListTile(
                           leading: const Icon(Icons.security_outlined),
-                          title: const Text('Privacy & Security'),
+                          title: Text(l10n.privacyAndSecurity),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Privacy & Security'),
+                              SnackBar(
+                                content: Text(l10n.privacyAndSecurity),
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
@@ -203,7 +205,7 @@ class ProfileScreen extends ConsumerWidget {
                   const SizedBox(height: 24),
 
                   // Danger Zone
-                  _buildSectionHeader(context, 'Danger Zone'),
+                  _buildSectionHeader(context, l10n.dangerZone),
                   const SizedBox(height: 8),
                   Card(
                     child: ListTile(
@@ -212,14 +214,14 @@ class ProfileScreen extends ConsumerWidget {
                         color: colorScheme.error,
                       ),
                       title: Text(
-                        'Delete Account',
+                        l10n.deleteAccount,
                         style: TextStyle(color: colorScheme.error),
                       ),
                       trailing: Icon(
                         Icons.chevron_right,
                         color: colorScheme.error,
                       ),
-                      onTap: () => _showDeleteAccountDialog(context),
+                      onTap: () => _showDeleteAccountDialog(context, l10n),
                     ),
                   ),
 
@@ -276,32 +278,30 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _showDeleteAccountDialog(BuildContext context) {
+  void _showDeleteAccountDialog(BuildContext context, AppLocalizations l10n) {
     final colorScheme = Theme.of(context).colorScheme;
     
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         icon: Icon(
           Icons.warning_amber_rounded,
           color: colorScheme.error,
           size: 48,
         ),
-        title: const Text('Delete Account'),
-        content: const Text(
-          'Are you sure you want to delete your account? This action cannot be undone.',
-        ),
+        title: Text(l10n.deleteAccount),
+        content: Text(l10n.deleteAccountConfirm),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.of(dialogContext).pop();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Account deletion requested'),
+                SnackBar(
+                  content: Text(l10n.accountDeletionRequested),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -309,7 +309,7 @@ class ProfileScreen extends ConsumerWidget {
             style: FilledButton.styleFrom(
               backgroundColor: colorScheme.error,
             ),
-            child: const Text('Delete'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
