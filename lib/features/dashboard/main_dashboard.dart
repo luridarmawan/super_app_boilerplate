@@ -12,6 +12,7 @@ import '../../core/network/repository/article_repository.dart';
 import '../../core/network/repository/banner_repository.dart';
 import '../../core/notification/notification_provider.dart';
 import '../../core/notification/notification_interface.dart';
+import '../../core/notification/notification_test_panel.dart';
 import '../../shared/widgets/custom_header.dart';
 import '../../shared/widgets/custom_sidebar.dart';
 import '../../shared/widgets/custom_footer.dart';
@@ -161,19 +162,44 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
         items: CustomFooter.defaultItems,
         onCenterButtonTap: () => _showScanDialog(context),
       ),
-      // Additional Floating Action Button
+      // Additional Floating Action Buttons
       floatingActionButton: currentIndex == 0
-          ? FloatingActionButton.small(
-              heroTag: 'fab_chat',
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.chatSupport),
-                    behavior: SnackBarBehavior.floating,
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Notification Test Button (only when notification enabled AND mock mode)
+                if (AppInfo.enableNotification &&
+                    (AppInfo.notificationProvider.toLowerCase() == 'mock' ||
+                     AppInfo.notificationProvider.toLowerCase() == 'test'))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: FloatingActionButton.small(
+                      heroTag: 'fab_notification_test',
+                      backgroundColor: Colors.orange,
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const NotificationTestPanel(),
+                          ),
+                        );
+                      },
+                      child: const Icon(Icons.bug_report),
+                    ),
                   ),
-                );
-              },
-              child: const Icon(Icons.chat_outlined),
+                // Chat Button
+                FloatingActionButton.small(
+                  heroTag: 'fab_chat',
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(l10n.chatSupport),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                  child: const Icon(Icons.chat_outlined),
+                ),
+              ],
             )
           : null,
     );

@@ -37,7 +37,7 @@ class AppInfo {
   static const bool enableGalleryUpload = true;
 
   static const bool enableNotification = true;
-  static const String notificationProvider = 'firebase'; // 'firebase', 'onesignal', 'mock'
+  static const String notificationProvider = 'mock'; // 'firebase', 'onesignal', 'mock'
 
   /// OneSignal App ID - get from https://onesignal.com dashboard
   static const String oneSignalAppId = 'YOUR_ONESIGNAL_APP_ID';
