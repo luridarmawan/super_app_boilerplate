@@ -20,4 +20,17 @@ class AppInfo {
 
   /// Full version with build number
   static const String fullVersion = '$version+$buildNumber';
+
+  // ============================================
+  // FEATURE FLAGS
+  // ============================================
+
+  /// Enable/disable QR Code scanning feature
+  static const bool enableQrScanner = true;
+
+  /// Enable/disable camera photo capture feature
+  static const bool enableCameraCapture = true;
+
+  /// Enable/disable gallery upload feature
+  static const bool enableGalleryUpload = true;
 }

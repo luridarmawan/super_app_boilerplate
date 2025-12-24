@@ -420,38 +420,44 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildScanOption(
-                  dialogContext,
-                  icon: Icons.qr_code_scanner,
-                  label: l10n.scanQr,
-                  onTap: () {
-                    Navigator.pop(dialogContext);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${l10n.scanQr} selected'),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                ),
-                _buildScanOption(
-                  dialogContext,
-                  icon: Icons.camera_alt_outlined,
-                  label: l10n.takePhoto,
-                  onTap: () {
-                    Navigator.pop(dialogContext);
-                    _takePhoto();
-                  },
-                ),
-                _buildScanOption(
-                  dialogContext,
-                  icon: Icons.file_upload_outlined,
-                  label: l10n.upload,
-                  onTap: () {
-                    Navigator.pop(dialogContext);
-                    _pickFromGallery();
-                  },
-                ),
+                // QR Scanner option
+                if (AppInfo.enableQrScanner)
+                  _buildScanOption(
+                    dialogContext,
+                    icon: Icons.qr_code_scanner,
+                    label: l10n.scanQr,
+                    onTap: () {
+                      Navigator.pop(dialogContext);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${l10n.scanQr} selected'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                  ),
+                // Camera capture option
+                if (AppInfo.enableCameraCapture)
+                  _buildScanOption(
+                    dialogContext,
+                    icon: Icons.camera_alt_outlined,
+                    label: l10n.takePhoto,
+                    onTap: () {
+                      Navigator.pop(dialogContext);
+                      _takePhoto();
+                    },
+                  ),
+                // Gallery upload option
+                if (AppInfo.enableGalleryUpload)
+                  _buildScanOption(
+                    dialogContext,
+                    icon: Icons.file_upload_outlined,
+                    label: l10n.upload,
+                    onTap: () {
+                      Navigator.pop(dialogContext);
+                      _pickFromGallery();
+                    },
+                  ),
               ],
             ),
             const SizedBox(height: 24),
