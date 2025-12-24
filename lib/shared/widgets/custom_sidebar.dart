@@ -174,7 +174,7 @@ class CustomSidebar extends ConsumerWidget {
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Avatar
           GestureDetector(
@@ -214,6 +214,7 @@ class CustomSidebar extends ConsumerWidget {
           // Name
           Text(
             user?.displayName ?? context.l10n.guestUser,
+            textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: colorScheme.onPrimaryContainer,
               fontWeight: FontWeight.w600,
@@ -224,6 +225,7 @@ class CustomSidebar extends ConsumerWidget {
           if (user?.email != null)
             Text(
               user!.email!,
+              textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: colorScheme.onPrimaryContainer.withOpacity(0.8),
               ),
