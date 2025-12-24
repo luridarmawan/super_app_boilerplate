@@ -15,7 +15,7 @@ UI Layer
            └── MockNotificationService      (For Testing)
 ```
 
-## Keuntungan
+## Keunggulan
 
 | Benefit | Deskripsi |
 |---------|-----------|
@@ -27,30 +27,98 @@ UI Layer
 
 ---
 
-## Konfigurasi
+## ⚡ Kemudahan Pemilihan Provider
+
+### Semua Konfigurasi di Satu Tempat
+
+Tidak perlu mengubah banyak file! Semua konfigurasi notification ada di **satu file**:
+
+📁 **`lib/core/constants/app_info.dart`**
+
+```dart
+class AppInfo {
+  // ... other configs ...
+
+  // ============================================
+  // NOTIFICATION CONFIGURATION
+  // ============================================
+  
+  /// Enable/disable seluruh fitur notification
+  static const bool enableNotification = true;
+  
+  /// Pilih provider: 'firebase', 'onesignal', 'mock'
+  static const String notificationProvider = 'firebase';
+}
+```
+
+### Cara Ganti Provider
+
+Cukup **ubah 1 baris** di `app_info.dart`:
+
+```dart
+// Untuk Firebase Cloud Messaging (default)
+static const String notificationProvider = 'firebase';
+
+// Untuk OneSignal
+static const String notificationProvider = 'onesignal';
+
+// Untuk Testing/Development
+static const String notificationProvider = 'mock';
+```
+
+### Provider yang Tersedia
+
+| Value | Provider | Deskripsi | Kapan Digunakan |
+|-------|----------|-----------|-----------------|
+| `firebase` / `fcm` | Firebase Cloud Messaging | Push notification dari Google | Production (default) |
+| `onesignal` | OneSignal | Alternatif push notification | Jika butuh fitur OneSignal |
+| `mock` / `test` | Mock Service | Tidak ada koneksi ke server | Testing & Development |
+
+### Perbandingan Provider
+
+| Fitur | Firebase (FCM) | OneSignal |
+|-------|----------------|-----------|
+| **Gratis** | ✅ Unlimited | ✅ Sampai 10k subscribers |
+| **Setup Kompleksitas** | Medium | Mudah |
+| **Analytics** | Via Firebase Console | Built-in dashboard |
+| **Segmentasi** | Manual via topics | Otomatis |
+| **A/B Testing** | Via Remote Config | Built-in |
+| **Rich Notifications** | ✅ | ✅ |
+| **iOS Support** | ✅ | ✅ |
+| **Android Support** | ✅ | ✅ |
+
+### Anti-Pattern yang Dihindari
+
+| ❌ Anti-Pattern | ✅ Solusi yang Diterapkan |
+|-----------------|---------------------------|
+| `if (provider == 'fcm')` di setiap screen | Abstraction layer dengan interface |
+| Konfigurasi tersebar di banyak file | Semua config di `app_info.dart` |
+| Susah testing karena butuh koneksi | `MockNotificationService` untuk testing |
+| Perlu refactor besar untuk ganti provider | Ubah 1 baris, selesai! |
+
+---
+
+## Konfigurasi Detail
 
 ### 1. Enable/Disable Notification
 
-File: `lib/core/constants/app_info.dart`
-
 ```dart
 // Set to false untuk menonaktifkan seluruh fitur notification
+// UI tetap berjalan normal, hanya notification yang off
 static const bool enableNotification = true;
 ```
 
+**Apa yang terjadi jika `false`:**
+- Tidak ada inisialisasi Firebase/OneSignal
+- Tidak ada request permission
+- `MockNotificationService` digunakan secara internal
+- Tidak ada error di UI
+
 ### 2. Pilih Provider
 
-File: `lib/core/notification/notification_provider.dart`
-
 ```dart
-enum PushProvider {
-  fcm,        // Firebase Cloud Messaging
-  oneSignal,  // OneSignal
-  mock,       // For testing
-}
-
-// Ubah baris ini untuk switch provider
-const PushProvider pushProvider = PushProvider.fcm;
+// Pilihan: 'firebase', 'onesignal', 'mock'
+static const String notificationProvider = 'firebase';
 ```
 
 ---
@@ -253,8 +321,8 @@ class NotificationState {
 ## Testing dengan MockNotificationService
 
 ```dart
-// Di test setup, set provider ke mock
-const PushProvider pushProvider = PushProvider.mock;
+// Di app_info.dart, set provider ke mock
+static const String notificationProvider = 'mock';
 
 // Di test
 void main() {

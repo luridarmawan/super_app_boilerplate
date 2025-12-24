@@ -7,17 +7,29 @@ import 'mock_notification_service.dart';
 
 /// Enum untuk push notification provider
 enum PushProvider {
-  fcm,
-  oneSignal,
+  firebase,
+  onesignal,
   mock,
 }
 
-/// Default push provider - change this to switch providers
-// ignore: constant_identifier_names
-const PushProvider pushProvider = PushProvider.fcm;
+/// Helper function to get PushProvider from AppInfo.notificationProvider string
+PushProvider get currentPushProvider {
+  switch (AppInfo.notificationProvider.toLowerCase()) {
+    case 'firebase':
+    case 'fcm':
+      return PushProvider.firebase;
+    case 'onesignal':
+      return PushProvider.onesignal;
+    case 'mock':
+    case 'test':
+      return PushProvider.mock;
+    default:
+      return PushProvider.firebase; // Default to Firebase
+  }
+}
 
 /// Provider untuk notification service
-/// Returns the appropriate notification service based on PUSH_PROVIDER config
+/// Returns the appropriate notification service based on AppInfo.notificationProvider
 final notificationServiceProvider = Provider<BaseNotificationService>((ref) {
   // Check if notifications are enabled
   if (!AppInfo.enableNotification) {
@@ -25,10 +37,10 @@ final notificationServiceProvider = Provider<BaseNotificationService>((ref) {
     return MockNotificationService();
   }
 
-  switch (pushProvider) {
-    case PushProvider.fcm:
+  switch (currentPushProvider) {
+    case PushProvider.firebase:
       return FcmNotificationService();
-    case PushProvider.oneSignal:
+    case PushProvider.onesignal:
       return OneSignalNotificationService();
     case PushProvider.mock:
       return MockNotificationService();

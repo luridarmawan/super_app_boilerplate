@@ -37,6 +37,7 @@ class AppInfo {
   static const bool enableGalleryUpload = true;
 
   static const bool enableNotification = true;
+  static const String notificationProvider = 'firebase'; // 'firebase', 'onesignal', mock
 
   static const bool enableDangerZone = true;
   static const bool enableDeleteAccount = true;

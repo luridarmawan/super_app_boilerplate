@@ -35,19 +35,18 @@ static const bool enableNotification = true; // Set to false to disable
 
 ### 2. Choose Push Provider
 
-In `lib/core/notification/notification_provider.dart`:
+In `lib/core/constants/app_info.dart`:
 
 ```dart
-/// Available providers
-enum PushProvider {
-  fcm,        // Firebase Cloud Messaging
-  oneSignal,  // OneSignal
-  mock,       // For testing
-}
-
-/// Change this to switch providers
-const PushProvider pushProvider = PushProvider.fcm;
+// Options: 'firebase', 'onesignal', 'mock'
+static const String notificationProvider = 'firebase';
 ```
+
+| Value | Provider |
+|-------|----------|
+| `firebase` or `fcm` | Firebase Cloud Messaging |
+| `onesignal` | OneSignal |
+| `mock` or `test` | Mock (for testing) |
 
 ## Usage
 
@@ -173,8 +172,8 @@ static const String _oneSignalAppId = 'YOUR_ONESIGNAL_APP_ID';
 ## Testing with MockNotificationService
 
 ```dart
-// In your test setup
-const PushProvider pushProvider = PushProvider.mock;
+// In app_info.dart, set provider to mock
+static const String notificationProvider = 'mock';
 
 // In your test
 final mockService = ref.read(notificationServiceProvider) as MockNotificationService;

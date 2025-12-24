@@ -208,6 +208,69 @@ if (response.success) {
 
 📚 **Dokumentasi lengkap:** [`docs/API.md`](docs/API.md)
 
+## 🔔 Push Notification (Multi-Provider)
+
+Push notification layer yang reusable dengan **Multi-Provider Abstraction**, memungkinkan pergantian provider tanpa mengubah kode UI.
+
+### ✨ Keunggulan
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| **Clean Separation** | Tidak ada `if (isFcm)` logic di UI layer |
+| **1-Line Switch** | Ganti provider cukup ubah 1 baris di `app_info.dart` |
+| **A/B Testing Ready** | Bisa dikontrol via remote config |
+| **Testable** | `MockNotificationService` untuk unit testing |
+| **Clean Architecture** | Konsisten dengan arsitektur aplikasi |
+
+### ⚡ Quick Configuration
+
+Semua konfigurasi ada di `lib/core/constants/app_info.dart`:
+
+```dart
+// Enable/disable notification
+static const bool enableNotification = true;
+
+// Pilih provider: 'firebase', 'onesignal', atau 'mock'
+static const String notificationProvider = 'firebase';
+```
+
+### Provider yang Tersedia
+
+| Value | Provider | Keterangan |
+|-------|----------|------------|
+| `firebase` / `fcm` | Firebase Cloud Messaging | Default, dari Google |
+| `onesignal` | OneSignal | Alternatif populer |
+| `mock` / `test` | Mock Service | Untuk testing |
+
+### 📖 Quick Example
+
+```dart
+// Sudah otomatis diinisialisasi di MainDashboard
+// Untuk manual initialization:
+
+// 1. Initialize & request permission
+await ref.read(notificationProvider.notifier).initialize();
+await ref.read(notificationProvider.notifier).requestPermission();
+
+// 2. Show local notification
+await ref.read(notificationProvider.notifier).showLocalNotification(
+  title: 'Hello!',
+  body: 'This is a notification',
+);
+
+// 3. Subscribe to topic
+await ref.read(notificationProvider.notifier).subscribeToTopic('news');
+
+// 4. Listen to notification tap
+ref.listen(notificationTapProvider, (prev, next) {
+  next.whenData((message) {
+    // Navigate based on message.data
+  });
+});
+```
+
+📚 **Dokumentasi lengkap:** [`docs/Notification.md`](docs/Notification.md)
+
 ## 📱 Screen List
 
 ### Authentication

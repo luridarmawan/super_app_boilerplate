@@ -19,9 +19,9 @@
 ///    static const bool enableNotification = true;
 ///    ```
 /// 
-/// 2. Choose provider in `notification_provider.dart`:
+/// 2. Choose provider in `app_info.dart`:
 ///    ```dart
-///    const PushProvider pushProvider = PushProvider.fcm;
+///    static const String notificationProvider = 'firebase'; // 'firebase', 'onesignal', 'mock'
 ///    ```
 /// 
 /// 3. Initialize in your app:
