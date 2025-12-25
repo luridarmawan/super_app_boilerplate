@@ -6,19 +6,23 @@ class AppInfo {
   AppInfo._();
   static const bool enableDemo = true;
 
+  // ============================================
+  // ENVIRONMENT & APP INFO
+  // ============================================
+
   /// Environment flag: Reads from ENVIRONMENT in .env file
-  /// - ENVIRONMENT=production: Uses production API (https://api.carik.id/)
-  /// - ENVIRONMENT=development (or other): Uses development API (https://staging-api.carik.id/)
+  /// - ENVIRONMENT=production: Uses production API
+  /// - ENVIRONMENT=development (or other): Uses development/staging API
   static bool get isProduction => dotenv.env['ENVIRONMENT'] == 'production';
 
   /// Application name
-  static const String name = 'Super X App';
+  static String get name => dotenv.env['APP_NAME'] ?? 'Super X App';
 
   /// Application description
-  static const String description = 'A Super App Project.';
+  static String get description => dotenv.env['APP_DESCRIPTION'] ?? 'A Super App Project.';
 
   /// Application tagline
-  static const String tagline = 'Your All-in-One Solution..';
+  static String get tagline => dotenv.env['APP_TAGLINE'] ?? 'Your All-in-One Solution.';
 
   /// Application version
   static const String version = '3.3.1';
@@ -31,9 +35,26 @@ class AppInfo {
 
   static const double bottomMargin = 58;
 
+  // ============================================
+  // API CONFIGURATION
+  // ============================================
+
+  /// Production API Base URL
+  static String get apiBaseUrl => dotenv.env['API_BASE_URL'] ?? 'https://api.example.com/';
+
+  /// Development/Staging API Base URL
+  static String get apiBaseUrlDevelopment => dotenv.env['API_BASE_URL_DEVELOPMENT'] ?? 'https://demo-api.example.com/';
+
+  /// Get the active API Base URL based on environment
+  static String get activeApiBaseUrl => isProduction ? apiBaseUrl : apiBaseUrlDevelopment;
+
+  // ============================================
+  // SPLASH SCREEN
+  // ============================================
+
   /// Enable/disable splash screen on app startup
   /// If false, app will skip splash screen and go directly to login
-  static const bool enableSplashScreen = true;
+  static bool get enableSplashScreen => dotenv.env['ENABLE_SPLASH_SCREEN']?.toLowerCase() == 'true';
 
   /// Duration of splash screen display (only applies if enableSplashScreen is true)
   static const Duration splashScreenDuration = Duration(seconds: 4);
@@ -43,42 +64,63 @@ class AppInfo {
   // ============================================
 
   /// Enable/disable QR Code scanning feature
-  static const bool enableQrScanner = true;
+  static bool get enableQrScanner => dotenv.env['ENABLE_QRSCANNER']?.toLowerCase() == 'true';
 
   /// Enable/disable camera photo capture feature
-  static const bool enableCameraCapture = true;
+  static bool get enableCameraCapture => dotenv.env['ENABLE_CAMERA_CAPTURE']?.toLowerCase() == 'true';
 
   /// Enable/disable gallery upload feature
-  static const bool enableGalleryUpload = true;
+  static bool get enableGalleryUpload => dotenv.env['ENABLE_GALLERY_UPLOAD']?.toLowerCase() == 'true';
 
   /// Enable/disable Google login/register feature
-  static const bool enableGoogleLogin = true;
+  static bool get enableGoogleLogin => dotenv.env['ENABLE_GOOGLE_LOGIN']?.toLowerCase() == 'true';
 
   /// Enable/disable Dummy login/register feature
-  static const bool enableDummyLogin = true;
+  static bool get enableDummyLogin => dotenv.env['ENABLE_DUMMY_LOGIN']?.toLowerCase() == 'true';
+
+  /// Enable/disable Danger Zone in profile
+  static bool get enableDangerZone => dotenv.env['ENABLE_DANGER_ZONE']?.toLowerCase() == 'true';
+
+  /// Enable/disable Delete Account feature
+  static bool get enableDeleteAccount => dotenv.env['ENABLE_DELETE_ACCOUNT']?.toLowerCase() == 'true';
+
+  // ============================================
+  // AUTH CONFIGURATION
+  // ============================================
 
   /// Auth provider strategy: 'firebase' or 'customApi'
   /// - 'firebase': Use Firebase Auth + Google Sign-In (requires firebase configuration)
   /// - 'customApi': Use Google Sign-In + Custom Backend API (no Firebase needed)
-  static const String authProvider = 'customApi'; // 'firebase', 'customApi'
-
-  static const bool enableNotification = false;
-  static const String notificationProvider = 'firebase'; // 'firebase', 'onesignal', 'mock'
-  static const bool enableNotificationBanner = false;
-
-  /// OneSignal App ID - get from https://onesignal.com dashboard
-  static const String oneSignalAppId = 'YOUR_ONESIGNAL_APP_ID';
+  static String get authProvider => dotenv.env['AUTH_PROVIDER'] ?? 'customApi';
 
   /// Google Web Client ID - get from Google Cloud Console
   /// This is the Web Client ID (not Android Client ID)
   /// Required for google_sign_in v7.x on Android
-  /// Reads from GOOGLE_CLIENT_ID in .env file
-  static String get googleServerClientId =>
-      dotenv.env['GOOGLE_CLIENT_ID'] ?? '';
+  static String get googleServerClientId => dotenv.env['GOOGLE_CLIENT_ID'] ?? '';
 
-  static const bool enableDangerZone = true;
-  static const bool enableDeleteAccount = true;
+  // ============================================
+  // NOTIFICATION CONFIGURATION
+  // ============================================
 
-  static const String emailSupport = "support@yourdomain.com";
-  static const String phoneSupport = "+62 890 1234 567";
+  /// Enable/disable notifications
+  static bool get enableNotification => dotenv.env['ENABLE_NOTIFICATION']?.toLowerCase() == 'true';
+
+  /// Notification provider: 'firebase', 'onesignal', 'mock'
+  static String get notificationProvider => dotenv.env['NOTIFICATION_PROVIDER'] ?? 'firebase';
+
+  /// Enable/disable notification banner
+  static bool get enableNotificationBanner => dotenv.env['ENABLE_NOTIFICATION_BANNER']?.toLowerCase() == 'true';
+
+  /// OneSignal App ID - get from https://onesignal.com dashboard
+  static String get oneSignalAppId => dotenv.env['ONESIGNAL_APP_ID'] ?? 'YOUR_ONESIGNAL_APP_ID';
+
+  // ============================================
+  // SUPPORT CONTACT
+  // ============================================
+
+  /// Support email address
+  static String get emailSupport => dotenv.env['SUPPORT_EMAIL'] ?? 'support@yourdomain.com';
+
+  /// Support phone number
+  static String get phoneSupport => dotenv.env['SUPPORT_PHONE'] ?? '+62 890 1234 567';
 }

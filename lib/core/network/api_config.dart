@@ -60,18 +60,18 @@ class EnvironmentConfig {
 
   /// Development environment
   /// Uses staging API for development and testing
-  static const EnvironmentConfig development = EnvironmentConfig._(
+  static EnvironmentConfig get development => EnvironmentConfig._(
     environment: Environment.development,
-    baseUrl: 'https://staging-api.carik.id/',
+    baseUrl: AppInfo.apiBaseUrlDevelopment,
     enableLogging: true,
     name: 'Development',
   );
 
   /// Production environment
   /// Uses production API for live app
-  static const EnvironmentConfig production = EnvironmentConfig._(
+  static EnvironmentConfig get production => EnvironmentConfig._(
     environment: Environment.production,
-    baseUrl: 'https://api.carik.id/',
+    baseUrl: AppInfo.apiBaseUrl,
     enableLogging: false,
     name: 'Production',
   );
