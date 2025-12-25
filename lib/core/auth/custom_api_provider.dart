@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
 import 'auth_interface.dart';
 import '../constants/app_info.dart';
 
@@ -108,29 +111,54 @@ class CustomApiAuthProvider implements BaseAuthService {
   @override
   Future<AuthResult> signInWithGoogle() async {
     try {
+      debugPrint('[GAUTH] >>> Starting Google Sign-In');
+
       // Ensure Google Sign-In is initialized
       await _initGoogleSignIn();
       
       // Check if authenticate is supported
       if (!_googleSignIn.supportsAuthenticate()) {
+        debugPrint('[GAUTH] ERROR: Not supported on this platform');
         return AuthResult.failure('Google Sign-In tidak didukung di platform ini');
       }
       
       // Trigger Google Sign-In flow (v7.x API)
-      // Note: In v7.x, authenticate() throws on cancel instead of returning null
       final googleUser = await _googleSignIn.authenticate();
+      debugPrint('[GAUTH] User: ${googleUser.email}');
 
-      // Get authentication tokens if needed for backend verification
-      // final googleAuth = googleUser.authentication;
-      // final idToken = googleAuth.idToken;
+      // Get authentication tokens for backend verification
+      final googleAuth = await googleUser.authentication;
+      final idToken = googleAuth.idToken;
 
-      // TODO: Send idToken to your backend API for verification
-      // Example:
-      // final response = await http.post(
-      //   Uri.parse('$baseUrl/auth/google'),
-      //   headers: {'Content-Type': 'application/json', ...?headers},
-      //   body: jsonEncode({'idToken': idToken}),
-      // );
+      if (idToken == null) {
+        debugPrint('[GAUTH] ERROR: ID Token is null');
+        return AuthResult.failure('Gagal mendapatkan ID Token dari Google');
+      }
+      debugPrint('[GAUTH] Token obtained (${idToken.length} chars)');
+
+      // Send idToken to backend API for verification
+      final apiUrl = AppInfo.apiGoogleAuthVerification;
+      debugPrint('[GAUTH] POST $apiUrl');
+
+      final requestBody = jsonEncode({
+        'token': idToken
+      });
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          ...?headers,
+        },
+        body: requestBody,
+      );
+
+      debugPrint('[GAUTH] Response: ${response.statusCode} - ${response.body}');
+
+      if (response.statusCode != 200) {
+        debugPrint('[GAUTH] ERROR: Backend returned ${response.statusCode}');
+        return AuthResult.failure('Verifikasi token gagal: ${response.statusCode}');
+      }
 
       // Create user from Google account info
       _currentUser = AuthUser(
@@ -140,10 +168,15 @@ class CustomApiAuthProvider implements BaseAuthService {
         photoUrl: googleUser.photoUrl,
         isEmailVerified: true,
       );
-      
+
+      debugPrint('[GAUTH] <<< Success: ${_currentUser!.email}');
+
       _authStateController.add(_currentUser);
       return AuthResult.success(_currentUser!);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('[GAUTH] EXCEPTION: $e');
+      debugPrint('[GAUTH] Stack: $stackTrace');
+
       // Handle cancel or other errors
       if (e.toString().contains('canceled') || e.toString().contains('cancelled')) {
         return AuthResult.failure('Login dibatalkan');

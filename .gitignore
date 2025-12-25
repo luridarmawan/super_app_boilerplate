@@ -9,7 +9,7 @@
 .env
 .env.*
 !.env.example
-
+*.bat
 
 # Flutter repo-specific
 /bin/cache/
