@@ -4,6 +4,11 @@ class AppInfo {
   AppInfo._();
   static const bool enableDemo = true;
 
+  /// Environment flag: Set to true for production, false for development
+  /// - false (default): Uses development API (https://staging-api.carik.id/)
+  /// - true: Uses production API (https://api.carik.id/)
+  static const bool isProduction = false;
+
   /// Application name
   static const String name = 'Super X App';
 
@@ -46,6 +51,9 @@ class AppInfo {
 
   /// Enable/disable Google login/register feature
   static const bool enableGoogleLogin = true;
+
+  /// Enable/disable Dummy login/register feature
+  static const bool enableDummyLogin = true;
 
   /// Auth provider strategy: 'firebase' or 'customApi'
   /// - 'firebase': Use Firebase Auth + Google Sign-In (requires firebase configuration)

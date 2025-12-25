@@ -7,11 +7,11 @@ class ApiConfig {
   ApiConfig._();
 
   /// Base URL for API calls
-  /// Change this based on your environment (dev, staging, prod)
-  static const String baseUrl = 'https://api.example.com';
+  /// Automatically uses the current environment's base URL
+  static String get baseUrl => EnvironmentConfig.current.baseUrl;
 
   /// API version prefix
-  static const String apiVersion = '/api/v1';
+  static const String apiVersion = '';
 
   /// Full API base URL
   static String get fullBaseUrl => '$baseUrl$apiVersion';
@@ -34,42 +34,57 @@ class ApiConfig {
         'User-Agent': '${AppInfo.name.replaceAll(' ', '')}/${AppInfo.version}',
       };
 
-  /// Environment configuration
-  static const bool enableLogging = true; // Set to false in production
+  /// Environment configuration (automatically set based on AppInfo.environment)
+  static bool get enableLogging => EnvironmentConfig.current.enableLogging;
 }
 
 /// Environment types for different API configurations
 enum Environment {
   development,
-  staging,
   production,
 }
 
-/// Environment-specific URLs
+/// Environment-specific URLs and configurations
 class EnvironmentConfig {
   final Environment environment;
   final String baseUrl;
+  final bool enableLogging;
+  final String name;
 
   const EnvironmentConfig._({
     required this.environment,
     required this.baseUrl,
+    required this.enableLogging,
+    required this.name,
   });
 
+  /// Development environment
+  /// Uses staging API for development and testing
   static const EnvironmentConfig development = EnvironmentConfig._(
     environment: Environment.development,
-    baseUrl: 'https://dev-api.example.com',
+    baseUrl: 'https://staging-api.carik.id/',
+    enableLogging: true,
+    name: 'Development',
   );
 
-  static const EnvironmentConfig staging = EnvironmentConfig._(
-    environment: Environment.staging,
-    baseUrl: 'https://staging-api.example.com',
-  );
-
+  /// Production environment
+  /// Uses production API for live app
   static const EnvironmentConfig production = EnvironmentConfig._(
     environment: Environment.production,
-    baseUrl: 'https://api.example.com',
+    baseUrl: 'https://api.carik.id/',
+    enableLogging: false,
+    name: 'Production',
   );
 
   /// Current active environment
-  static EnvironmentConfig current = development;
+  /// Change this based on AppInfo.isProduction flag
+  static EnvironmentConfig get current => AppInfo.isProduction 
+      ? production 
+      : development;
+
+  /// Check if current environment is development
+  static bool get isDevelopment => current.environment == Environment.development;
+
+  /// Check if current environment is production
+  static bool get isProduction => current.environment == Environment.production;
 }

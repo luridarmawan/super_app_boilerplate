@@ -45,34 +45,32 @@ import 'package:super_app/core/network/repository/base_repository.dart';
 
 ### 2. Konfigurasi Base URL
 
-Edit file `lib/core/network/api_config.dart`:
+Base URL dikonfigurasi otomatis berdasarkan environment di `lib/core/constants/app_info.dart`:
 
 ```dart
-class ApiConfig {
-  // Ubah sesuai API Anda
-  static const String baseUrl = 'https://api.example.com';
-  static const String apiVersion = '/api/v1';
-  
-  // Timeout dalam milliseconds
-  static const int connectTimeout = 30000;
-  static const int receiveTimeout = 30000;
-  static const int sendTimeout = 30000;
-  
-  // Enable/disable logging
-  static const bool enableLogging = true; // false untuk production
+class AppInfo {
+  /// Environment flag: Set to true for production, false for development
+  /// - false (default): Uses development API (https://staging-api.carik.id/)
+  /// - true: Uses production API (https://api.carik.id/)
+  static const bool isProduction = false;
 }
 ```
 
 ### 3. Environment Configuration
 
-```dart
-// Pilih environment
-EnvironmentConfig.current = EnvironmentConfig.production;
+Konfigurasi environment otomatis berdasarkan flag `AppInfo.isProduction`:
 
-// Atau gunakan langsung
-final client = ApiClient(
-  baseUrl: EnvironmentConfig.staging.baseUrl,
-);
+| Environment | Base URL | Logging | Kapan Digunakan |
+|-------------|----------|---------|-----------------|
+| Development | `https://staging-api.carik.id/` | ✅ Enabled | Saat `isProduction = false` |
+| Production | `https://api.carik.id/` | ❌ Disabled | Saat `isProduction = true` |
+
+```dart
+// Cek environment saat ini
+print(EnvironmentConfig.current.name);      // 'Development' atau 'Production'
+print(EnvironmentConfig.current.baseUrl);   // URL sesuai environment
+print(EnvironmentConfig.isDevelopment);     // true/false
+print(EnvironmentConfig.isProduction);      // true/false
 ```
 
 ---
