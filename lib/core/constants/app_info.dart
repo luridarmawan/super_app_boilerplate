@@ -1,13 +1,15 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 /// Application information from pubspec.yaml
 /// This file stores constants that correspond to data in pubspec.yaml
 class AppInfo {
   AppInfo._();
   static const bool enableDemo = true;
 
-  /// Environment flag: Set to true for production, false for development
-  /// - false (default): Uses development API (https://staging-api.carik.id/)
-  /// - true: Uses production API (https://api.carik.id/)
-  static const bool isProduction = false;
+  /// Environment flag: Reads from ENVIRONMENT in .env file
+  /// - ENVIRONMENT=production: Uses production API (https://api.carik.id/)
+  /// - ENVIRONMENT=development (or other): Uses development API (https://staging-api.carik.id/)
+  static bool get isProduction => dotenv.env['ENVIRONMENT'] == 'production';
 
   /// Application name
   static const String name = 'Super X App';
@@ -70,7 +72,9 @@ class AppInfo {
   /// Google Web Client ID - get from Google Cloud Console
   /// This is the Web Client ID (not Android Client ID)
   /// Required for google_sign_in v7.x on Android
-  static const String googleServerClientId = 'your_client_id';
+  /// Reads from GOOGLE_CLIENT_ID in .env file
+  static String get googleServerClientId =>
+      dotenv.env['GOOGLE_CLIENT_ID'] ?? '';
 
   static const bool enableDangerZone = true;
   static const bool enableDeleteAccount = true;

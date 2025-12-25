@@ -8,6 +8,7 @@
 .history
 .env
 .env.*
+!.env.example
 
 
 # Flutter repo-specific
