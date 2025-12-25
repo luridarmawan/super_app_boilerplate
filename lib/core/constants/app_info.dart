@@ -59,6 +59,11 @@ class AppInfo {
   /// OneSignal App ID - get from https://onesignal.com dashboard
   static const String oneSignalAppId = 'YOUR_ONESIGNAL_APP_ID';
 
+  /// Google Web Client ID - get from Google Cloud Console
+  /// This is the Web Client ID (not Android Client ID)
+  /// Required for google_sign_in v7.x on Android
+  static const String googleServerClientId = 'your_client_id';
+
   static const bool enableDangerZone = true;
   static const bool enableDeleteAccount = true;
 
