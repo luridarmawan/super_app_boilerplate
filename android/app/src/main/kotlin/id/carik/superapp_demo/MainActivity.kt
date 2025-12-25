@@ -1,4 +1,4 @@
-package id.carik.superapp.super_app_boilerplate
+package id.carik.superapp_demo
 
 import io.flutter.embedding.android.FlutterActivity
 
