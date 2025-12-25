@@ -24,6 +24,11 @@ class AppInfo {
 
   static const double bottomMargin = 58;
 
+  /// Enable/disable splash screen on app startup
+  /// If false, app will skip splash screen and go directly to login
+  static const bool enableSplashScreen = true;
+
+  /// Duration of splash screen display (only applies if enableSplashScreen is true)
   static const Duration splashScreenDuration = Duration(seconds: 4);
 
   // ============================================

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../constants/app_info.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/register_screen.dart';
@@ -29,7 +30,8 @@ class AppRoutes {
 /// Router provider untuk navigasi
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: AppRoutes.splash,
+    // Skip splash screen if disabled in AppInfo
+    initialLocation: AppInfo.enableSplashScreen ? AppRoutes.splash : AppRoutes.login,
     debugLogDiagnostics: true,
     routes: [
       // Splash Screen
