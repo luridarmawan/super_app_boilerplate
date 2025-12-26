@@ -62,7 +62,7 @@ lib/
 |-------|--------|-----------|
 | **Material 3** | ✅ | `useMaterial3: true` dengan ColorScheme.fromSeed |
 | **Auth Abstraction** | ✅ | `BaseAuthService` + Firebase & Custom API providers |
-| **Multi-Template** | ✅ | 5 tema: Blue, Purple, Green, Orange, Dark Mode |
+| **Multi-Template** | ✅ | 6 tema: Blue, Purple, Green, Orange, Brown, Dark Mode |
 | **Multi-Bahasa** | ✅ | Locale ID & EN dengan flutter_localizations |
 | **Sidebar Configurable** | ✅ | Posisi kiri/kanan dapat dikonfigurasi |
 | **Footer dengan FAB** | ✅ | 5 tombol dengan center button dominan |
@@ -269,7 +269,7 @@ File `lib/core/config/app_config.dart` mengontrol:
 
 1. **authStrategy**: `AuthStrategy.firebase` | `AuthStrategy.customApi`
 2. **sidebarPosition**: `SidebarPosition.left` | `SidebarPosition.right`
-3. **currentTemplate**: `AppTemplate.defaultBlue` | `modernPurple` | `elegantGreen` | `warmOrange` | `darkMode`
+3. **currentTemplate**: `AppTemplate.defaultBlue` | `modernPurple` | `elegantGreen` | `warmOrange` | `sweetBrown` | `darkMode`
 4. **selectedLocale**: `Locale('id', 'ID')` | `Locale('en', 'US')`
 5. **isDarkMode**: `true` | `false`
 
@@ -283,6 +283,7 @@ File `lib/core/config/app_config.dart` mengontrol:
 | Modern Purple | `#7B1FA2` | Tema ungu modern |
 | Elegant Green | `#2E7D32` | Tema hijau elegan |
 | Warm Orange | `#E65100` | Tema oranye hangat |
+| Sweet Brown | `#8D6E63` | Tema coklat manis |
 | Dark Mode | `#6750A4` | Mode gelap |
 
 ---

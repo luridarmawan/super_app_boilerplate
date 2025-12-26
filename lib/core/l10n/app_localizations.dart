@@ -195,6 +195,7 @@ class AppLocalizations {
   String get modernPurple => translate('modernPurple');
   String get elegantGreen => translate('elegantGreen');
   String get warmOrange => translate('warmOrange');
+  String get sweetBrown => translate('sweetBrown');
   String get darkModeTheme => translate('darkModeTheme');
 
   // ============================================
@@ -432,6 +433,7 @@ const Map<String, String> _idStrings = {
   'modernPurple': 'Ungu Modern',
   'elegantGreen': 'Hijau Elegan',
   'warmOrange': 'Oranye Hangat',
+  'sweetBrown': 'Coklat Manis',
   'darkModeTheme': 'Mode Gelap',
 
   // Help & Support
@@ -657,6 +659,7 @@ const Map<String, String> _enStrings = {
   'modernPurple': 'Modern Purple',
   'elegantGreen': 'Elegant Green',
   'warmOrange': 'Warm Orange',
+  'sweetBrown': 'Sweet Brown',
   'darkModeTheme': 'Dark Mode',
 
   // Help & Support

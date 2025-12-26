@@ -7,6 +7,7 @@ enum AppTemplate {
   modernPurple,
   elegantGreen,
   warmOrange,
+  sweetBrown,
   darkMode,
 }
 
@@ -20,6 +21,7 @@ class AppTheme {
     AppTemplate.modernPurple: Color(0xFF7B1FA2),
     AppTemplate.elegantGreen: Color(0xFF2E7D32),
     AppTemplate.warmOrange: Color(0xFFE65100),
+    AppTemplate.sweetBrown: Color(0xFF8D6E63),
     AppTemplate.darkMode: Color(0xFF6750A4),
   };
 
@@ -288,6 +290,8 @@ class AppTheme {
         return 'Elegant Green';
       case AppTemplate.warmOrange:
         return 'Warm Orange';
+      case AppTemplate.sweetBrown:
+        return 'Sweet Brown';
       case AppTemplate.darkMode:
         return 'Dark Mode';
     }

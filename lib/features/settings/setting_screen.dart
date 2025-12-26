@@ -211,6 +211,8 @@ class SettingScreen extends ConsumerWidget {
         return l10n.elegantGreen;
       case AppTemplate.warmOrange:
         return l10n.warmOrange;
+      case AppTemplate.sweetBrown:
+        return l10n.sweetBrown;
       case AppTemplate.darkMode:
         return l10n.darkModeTheme;
     }
