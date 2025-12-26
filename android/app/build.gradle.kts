@@ -6,6 +6,23 @@ plugins {
 
 }
 
+// Read APP_NAME from .env file
+fun readAppNameFromEnv(): String {
+    val envFile = rootProject.file("../.env")
+    if (envFile.exists()) {
+        envFile.readLines().forEach { line ->
+            if (line.startsWith("APP_NAME=")) {
+                val value = line.substringAfter("APP_NAME=").trim()
+                // Remove surrounding quotes if present
+                return value.trim('"', '\'')
+            }
+        }
+    }
+    return "Super App" // Default fallback
+}
+
+val appNameFromEnv = readAppNameFromEnv()
+
 android {
     namespace = "id.carik.superapp_demo"
     compileSdk = flutter.compileSdkVersion
@@ -34,6 +51,9 @@ android {
 
         // Required for flutter_local_notifications
         multiDexEnabled = true
+
+        // Set app_name from .env APP_NAME value
+        resValue("string", "app_name", appNameFromEnv)
     }
 
     buildTypes {
