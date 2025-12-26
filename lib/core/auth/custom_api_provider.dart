@@ -6,6 +6,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_interface.dart';
 import '../constants/app_info.dart';
+import '../network/api_client.dart';
+import '../network/api_config.dart';
 
 /// Implementasi Custom API Auth
 /// Gunakan ini untuk backend custom (REST API, GraphQL, dll)
@@ -106,34 +108,162 @@ class CustomApiAuthProvider implements BaseAuthService {
     required String password,
   }) async {
     try {
-      // TODO: Implementasi dengan HTTP client
-      // final response = await http.post(
-      //   Uri.parse('$baseUrl/auth/login'),
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     ...?headers,
-      //   },
-      //   body: jsonEncode({
-      //     'email': email,
-      //     'password': password,
-      //   }),
-      // );
-      
-      await Future.delayed(const Duration(seconds: 1));
-      
-      _currentUser = AuthUser(
-        uid: 'api_user_${DateTime.now().millisecondsSinceEpoch}',
-        email: email,
-        displayName: email.split('@').first,
-        isEmailVerified: true,
+      debugPrint('[AUTH] >>> Starting Email/Password Login');
+      debugPrint('[AUTH] Email: $email');
+
+      // Build API URL using ApiConfig and AppInfo
+      final endpoint = AppInfo.apiEndpointLogin;
+      final fullUrl = ApiConfig.buildUrl(endpoint);
+      debugPrint('[AUTH] POST $fullUrl');
+
+      // Create ApiClient instance and make request
+      final apiClient = ApiClient(baseUrl: ApiConfig.fullBaseUrl);
+      final response = await apiClient.dio.post(
+        endpoint,
+        data: {
+          'username': email,
+          'password': password,
+        },
       );
+
+      debugPrint('[AUTH] Response: ${response.statusCode} - ${response.data}');
+
+      // Handle error responses
+      if (response.statusCode != 200) {
+        final errorData = response.data;
+        String errorMessage = 'Login failed';
+
+        if (errorData is Map<String, dynamic>) {
+          // Try to extract error message from response
+          errorMessage = errorData['message']?.toString() ??
+              errorData['error']?.toString() ??
+              errorData['detail']?.toString() ??
+              'Login failed: ${response.statusCode}';
+        }
+
+        debugPrint('[AUTH] ERROR: $errorMessage');
+        return AuthResult.failure(errorMessage);
+      }
+
+      // Parse response data
+      final responseData = response.data as Map<String, dynamic>;
+
+      // Extract user data (adapt based on your API response structure)
+      // Common response structures:
+      // 1. { user: {...}, token: "..." }
+      // 2. { data: { user: {...}, token: "..." } }
+      // 3. { id: ..., email: ..., name: ..., token: "..." }
       
-      // Simpan user setelah login berhasil
+      Map<String, dynamic>? userData;
+      String? accessToken;
+      String? refreshToken;
+
+      // check response data, jika json dan memiliki field "code", check value-nya
+      // code 0 atau 200 artinya success
+      if (responseData is Map<String, dynamic> && responseData.containsKey('code')) {
+        if (responseData['code'] != 0 && responseData['code'] != 200) {
+          return AuthResult.failure(responseData['message']?.toString() ?? 'Login failed');
+        }
+      }
+
+      // Handle different API response structures
+      if (responseData.containsKey('user')) {
+        userData = responseData['user'] as Map<String, dynamic>?;
+        accessToken = responseData['token']?.toString() ?? 
+                      responseData['access_token']?.toString();
+        refreshToken = responseData['refresh_token']?.toString();
+      } else if (responseData.containsKey('data')) {
+        final data = responseData['data'] as Map<String, dynamic>;
+        userData = data['user'] as Map<String, dynamic>? ?? data;
+        accessToken = data['token']?.toString() ?? 
+                      data['access_token']?.toString();
+        refreshToken = data['refresh_token']?.toString();
+      } else {
+        // Assume the response is the user data itself
+        userData = responseData;
+        accessToken = responseData['token']?.toString() ?? 
+                      responseData['access_token']?.toString();
+        refreshToken = responseData['refresh_token']?.toString();
+      }
+
+      // Build display name from available fields
+      String? displayName = userData?['name']?.toString() ?? 
+                            userData?['display_name']?.toString() ??
+                            userData?['full_name']?.toString();
+
+      // If no direct name field, try combining first_name and last_name
+      if (displayName == null || displayName.isEmpty) {
+        final firstName = userData?['first_name']?.toString() ?? '';
+        final lastName = userData?['last_name']?.toString() ?? '';
+        final combinedName = '$firstName $lastName'.trim();
+        if (combinedName.isNotEmpty) {
+          displayName = combinedName;
+        }
+      }
+
+      // Fallback to email prefix if no name found
+      displayName ??= email.split('@').first;
+
+      // Create AuthUser from response
+      _currentUser = AuthUser(
+        uid: userData?['id']?.toString() ?? 
+             userData?['uid']?.toString() ?? 
+             'user_${DateTime.now().millisecondsSinceEpoch}',
+        email: userData?['email']?.toString() ?? email,
+        displayName: displayName,
+        photoUrl: userData?['photo_url']?.toString() ?? 
+                  userData?['avatar']?.toString() ??
+                  userData?['picture']?.toString(),
+        isEmailVerified: userData?['email_verified'] == true || 
+                         userData?['is_verified'] == true,
+        isGoogleLogin: false,
+      );
+
+      debugPrint('[AUTH] <<< Login Success: ${_currentUser!.email}, Name: ${_currentUser!.displayName}');
+
+      // Save user after successful login
       await _saveUser(_currentUser!);
+
+      // TODO: If your API returns tokens, you can save them here
+      // Example:
+      // if (accessToken != null) {
+      //   final prefs = await SharedPreferences.getInstance();
+      //   await prefs.setString('access_token', accessToken);
+      //   if (refreshToken != null) {
+      //     await prefs.setString('refresh_token', refreshToken);
+      //   }
+      // }
 
       _authStateController.add(_currentUser);
       return AuthResult.success(_currentUser!);
+    } on DioException catch (e) {
+      debugPrint('[AUTH] DioException: ${e.type} - ${e.message}');
+
+      String errorMessage;
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        errorMessage = 'Koneksi timeout. Silakan coba lagi.';
+      } else if (e.type == DioExceptionType.connectionError) {
+        errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+      } else if (e.response != null) {
+        // Try to extract error message from response
+        final data = e.response?.data;
+        if (data is Map<String, dynamic>) {
+          errorMessage = data['message']?.toString() ??
+              data['error']?.toString() ??
+              data['detail']?.toString() ??
+              'Login gagal';
+        } else {
+          errorMessage = 'Login gagal: ${e.response?.statusCode}';
+        }
+      } else {
+        errorMessage = 'Login gagal: ${e.message}';
+      }
+
+      return AuthResult.failure(errorMessage);
     } catch (e) {
+      debugPrint('[AUTH] Exception: $e');
       return AuthResult.failure('Login gagal: ${e.toString()}');
     }
   }

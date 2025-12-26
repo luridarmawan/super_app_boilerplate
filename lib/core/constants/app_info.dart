@@ -49,6 +49,18 @@ class AppInfo {
   static String get activeApiBaseUrl => isProduction ? apiBaseUrl : apiBaseUrlDevelopment;
 
   // ============================================
+  // API ENDPOINT
+  // ============================================
+
+  static String get apiEndpointLogin => dotenv.env['API_ENDPOINT_LOGIN'] ?? '/o/auth/login/';
+  static String get apiEndpointRegister => dotenv.env['API_ENDPOINT_REGISTER'] ?? '/o/auth/register/';
+  static String get apiEndpointForgotPassword => dotenv.env['API_ENDPOINT_FORGOT_PASSWORD'] ?? '/o/auth/forgot-password/';
+  static String get apiEndpointResetPassword => dotenv.env['API_ENDPOINT_RESET_PASSWORD'] ?? '/o/auth/reset-password/';
+  static String get apiEndpointLogout => dotenv.env['API_ENDPOINT_LOGOUT'] ?? '/o/auth/logout/';
+  static String get apiEndpointRefreshToken => dotenv.env['API_ENDPOINT_REFRESH_TOKEN'] ?? '/o/auth/refresh-token/';
+  static String get apiEndpointVerifyToken => dotenv.env['API_ENDPOINT_VERIFY_TOKEN'] ?? '/o/auth/verify-token/';
+
+  // ============================================
   // SPLASH SCREEN
   // ============================================
 

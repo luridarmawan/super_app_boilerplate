@@ -13,8 +13,25 @@ class ApiConfig {
   /// API version prefix
   static const String apiVersion = '';
 
-  /// Full API base URL
-  static String get fullBaseUrl => '$baseUrl$apiVersion';
+  /// Normalize base URL by removing trailing slash
+  static String _normalizeBaseUrl(String url) {
+    return url.endsWith('/') ? url.substring(0, url.length - 1) : url;
+  }
+
+  /// Normalize endpoint by ensuring it starts with /
+  static String _normalizeEndpoint(String endpoint) {
+    return endpoint.startsWith('/') ? endpoint : '/$endpoint';
+  }
+
+  /// Full API base URL (normalized, without trailing slash)
+  static String get fullBaseUrl => _normalizeBaseUrl('$baseUrl$apiVersion');
+
+  /// Build complete URL from base URL and endpoint
+  /// Handles duplicate slashes automatically
+  /// Example: buildUrl('/auth/login/') => 'https://dashboard.carik.id/auth/login/'
+  static String buildUrl(String endpoint) {
+    return '${fullBaseUrl}${_normalizeEndpoint(endpoint)}';
+  }
 
   /// Connection timeout in milliseconds
   static const int connectTimeout = 30000;
