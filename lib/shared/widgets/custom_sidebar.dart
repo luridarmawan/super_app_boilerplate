@@ -270,36 +270,36 @@ class CustomSidebar extends ConsumerWidget {
       case 0: // Dashboard
         onDashboardTap?.call();
         break;
-      case 1: // Profile
-        onProfileTap?.call();
-        break;
-      case 2: // Notifications
+      // case 1: // Profile
+      //   onProfileTap?.call();
+      //   break;
+      case 1: // Notifications
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.notifications)),
         );
         break;
-      case 3: // History
+      case 2: // History
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.history)),
         );
         break;
-      case 4: // Favorites
+      case 3: // Favorites
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.favorites)),
         );
         break;
-      case 5: // Saved
+      case 4: // Saved
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.saved)),
         );
         break;
-      case 6: // Settings
+      case 5: // Settings
         onSettingsTap?.call();
         break;
-      case 7: // Help
+      case 6: // Help
         onHelpTap?.call();
         break;
-      case 8: // Notification Test (only if shown)
+      case 7: // Notification Test (only if shown)
         if (AppInfo.enableNotification &&
             (AppInfo.notificationProvider.toLowerCase() == 'mock' ||
              AppInfo.notificationProvider.toLowerCase() == 'test')) {
