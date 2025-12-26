@@ -60,13 +60,15 @@ void main() async {
     'dart',
     ['run', 'flutter_launcher_icons'],
     runInShell: true,
-    stdoutEncoding: const SystemEncoding(),
-    stderrEncoding: const SystemEncoding(),
   );
 
-  print(result.stdout);
+  // Clean and print output
+  final cleanedOutput = _cleanOutput(result.stdout.toString()).trim();
+  print(cleanedOutput);
+  
   if (result.stderr.toString().isNotEmpty) {
-    print(result.stderr);
+    final cleanedError = _cleanOutput(result.stderr.toString()).trim();
+    print(cleanedError);
   }
 
   if (result.exitCode == 0) {
@@ -75,6 +77,97 @@ void main() async {
     print('\n[FAILED] Failed to generate launcher icons');
     exit(result.exitCode);
   }
+}
+
+/// Clean output by replacing Unicode characters with ASCII equivalents
+String _cleanOutput(String input) {
+  // Normalize line endings and process line by line
+  final normalizedInput = input.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+  final lines = normalizedInput.split('\n');
+  final cleanedLines = <String>[];
+  
+  for (var line in lines) {
+    // Mojibake patterns (corrupted UTF-8 displayed as Windows-1252)
+    final mojibakeReplacements = {
+      'âš ï¸': '[!]',
+      'âš ': '[!]',
+      'âœ"': '[OK]',
+      'âœ•': '[X]',
+      'âœ—': '[X]',
+      'â•': '=',
+      'â€"': '-',
+      'â€™': "'",
+      'â€¢': '*',
+      'â€': '',
+      'ï¸': '',
+    };
+    
+    for (final entry in mojibakeReplacements.entries) {
+      line = line.replaceAll(entry.key, entry.value);
+    }
+    
+    // Remove any remaining â followed by special chars
+    line = line.replaceAll(RegExp(r'â[^\w\s]'), '');
+    
+    // Unicode replacements for when UTF-8 works correctly
+    final unicodeReplacements = {
+      '═': '=',
+      '╔': '+',
+      '╗': '+',
+      '╚': '+',
+      '╝': '+',
+      '║': '|',
+      '─': '-',
+      '✓': '[OK]',
+      '✔': '[OK]',
+      '✕': '[X]',
+      '✗': '[X]',
+      '•': '*',
+      '⚠️': '[!]',
+      '⚠': '[!]',
+    };
+    
+    for (final entry in unicodeReplacements.entries) {
+      line = line.replaceAll(entry.key, entry.value);
+    }
+    
+    // Fix lone quote at start of line (leftover from mojibake)
+    // Handle various quote characters: " " " ″ ʺ
+    line = line.replaceAll(RegExp(r'^[""\u201C\u201D\u2033\u02BA] '), '[OK] ');
+    
+    // Skip irrelevant warning lines for mobile-only projects
+    if (line.contains('web\\index.html') || 
+        line.contains('web/index.html') ||
+        line.contains('.\\web') ||
+        line.contains('./web') ||
+        line.contains('.\\windows') ||
+        line.contains('./windows') ||
+        line.contains('.\\macos') ||
+        line.contains('./macos') ||
+        line.contains('Requirements failed for platform') ||
+        line.contains('FormatException: Unexpected end of input') ||
+        line.trim() == '^') {
+      continue;
+    }
+    
+    cleanedLines.add(line);
+  }
+  
+  // Remove consecutive empty lines
+  final result = <String>[];
+  var lastWasEmpty = false;
+  for (var line in cleanedLines) {
+    // Clean any remaining carriage return
+    line = line.replaceAll('\r', '');
+    final isEmpty = line.trim().isEmpty;
+    if (isEmpty && lastWasEmpty) {
+      continue; // Skip consecutive empty lines
+    }
+    result.add(line);
+    lastWasEmpty = isEmpty;
+  }
+  
+  return result.join('\n');
 }
 
 /// Parse .env file content into a Map
