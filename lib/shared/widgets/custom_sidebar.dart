@@ -60,11 +60,11 @@ class CustomSidebar extends ConsumerWidget {
           label: Text(l10n.dashboard),
         ),
         
-        NavigationDrawerDestination(
-          icon: const Icon(Icons.person_outline),
-          selectedIcon: const Icon(Icons.person),
-          label: Text(l10n.profile),
-        ),
+        // NavigationDrawerDestination(
+        //   icon: const Icon(Icons.person_outline),
+        //   selectedIcon: const Icon(Icons.person),
+        //   label: Text(l10n.profile),
+        // ),
         
         NavigationDrawerDestination(
           icon: const Icon(Icons.notifications_outlined),
