@@ -125,4 +125,8 @@ class AppInfo {
 
   /// Support phone number
   static String get phoneSupport => dotenv.env['SUPPORT_PHONE'] ?? '+62 890 1234 567';
+
+  static String get flutterSplashLogo => dotenv.env['SPLASH_LOGO'] ?? 'assets/images/logo/carik_blue_logo.png';
+
+  static String get flutterLauncherIcon => dotenv.env['LAUNCHER_ICON'] ?? 'assets/images/logo/carik_blue_logo.png';
 }

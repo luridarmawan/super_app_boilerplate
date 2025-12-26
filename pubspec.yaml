@@ -95,19 +95,19 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo/carik_blue_logo.png"
+  image_path: "assets/images/logo/carik_green_Logo.png"
   # Untuk Android adaptive icon (opsional)
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/images/logo/carik_blue_logo.png"
+  adaptive_icon_foreground: "assets/images/logo/carik_green_Logo.png"
   # Untuk menghapus alpha channel (transparan) di iOS
   remove_alpha_ios: true
   # Nama file icon untuk web (opsional)
   web:
     generate: true
-    image_path: "assets/images/logo/carik_blue_logo.png"
+    image_path: "assets/images/logo/carik_green_Logo.png"
   windows:
     generate: true
-    image_path: "assets/images/logo/carik_blue_logo.png"
+    image_path: "assets/images/logo/carik_green_Logo.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
