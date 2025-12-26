@@ -243,7 +243,7 @@ class CustomSidebar extends ConsumerWidget {
               user!.email!,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.white.withValues(alpha: 0.9),
+                color: colorScheme.onPrimaryContainer,
               ),
             ),
           
@@ -257,7 +257,7 @@ class CustomSidebar extends ConsumerWidget {
             style: TextButton.styleFrom(
               padding: EdgeInsets.zero,
               minimumSize: const Size(0, 32),
-              foregroundColor: Colors.white,
+              foregroundColor: colorScheme.onPrimaryContainer,
             ),
           ),
         ],

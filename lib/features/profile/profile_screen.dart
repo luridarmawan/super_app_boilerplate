@@ -104,7 +104,7 @@ class ProfileScreen extends ConsumerWidget {
                       Text(
                         user?.email ?? l10n.notLoggedIn,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.9),
+                              color: colorScheme.onPrimaryContainer,
                             ),
                       ),
                     ],
@@ -410,7 +410,7 @@ class EmbeddedProfileContent extends ConsumerWidget {
                 Text(
                   user?.email ?? l10n.notLoggedIn,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
+                        color: colorScheme.onPrimaryContainer,
                       ),
                 ),
               ],
