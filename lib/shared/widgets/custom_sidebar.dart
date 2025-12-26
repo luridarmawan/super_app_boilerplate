@@ -180,46 +180,48 @@ class CustomSidebar extends ConsumerWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
+            colorScheme.primary,
             colorScheme.primaryContainer,
-            colorScheme.primaryContainer.withValues(alpha: 0.7),
           ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Avatar
+          // Avatar with circle border and shadow (like profile_screen.dart)
           GestureDetector(
             onTap: onProfileTap,
-            child: CircleAvatar(
-              radius: 36,
-              backgroundColor: colorScheme.primary,
-              child: user?.photoUrl != null
-                  ? ClipOval(
-                      child: CachedNetworkImage(
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white,
+                  width: 3,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: user?.photoUrl != null
+                    ? CachedNetworkImage(
                         imageUrl: user!.photoUrl!,
-                        width: 72,
-                        height: 72,
+                        width: 80,
+                        height: 80,
                         fit: BoxFit.cover,
-                        placeholder: (context, url) => Icon(
-                          Icons.person,
-                          size: 36,
-                          color: colorScheme.onPrimary,
-                        ),
-                        errorWidget: (context, url, error) => Icon(
-                          Icons.person,
-                          size: 36,
-                          color: colorScheme.onPrimary,
-                        ),
-                      ),
-                    )
-                  : Icon(
-                      Icons.person,
-                      size: 36,
-                      color: colorScheme.onPrimary,
-                    ),
+                        placeholder: (context, url) => _buildDefaultAvatar(colorScheme),
+                        errorWidget: (context, url, error) => _buildDefaultAvatar(colorScheme),
+                      )
+                    : _buildDefaultAvatar(colorScheme),
+              ),
             ),
           ),
           
@@ -230,7 +232,7 @@ class CustomSidebar extends ConsumerWidget {
             user?.displayName ?? context.l10n.guestUser,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: colorScheme.onPrimaryContainer,
+              color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -241,7 +243,7 @@ class CustomSidebar extends ConsumerWidget {
               user!.email!,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
+                color: Colors.white.withValues(alpha: 0.9),
               ),
             ),
           
@@ -255,10 +257,21 @@ class CustomSidebar extends ConsumerWidget {
             style: TextButton.styleFrom(
               padding: EdgeInsets.zero,
               minimumSize: const Size(0, 32),
-              foregroundColor: colorScheme.onPrimaryContainer,
+              foregroundColor: Colors.white,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDefaultAvatar(ColorScheme colorScheme) {
+    return Container(
+      color: colorScheme.primaryContainer,
+      child: Icon(
+        Icons.person,
+        size: 40,
+        color: colorScheme.onPrimaryContainer,
       ),
     );
   }
