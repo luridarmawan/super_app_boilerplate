@@ -5,7 +5,7 @@ import '../../core/config/app_config.dart';
 import '../../core/constants/app_info.dart';
 import '../../core/l10n/app_localizations.dart';
 
-/// Profile Screen - Detail profil user
+/// Profile Screen - User profile details
 class ProfileScreen extends ConsumerWidget {
   final VoidCallback? onBackTap;
   final VoidCallback? onEditTap;
@@ -22,7 +22,7 @@ class ProfileScreen extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = context.l10n;
 
-    // Cek apakah user login dengan Google (dari property atau deteksi dari photoUrl)
+    // Check if user logged in with Google (from property or detect from photoUrl)
     final isGoogleUser = user?.isGoogleLogin == true || 
         (user?.photoUrl?.contains('googleusercontent.com') ?? false);
 
@@ -162,7 +162,7 @@ class ProfileScreen extends ConsumerWidget {
                   Card(
                     child: Column(
                       children: [
-                        // Sembunyikan menu Change Password jika login dengan Google
+                        // Hide Change Password menu if logged in with Google
                         if (!isGoogleUser) ...[
                           ListTile(
                             leading: const Icon(Icons.lock_outline),
@@ -326,8 +326,8 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-/// Embedded Profile Content - untuk digunakan di dalam bottom navigation
-/// Tanpa Scaffold dan AppBar, cocok untuk ditampilkan di dalam tab/page
+/// Embedded Profile Content - for use within bottom navigation
+/// Without Scaffold and AppBar, suitable for display within tab/page
 class EmbeddedProfileContent extends ConsumerWidget {
   final VoidCallback? onEditProfileTap;
   final VoidCallback? onSettingsTap;
