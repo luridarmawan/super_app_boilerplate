@@ -1,8 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:http/http.dart' as http;
 import 'auth_interface.dart';
 import '../constants/app_info.dart';
 
@@ -127,7 +126,7 @@ class CustomApiAuthProvider implements BaseAuthService {
       debugPrint('[GAUTH] User: ${googleUser.email}');
 
       // Get authentication tokens for backend verification
-      final googleAuth = await googleUser.authentication;
+      final googleAuth = googleUser.authentication;
       final idToken = googleAuth.idToken;
 
       if (idToken == null) {
@@ -140,20 +139,19 @@ class CustomApiAuthProvider implements BaseAuthService {
       final apiUrl = AppInfo.apiGoogleAuthVerification;
       debugPrint('[GAUTH] POST $apiUrl');
 
-      final requestBody = jsonEncode({
-        'token': idToken
-      });
-
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          ...?headers,
-        },
-        body: requestBody,
+      final dio = Dio();
+      final response = await dio.post(
+        apiUrl,
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            ...?headers,
+          },
+        ),
+        data: {'token': idToken},
       );
 
-      debugPrint('[GAUTH] Response: ${response.statusCode} - ${response.body}');
+      debugPrint('[GAUTH] Response: ${response.statusCode} - ${response.data}');
 
       if (response.statusCode != 200) {
         debugPrint('[GAUTH] ERROR: Backend returned ${response.statusCode}');

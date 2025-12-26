@@ -52,8 +52,11 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
     // Set system UI for edge-to-edge
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     
-    // Initialize notifications
-    _initializeNotifications();
+    // Initialize notifications after the first frame is built
+    // This prevents "Tried to modify a provider while the widget tree was building" error
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeNotifications();
+    });
   }
 
   /// Initialize push notification service

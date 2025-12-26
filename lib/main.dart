@@ -31,8 +31,13 @@ void main() async {
     ),
   );
 
-  // Initialize Firebase if notifications are enabled
-  if (AppInfo.enableNotification) {
+  // Initialize Firebase only if notifications are enabled AND using Firebase provider
+  // Skip Firebase initialization for 'mock' or 'onesignal' providers
+  final shouldInitFirebase = AppInfo.enableNotification &&
+      (AppInfo.notificationProvider.toLowerCase() == 'firebase' ||
+       AppInfo.notificationProvider.toLowerCase() == 'fcm');
+
+  if (shouldInitFirebase) {
     try {
       await Firebase.initializeApp();
     } catch (e) {

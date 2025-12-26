@@ -50,10 +50,10 @@ final connectivityStatusProvider = Provider<ConnectivityStatus>((ref) {
       return currentStatus.when(
         data: (status) => status,
         loading: () => ConnectivityStatus.online, // Assume online initially
-        error: (_, __) => ConnectivityStatus.online,
+        error: (_, _) => ConnectivityStatus.online,
       );
     },
-    error: (_, __) => ConnectivityStatus.online, // Assume online on error
+    error: (_, _) => ConnectivityStatus.online, // Assume online on error
   );
 });
 

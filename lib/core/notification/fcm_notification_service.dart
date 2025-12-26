@@ -7,9 +7,14 @@ import 'notification_interface.dart';
 /// Background message handler - must be a top-level function
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  // Handle background message here if needed
-  // print('Handling background message: ${message.messageId}');
+  try {
+    await Firebase.initializeApp();
+    // Handle background message here if needed
+    // print('Handling background message: ${message.messageId}');
+  } catch (e) {
+    // Silently fail if Firebase is not configured
+    // This prevents crashes when google-services.json is missing
+  }
 }
 
 /// Firebase Cloud Messaging implementation of BaseNotificationService
@@ -81,7 +86,18 @@ class FcmNotificationService implements BaseNotificationService {
 
       _isInitialized = true;
     } catch (e) {
-      // print('FCM initialization error: $e');
+      // Check if this is a Firebase configuration error
+      final errorMessage = e.toString();
+      if (errorMessage.contains('FirebaseOptions') ||
+          errorMessage.contains('values.xml') ||
+          errorMessage.contains('google-services.json')) {
+        throw Exception(
+          'Firebase configuration is missing. '
+          'Please add google-services.json to android/app/ folder, '
+          'or change NOTIFICATION_PROVIDER to "mock" in your .env file. '
+          'Original error: $e'
+        );
+      }
       rethrow;
     }
   }
