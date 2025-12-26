@@ -1,10 +1,12 @@
-// ignore_for_file: avoid_print
 /// Tool to generate launcher icons from .env configuration
-/// 
+///
 /// Usage: dart run tool/generate_launcher_icons.dart
-/// 
+///
 /// This script reads LAUNCHER_ICON from .env file and updates
 /// flutter_launcher_icons.yaml before running the icon generator.
+library;
+
+// ignore_for_file: avoid_print
 
 import 'dart:io';
 

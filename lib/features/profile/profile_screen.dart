@@ -318,3 +318,235 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 }
+
+/// Embedded Profile Content - untuk digunakan di dalam bottom navigation
+/// Tanpa Scaffold dan AppBar, cocok untuk ditampilkan di dalam tab/page
+class EmbeddedProfileContent extends ConsumerWidget {
+  final VoidCallback? onEditProfileTap;
+  final VoidCallback? onSettingsTap;
+  final VoidCallback? onHelpTap;
+  final VoidCallback? onLogoutTap;
+
+  const EmbeddedProfileContent({
+    super.key,
+    this.onEditProfileTap,
+    this.onSettingsTap,
+    this.onHelpTap,
+    this.onLogoutTap,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Profile Header with gradient
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  colorScheme.primary,
+                  colorScheme.primaryContainer,
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+            child: Column(
+              children: [
+                // Avatar
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 4,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: user?.photoUrl != null
+                        ? CachedNetworkImage(
+                            imageUrl: user!.photoUrl!,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) =>
+                                _buildDefaultAvatar(colorScheme),
+                            errorWidget: (context, url, error) =>
+                                _buildDefaultAvatar(colorScheme),
+                          )
+                        : _buildDefaultAvatar(colorScheme),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  user?.displayName ?? l10n.guestUser,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  user?.email ?? l10n.notLoggedIn,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.9),
+                      ),
+                ),
+              ],
+            ),
+          ),
+
+          // Profile Content
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Account Info Section
+                _buildSectionHeader(context, l10n.accountInformation),
+                const SizedBox(height: 8),
+                Card(
+                  child: Column(
+                    children: [
+                      _buildInfoTile(
+                        context,
+                        icon: Icons.person_outline,
+                        title: l10n.fullName,
+                        value: user?.displayName ?? l10n.notSet,
+                      ),
+                      const Divider(height: 1),
+                      _buildInfoTile(
+                        context,
+                        icon: Icons.email_outlined,
+                        title: l10n.email,
+                        value: user?.email ?? l10n.notSet,
+                      ),
+                      const Divider(height: 1),
+                      _buildInfoTile(
+                        context,
+                        icon: Icons.verified_outlined,
+                        title: l10n.emailVerified,
+                        value: user?.isEmailVerified == true ? l10n.yes : l10n.no,
+                        valueColor: user?.isEmailVerified == true
+                            ? Colors.green
+                            : colorScheme.error,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Profile Actions Section
+                _buildSectionHeader(context, l10n.quickActions),
+                const SizedBox(height: 8),
+                Card(
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.person_outline),
+                        title: Text(l10n.editProfile),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: onEditProfileTap,
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: const Icon(Icons.settings_outlined),
+                        title: Text(l10n.settings),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: onSettingsTap,
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: const Icon(Icons.help_outline),
+                        title: Text(l10n.helpAndSupport),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: onHelpTap,
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: Icon(
+                          Icons.logout,
+                          color: colorScheme.error,
+                        ),
+                        title: Text(
+                          l10n.logout,
+                          style: TextStyle(color: colorScheme.error),
+                        ),
+                        trailing: Icon(
+                          Icons.chevron_right,
+                          color: colorScheme.error,
+                        ),
+                        onTap: onLogoutTap,
+                      ),
+                    ],
+                  ),
+                ),
+
+                SizedBox(height: AppInfo.bottomMargin),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDefaultAvatar(ColorScheme colorScheme) {
+    return Container(
+      color: colorScheme.primaryContainer,
+      child: Icon(
+        Icons.person,
+        size: 50,
+        color: colorScheme.onPrimaryContainer,
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
+      ),
+    );
+  }
+
+  Widget _buildInfoTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String value,
+    Color? valueColor,
+  }) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      trailing: Text(
+        value,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: valueColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+      ),
+    );
+  }
+}
+

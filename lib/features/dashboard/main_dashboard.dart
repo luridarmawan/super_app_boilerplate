@@ -22,6 +22,7 @@ import '../../shared/widgets/notification_banner.dart';
 import 'widgets/banner_carousel.dart';
 import 'widgets/menu_grid.dart';
 import 'widgets/article_list.dart';
+import '../profile/profile_screen.dart';
 
 /// Current navigation index
 final currentNavIndexProvider = StateProvider<int>((ref) => 0);
@@ -447,87 +448,11 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
   }
 
   Widget _buildProfileContent() {
-    final user = ref.watch(currentUserProvider);
-    final l10n = context.l10n;
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          const SizedBox(height: 24),
-          // Avatar
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-            child: Icon(
-              Icons.person,
-              size: 50,
-              color: Theme.of(context).colorScheme.onPrimaryContainer,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            user?.displayName ?? l10n.guestUser,
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          Text(
-            user?.email ?? l10n.pleaseLoginToContinue,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-          ),
-          const SizedBox(height: 32),
-          // Profile Actions
-          _buildProfileAction(
-            icon: Icons.person_outline,
-            title: l10n.editProfile,
-            onTap: widget.onProfileTap,
-          ),
-          _buildProfileAction(
-            icon: Icons.settings_outlined,
-            title: l10n.settings,
-            onTap: widget.onSettingsTap,
-          ),
-          _buildProfileAction(
-            icon: Icons.help_outline,
-            title: l10n.helpAndSupport,
-            onTap: widget.onHelpTap,
-          ),
-          _buildProfileAction(
-            icon: Icons.logout,
-            title: l10n.logout,
-            isDestructive: true,
-            onTap: _handleLogout,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileAction({
-    required IconData icon,
-    required String title,
-    VoidCallback? onTap,
-    bool isDestructive = false,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Icon(
-          icon,
-          color: isDestructive ? colorScheme.error : colorScheme.onSurface,
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: isDestructive ? colorScheme.error : colorScheme.onSurface,
-          ),
-        ),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
-      ),
+    return EmbeddedProfileContent(
+      onEditProfileTap: widget.onProfileTap,
+      onSettingsTap: widget.onSettingsTap,
+      onHelpTap: widget.onHelpTap,
+      onLogoutTap: _handleLogout,
     );
   }
 
