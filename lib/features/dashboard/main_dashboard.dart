@@ -209,6 +209,10 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
       // Sidebar with configurable position
       drawer: sidebarPosition == SidebarPosition.left
           ? CustomSidebar(
+              onDashboardTap: () {
+                // Reset navigation to Home (index 0)
+                ref.read(currentNavIndexProvider.notifier).state = 0;
+              },
               onProfileTap: widget.onProfileTap,
               onSettingsTap: widget.onSettingsTap,
               onHelpTap: widget.onHelpTap,
@@ -217,6 +221,10 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
           : null,
       endDrawer: sidebarPosition == SidebarPosition.right
           ? CustomSidebar(
+              onDashboardTap: () {
+                // Reset navigation to Home (index 0)
+                ref.read(currentNavIndexProvider.notifier).state = 0;
+              },
               onProfileTap: widget.onProfileTap,
               onSettingsTap: widget.onSettingsTap,
               onHelpTap: widget.onHelpTap,

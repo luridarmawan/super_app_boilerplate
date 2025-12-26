@@ -9,6 +9,7 @@ import '../../core/notification/notification_test_panel.dart';
 
 /// Custom Sidebar menggunakan Material 3 NavigationDrawer
 class CustomSidebar extends ConsumerWidget {
+  final VoidCallback? onDashboardTap;
   final VoidCallback? onProfileTap;
   final VoidCallback? onSettingsTap;
   final VoidCallback? onHelpTap;
@@ -16,6 +17,7 @@ class CustomSidebar extends ConsumerWidget {
 
   const CustomSidebar({
     super.key,
+    this.onDashboardTap,
     this.onProfileTap,
     this.onSettingsTap,
     this.onHelpTap,
@@ -266,7 +268,7 @@ class CustomSidebar extends ConsumerWidget {
     
     switch (index) {
       case 0: // Dashboard
-        // Already on dashboard
+        onDashboardTap?.call();
         break;
       case 1: // Profile
         onProfileTap?.call();
