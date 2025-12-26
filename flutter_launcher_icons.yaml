@@ -1,9 +1,12 @@
-# flutter pub run flutter_launcher_icons
+# flutter_launcher_icons configuration
+# Auto-generated from .env LAUNCHER_ICON
+# Do not edit manually - run: dart run tool/generate_launcher_icons.dart
+
 flutter_launcher_icons:
   image_path: "assets/images/logo/carik_blue_logo.png"
 
   android: "launcher_icon"
-  min_sdk_android: 21 # android min sdk min:16, default 21
+  min_sdk_android: 21
   adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: "assets/images/logo/carik_blue_logo.png"
 
@@ -19,7 +22,7 @@ flutter_launcher_icons:
   windows:
     generate: true
     image_path: "assets/images/logo/carik_blue_logo.png"
-    icon_size: 48 # min:48, max:256, default: 48
+    icon_size: 48
 
   macos:
     generate: true
