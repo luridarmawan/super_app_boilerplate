@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/config/app_config.dart';
 import '../../core/constants/assets.dart';
@@ -13,6 +14,7 @@ import '../../core/network/repository/banner_repository.dart';
 import '../../core/notification/notification_provider.dart';
 import '../../core/notification/notification_interface.dart';
 import '../../core/notification/notification_test_panel.dart';
+import '../../core/routes/app_router.dart';
 import '../../shared/widgets/custom_header.dart';
 import '../../shared/widgets/custom_sidebar.dart';
 import '../../shared/widgets/custom_footer.dart';
@@ -95,6 +97,39 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
     }
   }
 
+  /// Handle logout with confirmation dialog
+  void _handleLogout() {
+    final l10n = context.l10n;
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: const Icon(Icons.logout),
+        title: Text(l10n.logout),
+        content: Text(l10n.confirmLogout),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+
+              // Call signOut from auth service to clear session
+              final authService = ref.read(authServiceProvider);
+              await authService.signOut();
+
+              // Navigate to login page
+              if (mounted) {
+                context.go(AppRoutes.login);
+              }
+            },
+            child: Text(l10n.logout),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +211,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
               onProfileTap: widget.onProfileTap,
               onSettingsTap: widget.onSettingsTap,
               onHelpTap: widget.onHelpTap,
-              onLogoutTap: widget.onLogoutTap,
+              onLogoutTap: _handleLogout,
             )
           : null,
       endDrawer: sidebarPosition == SidebarPosition.right
@@ -184,7 +219,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
               onProfileTap: widget.onProfileTap,
               onSettingsTap: widget.onSettingsTap,
               onHelpTap: widget.onHelpTap,
-              onLogoutTap: widget.onLogoutTap,
+              onLogoutTap: _handleLogout,
             )
           : null,
       body: _buildBody(currentIndex),
@@ -462,7 +497,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
             icon: Icons.logout,
             title: l10n.logout,
             isDestructive: true,
-            onTap: widget.onLogoutTap,
+            onTap: _handleLogout,
           ),
         ],
       ),

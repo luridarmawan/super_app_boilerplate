@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_interface.dart';
 import '../constants/app_info.dart';
 
@@ -20,6 +22,10 @@ class CustomApiAuthProvider implements BaseAuthService {
   GoogleSignIn get _googleSignIn => GoogleSignIn.instance;
   bool _googleSignInInitialized = false;
 
+  // SharedPreferences keys
+  static const String _savedUserKey = 'app_saved_user';
+  static const String _isLoggedInKey = 'app_is_logged_in';
+
   CustomApiAuthProvider({
     this.baseUrl,
     this.headers,
@@ -27,6 +33,8 @@ class CustomApiAuthProvider implements BaseAuthService {
     _currentUser = null;
     _authStateController.add(null);
     _initGoogleSignIn();
+    // Memuat saved user saat inisialisasi
+    _loadSavedUser();
   }
   
   Future<void> _initGoogleSignIn() async {
@@ -39,6 +47,50 @@ class CustomApiAuthProvider implements BaseAuthService {
       _googleSignInInitialized = true;
     } catch (e) {
       // Initialization might fail on some platforms
+    }
+  }
+
+  /// Memuat user yang tersimpan dari SharedPreferences
+  Future<void> _loadSavedUser() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final isLoggedIn = prefs.getBool(_isLoggedInKey) ?? false;
+
+      if (isLoggedIn) {
+        final savedUserJson = prefs.getString(_savedUserKey);
+        if (savedUserJson != null && savedUserJson.isNotEmpty) {
+          final userMap = jsonDecode(savedUserJson) as Map<String, dynamic>;
+          _currentUser = AuthUser.fromJson(userMap);
+          _authStateController.add(_currentUser);
+          debugPrint('[AUTH] Loaded saved user: ${_currentUser?.email}');
+        }
+      }
+    } catch (e) {
+      debugPrint('[AUTH] Error loading saved user: $e');
+    }
+  }
+
+  /// Menyimpan user ke SharedPreferences setelah login berhasil
+  Future<void> _saveUser(AuthUser user) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_savedUserKey, jsonEncode(user.toJson()));
+      await prefs.setBool(_isLoggedInKey, true);
+      debugPrint('[AUTH] User saved: ${user.email}');
+    } catch (e) {
+      debugPrint('[AUTH] Error saving user: $e');
+    }
+  }
+
+  /// Menghapus user yang tersimpan dari SharedPreferences saat logout
+  Future<void> _clearSavedUser() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_savedUserKey);
+      await prefs.setBool(_isLoggedInKey, false);
+      debugPrint('[AUTH] Saved user cleared');
+    } catch (e) {
+      debugPrint('[AUTH] Error clearing saved user: $e');
     }
   }
 
@@ -76,6 +128,9 @@ class CustomApiAuthProvider implements BaseAuthService {
         isEmailVerified: true,
       );
       
+      // Simpan user setelah login berhasil
+      await _saveUser(_currentUser!);
+
       _authStateController.add(_currentUser);
       return AuthResult.success(_currentUser!);
     } catch (e) {
@@ -100,6 +155,9 @@ class CustomApiAuthProvider implements BaseAuthService {
         isEmailVerified: false,
       );
       
+      // Simpan user setelah registrasi berhasil
+      await _saveUser(_currentUser!);
+
       _authStateController.add(_currentUser);
       return AuthResult.success(_currentUser!);
     } catch (e) {
@@ -178,6 +236,9 @@ class CustomApiAuthProvider implements BaseAuthService {
 
       debugPrint('[GAUTH] <<< Success: ${_currentUser!.email}, Name: ${_currentUser!.displayName}');
 
+      // Simpan user setelah login Google berhasil
+      await _saveUser(_currentUser!);
+
       _authStateController.add(_currentUser);
       return AuthResult.success(_currentUser!);
     } catch (e, stackTrace) {
@@ -200,7 +261,9 @@ class CustomApiAuthProvider implements BaseAuthService {
     } catch (e) {
       // Ignore Google sign out errors
     }
-    // TODO: Implementasi logout ke backend
+    // Hapus saved user dari SharedPreferences
+    await _clearSavedUser();
+
     _currentUser = null;
     _authStateController.add(null);
   }

@@ -88,6 +88,7 @@ class AppLocalizations {
   String get signUp => translate('signUp');
   String get signOut => translate('signOut');
   String get logout => translate('logout');
+  String get confirmLogout => translate('confirmLogout');
   String get createAccount => translate('createAccount');
   String get joinSuperApp => translate('joinSuperApp');
   String get createAccountDesc => translate('createAccountDesc');
@@ -336,6 +337,7 @@ const Map<String, String> _idStrings = {
   'signUp': 'Daftar',
   'signOut': 'Keluar',
   'logout': 'Keluar',
+  'confirmLogout': 'Apakah Anda yakin ingin keluar?',
   'createAccount': 'Buat Akun',
   'joinSuperApp': 'Bergabung dengan Super App',
   'createAccountDesc': 'Buat akun untuk memulai',
@@ -560,6 +562,7 @@ const Map<String, String> _enStrings = {
   'signUp': 'Sign Up',
   'signOut': 'Sign Out',
   'logout': 'Logout',
+  'confirmLogout': 'Are you sure you want to logout?',
   'createAccount': 'Create Account',
   'joinSuperApp': 'Join Super App',
   'createAccountDesc': 'Create an account to get started',

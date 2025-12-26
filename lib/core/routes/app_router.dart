@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/app_info.dart';
 import '../../features/splash/splash_screen.dart';
@@ -27,10 +28,19 @@ class AppRoutes {
   static const String privacy = '/privacy';
 }
 
+/// Key untuk SharedPreferences
+const String _isLoggedInKey = 'app_is_logged_in';
+
+/// Provider untuk mengecek apakah user sudah login (dari SharedPreferences)
+final isUserLoggedInProvider = FutureProvider<bool>((ref) async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(_isLoggedInKey) ?? false;
+});
+
 /// Router provider untuk navigasi
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    // Skip splash screen if disabled in AppInfo
+    // Always start at splash to check auth state
     initialLocation: AppInfo.enableSplashScreen ? AppRoutes.splash : AppRoutes.login,
     debugLogDiagnostics: true,
     routes: [
@@ -38,9 +48,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.splash,
         builder: (context, state) => SplashScreen(
-          onComplete: () {
-            // Navigate ke login atau dashboard berdasarkan auth state
-            context.go(AppRoutes.login);
+          onComplete: () async {
+            // Check if user is logged in from SharedPreferences
+            final prefs = await SharedPreferences.getInstance();
+            final isLoggedIn = prefs.getBool(_isLoggedInKey) ?? false;
+
+            if (context.mounted) {
+              if (isLoggedIn) {
+                context.go(AppRoutes.dashboard);
+              } else {
+                context.go(AppRoutes.login);
+              }
+            }
           },
         ),
       ),
@@ -60,6 +79,16 @@ final routerProvider = Provider<GoRouter>((ref) {
             );
           },
         ),
+        redirect: (context, state) async {
+          // Check if user is already logged in
+          final prefs = await SharedPreferences.getInstance();
+          final isLoggedIn = prefs.getBool(_isLoggedInKey) ?? false;
+
+          if (isLoggedIn) {
+            return AppRoutes.dashboard;
+          }
+          return null;
+        },
       ),
       GoRoute(
         path: AppRoutes.register,
@@ -76,8 +105,18 @@ final routerProvider = Provider<GoRouter>((ref) {
           onSettingsTap: () => context.push(AppRoutes.settings),
           onProfileTap: () => context.push(AppRoutes.profile),
           onHelpTap: () => context.push(AppRoutes.help),
-          onLogoutTap: () => _showLogoutDialog(context),
+          // onLogoutTap handled internally by MainDashboard
         ),
+        redirect: (context, state) async {
+          // Protect dashboard - redirect to login if not logged in
+          final prefs = await SharedPreferences.getInstance();
+          final isLoggedIn = prefs.getBool(_isLoggedInKey) ?? false;
+
+          if (!isLoggedIn) {
+            return AppRoutes.login;
+          }
+          return null;
+        },
       ),
 
       // Settings
@@ -157,28 +196,3 @@ final routerProvider = Provider<GoRouter>((ref) {
     ),
   );
 });
-
-/// Show logout confirmation dialog
-void _showLogoutDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      icon: const Icon(Icons.logout),
-      title: const Text('Logout'),
-      content: const Text('Are you sure you want to logout?'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () {
-            Navigator.of(dialogContext).pop();
-            context.go(AppRoutes.login);
-          },
-          child: const Text('Logout'),
-        ),
-      ],
-    ),
-  );
-}

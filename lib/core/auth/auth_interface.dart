@@ -36,6 +36,28 @@ class AuthUser {
       isEmailVerified: isEmailVerified ?? this.isEmailVerified,
     );
   }
+
+  /// Convert AuthUser to JSON Map
+  Map<String, dynamic> toJson() {
+    return {
+      'uid': uid,
+      'email': email,
+      'displayName': displayName,
+      'photoUrl': photoUrl,
+      'isEmailVerified': isEmailVerified,
+    };
+  }
+
+  /// Create AuthUser from JSON Map
+  factory AuthUser.fromJson(Map<String, dynamic> json) {
+    return AuthUser(
+      uid: json['uid'] as String? ?? '',
+      email: json['email'] as String?,
+      displayName: json['displayName'] as String?,
+      photoUrl: json['photoUrl'] as String?,
+      isEmailVerified: json['isEmailVerified'] as bool? ?? false,
+    );
+  }
 }
 
 /// Hasil dari operasi autentikasi

@@ -364,13 +364,14 @@ flutter run -d emulator-5554
 
 ## 📋 TODO (Pengembangan Lanjut)
 
-- [ ] Implementasi Firebase Auth sebenarnya (tambah firebase_core, firebase_auth)
-- [ ] Implementasi Google Sign-In (tambah google_sign_in)
+- [x] Implementasi Google Sign-In (tambah google_sign_in)
 - [x] Tambahkan localization strings untuk multi-bahasa (lihat `docs/LOCALIZATION.md`)
 - [x] Network Layer dengan Dio + Retrofit (lihat `docs/API.md`)
 - [x] Implementasi persistent storage untuk settings (menggunakan SharedPreferences)
 - [ ] Tambahkan unit tests dan widget tests
 - [x] Implementasi push notifications (lihat `docs/Notification.md`)
+- [ ] Implementai remote config
+- [ ] Implementasi Firebase Auth (tambah firebase_core, firebase_auth)
 - [ ] Tambahkan analytics
 
 ---
