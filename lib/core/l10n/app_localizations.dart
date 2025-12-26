@@ -149,9 +149,9 @@ class AppLocalizations {
   String get editProfile => translate('editProfile');
 
   // ============================================
-  // SCAN & PAY STRINGS
+  // SCAN & PHOTO STRINGS
   // ============================================
-  String get scanAndPay => translate('scanAndPay');
+  String get scanAndPhoto => translate('scanAndPhoto');
   String get scanQr => translate('scanQr');
   String get takePhoto => translate('takePhoto');
   String get upload => translate('upload');
@@ -391,8 +391,8 @@ const Map<String, String> _idStrings = {
   'pleaseLoginToContinue': 'Silakan masuk untuk melanjutkan',
   'editProfile': 'Edit Profil',
 
-  // Scan & Pay
-  'scanAndPay': 'Scan & Bayar',
+  // Scan & Photo
+  'scanAndPhoto': 'Scan & Foto',
   'scanQr': 'Scan QR',
   'takePhoto': 'Ambil Foto',
   'upload': 'Unggah',
@@ -616,8 +616,8 @@ const Map<String, String> _enStrings = {
   'pleaseLoginToContinue': 'Please login to continue',
   'editProfile': 'Edit Profile',
 
-  // Scan & Pay
-  'scanAndPay': 'Scan & Pay',
+  // Scan & Photo
+  'scanAndPhoto': 'Scan & Photo',
   'scanQr': 'Scan QR',
   'takePhoto': 'Take Photo',
   'upload': 'Upload',

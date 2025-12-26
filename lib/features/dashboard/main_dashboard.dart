@@ -550,7 +550,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
             ),
             const SizedBox(height: 24),
             Text(
-              l10n.scanAndPay,
+              l10n.scanAndPhoto,
               style: Theme.of(dialogContext).textTheme.titleLarge,
             ),
             const SizedBox(height: 24),
