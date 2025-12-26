@@ -22,6 +22,10 @@ class ProfileScreen extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = context.l10n;
 
+    // Cek apakah user login dengan Google (dari property atau deteksi dari photoUrl)
+    final isGoogleUser = user?.isGoogleLogin == true || 
+        (user?.photoUrl?.contains('googleusercontent.com') ?? false);
+
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -159,7 +163,7 @@ class ProfileScreen extends ConsumerWidget {
                     child: Column(
                       children: [
                         // Sembunyikan menu Change Password jika login dengan Google
-                        if (user?.isGoogleLogin != true) ...[
+                        if (!isGoogleUser) ...[
                           ListTile(
                             leading: const Icon(Icons.lock_outline),
                             title: Text(l10n.changePassword),
