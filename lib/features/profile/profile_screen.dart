@@ -158,20 +158,23 @@ class ProfileScreen extends ConsumerWidget {
                   Card(
                     child: Column(
                       children: [
-                        ListTile(
-                          leading: const Icon(Icons.lock_outline),
-                          title: Text(l10n.changePassword),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(l10n.changePassword),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          },
-                        ),
-                        const Divider(height: 1),
+                        // Sembunyikan menu Change Password jika login dengan Google
+                        if (user?.isGoogleLogin != true) ...[
+                          ListTile(
+                            leading: const Icon(Icons.lock_outline),
+                            title: Text(l10n.changePassword),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(l10n.changePassword),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            },
+                          ),
+                          const Divider(height: 1),
+                        ],
                         ListTile(
                           leading: const Icon(Icons.notifications_outlined),
                           title: Text(l10n.notificationSettings),

@@ -232,6 +232,7 @@ class CustomApiAuthProvider implements BaseAuthService {
         displayName: userData['name']?.toString() ?? googleUser.displayName,
         photoUrl: userData['picture']?.toString() ?? googleUser.photoUrl,
         isEmailVerified: userData['email_verified'] == true,
+        isGoogleLogin: true,
       );
 
       debugPrint('[GAUTH] <<< Success: ${_currentUser!.email}, Name: ${_currentUser!.displayName}');

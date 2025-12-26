@@ -5,6 +5,7 @@ class AuthUser {
   final String? displayName;
   final String? photoUrl;
   final bool isEmailVerified;
+  final bool isGoogleLogin;
 
   AuthUser({
     required this.uid,
@@ -12,6 +13,7 @@ class AuthUser {
     this.displayName,
     this.photoUrl,
     this.isEmailVerified = false,
+    this.isGoogleLogin = false,
   });
 
   factory AuthUser.empty() {
@@ -27,6 +29,7 @@ class AuthUser {
     String? displayName,
     String? photoUrl,
     bool? isEmailVerified,
+    bool? isGoogleLogin,
   }) {
     return AuthUser(
       uid: uid ?? this.uid,
@@ -34,6 +37,7 @@ class AuthUser {
       displayName: displayName ?? this.displayName,
       photoUrl: photoUrl ?? this.photoUrl,
       isEmailVerified: isEmailVerified ?? this.isEmailVerified,
+      isGoogleLogin: isGoogleLogin ?? this.isGoogleLogin,
     );
   }
 
@@ -45,6 +49,7 @@ class AuthUser {
       'displayName': displayName,
       'photoUrl': photoUrl,
       'isEmailVerified': isEmailVerified,
+      'isGoogleLogin': isGoogleLogin,
     };
   }
 
@@ -56,6 +61,7 @@ class AuthUser {
       displayName: json['displayName'] as String?,
       photoUrl: json['photoUrl'] as String?,
       isEmailVerified: json['isEmailVerified'] as bool? ?? false,
+      isGoogleLogin: json['isGoogleLogin'] as bool? ?? false,
     );
   }
 }

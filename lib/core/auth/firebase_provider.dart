@@ -190,6 +190,7 @@ class FirebaseAuthProvider implements BaseAuthService {
         displayName: googleUser.displayName,
         photoUrl: googleUser.photoUrl,
         isEmailVerified: true,
+        isGoogleLogin: true,
       );
 
       // Simpan user setelah login Google berhasil
