@@ -158,16 +158,25 @@ class CustomApiAuthProvider implements BaseAuthService {
         return AuthResult.failure('Verifikasi token gagal: ${response.statusCode}');
       }
 
-      // Create user from Google account info
+      // Parse user data from API response
+      final responseData = response.data;
+      final userData = responseData['user'] as Map<String, dynamic>?;
+
+      if (userData == null) {
+        debugPrint('[GAUTH] ERROR: No user data in response');
+        return AuthResult.failure('Data user tidak ditemukan dalam response');
+      }
+
+      // Create user from API response (more complete than googleUser)
       _currentUser = AuthUser(
-        uid: googleUser.id,
-        email: googleUser.email,
-        displayName: googleUser.displayName,
-        photoUrl: googleUser.photoUrl,
-        isEmailVerified: true,
+        uid: userData['id']?.toString() ?? googleUser.id,
+        email: userData['email']?.toString() ?? googleUser.email,
+        displayName: userData['name']?.toString() ?? googleUser.displayName,
+        photoUrl: userData['picture']?.toString() ?? googleUser.photoUrl,
+        isEmailVerified: userData['email_verified'] == true,
       );
 
-      debugPrint('[GAUTH] <<< Success: ${_currentUser!.email}');
+      debugPrint('[GAUTH] <<< Success: ${_currentUser!.email}, Name: ${_currentUser!.displayName}');
 
       _authStateController.add(_currentUser);
       return AuthResult.success(_currentUser!);

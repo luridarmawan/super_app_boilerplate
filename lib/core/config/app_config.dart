@@ -161,9 +161,13 @@ final appConfigProvider = StateNotifierProvider<AppConfigNotifier, AppConfigStat
   (ref) => AppConfigNotifier(),
 );
 
-/// Provider untuk Auth Service
+/// Provider untuk Auth Service - Using keepAlive for singleton behavior
 final authServiceProvider = Provider<BaseAuthService>((ref) {
+  // Keep this provider alive to maintain singleton instance
+  ref.keepAlive();
+
   final config = ref.watch(appConfigProvider);
+
   switch (config.authStrategy) {
     case AuthStrategy.firebase:
       return FirebaseAuthProvider();
@@ -174,15 +178,46 @@ final authServiceProvider = Provider<BaseAuthService>((ref) {
   }
 });
 
-/// Provider untuk auth state
+/// Auth State Notifier untuk mengelola state user secara reactive
+class AuthStateNotifier extends StateNotifier<AuthUser?> {
+  final BaseAuthService _authService;
+
+  AuthStateNotifier(this._authService) : super(null) {
+    // Listen to auth state changes and update state
+    _authService.authStateChanges.listen((user) {
+      state = user;
+    });
+    // Initialize with current user if any
+    if (_authService.currentUser != null) {
+      state = _authService.currentUser;
+    }
+  }
+
+  /// Force refresh dari currentUser
+  void refreshUser() {
+    state = _authService.currentUser;
+  }
+}
+
+/// Provider untuk auth state notifier
+final authStateNotifierProvider = StateNotifierProvider<AuthStateNotifier, AuthUser?>((ref) {
+  // Keep alive to maintain auth state
+  ref.keepAlive();
+  final authService = ref.watch(authServiceProvider);
+  return AuthStateNotifier(authService);
+});
+
+/// Provider untuk auth state (StreamProvider untuk backward compatibility)
 final authStateProvider = StreamProvider<AuthUser?>((ref) {
+  ref.keepAlive();
   final authService = ref.watch(authServiceProvider);
   return authService.authStateChanges;
 });
 
 /// Provider untuk current user
 final currentUserProvider = Provider<AuthUser?>((ref) {
-  return ref.watch(authStateProvider).value;
+  // Use StateNotifier for more reliable updates
+  return ref.watch(authStateNotifierProvider);
 });
 
 /// Provider untuk cek apakah user sudah login
