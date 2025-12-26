@@ -141,4 +141,14 @@ class AppInfo {
   static String get flutterSplashLogo => dotenv.env['SPLASH_LOGO'] ?? 'assets/images/logo/carik_blue_logo.png';
 
   static String get flutterLauncherIcon => dotenv.env['LAUNCHER_ICON'] ?? 'assets/images/logo/carik_blue_logo.png';
+
+  // ============================================
+  // DEMO/TESTING CONFIGURATION
+  // ============================================
+
+  /// Default username for demo/testing purposes
+  static String get usernameDefault => dotenv.env['USERNAME_DEFAULT'] ?? '';
+
+  /// Default password for demo/testing purposes
+  static String get passwordDefault => dotenv.env['PASSWORD_DEFAULT'] ?? '';
 }
