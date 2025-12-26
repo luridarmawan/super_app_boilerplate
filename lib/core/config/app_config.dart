@@ -6,6 +6,7 @@ import '../auth/auth_interface.dart';
 import '../auth/firebase_provider.dart';
 import '../auth/custom_api_provider.dart';
 import '../constants/app_info.dart';
+import '../services/prefs_service.dart';
 
 /// Keys untuk SharedPreferences
 class _PrefsKeys {
@@ -75,36 +76,35 @@ class AppConfigState {
 
 /// Notifier untuk mengelola konfigurasi aplikasi dengan persistensi
 class AppConfigNotifier extends StateNotifier<AppConfigState> {
-  SharedPreferences? _prefs;
-
   AppConfigNotifier() : super(AppConfigState()) {
     _loadFromPrefs();
   }
 
-  /// Memuat pengaturan dari SharedPreferences
-  Future<void> _loadFromPrefs() async {
-    _prefs = await SharedPreferences.getInstance();
+  /// Get cached SharedPreferences from PrefsService
+  SharedPreferences get _prefs => PrefsService.instance.prefs;
 
+  /// Memuat pengaturan dari SharedPreferences (synchronous now!)
+  void _loadFromPrefs() {
     // Load locale
-    final localeCode = _prefs?.getString(_PrefsKeys.locale);
-    final localeCountry = _prefs?.getString(_PrefsKeys.localeCountry);
+    final localeCode = _prefs.getString(_PrefsKeys.locale);
+    final localeCountry = _prefs.getString(_PrefsKeys.localeCountry);
     Locale? savedLocale;
     if (localeCode != null) {
       savedLocale = Locale(localeCode, localeCountry ?? '');
     }
 
     // Load template
-    final templateIndex = _prefs?.getInt(_PrefsKeys.template);
+    final templateIndex = _prefs.getInt(_PrefsKeys.template);
     AppTemplate? savedTemplate;
     if (templateIndex != null && templateIndex < AppTemplate.values.length) {
       savedTemplate = AppTemplate.values[templateIndex];
     }
 
     // Load dark mode
-    final savedDarkMode = _prefs?.getBool(_PrefsKeys.isDarkMode);
+    final savedDarkMode = _prefs.getBool(_PrefsKeys.isDarkMode);
 
     // Load sidebar position
-    final sidebarIndex = _prefs?.getInt(_PrefsKeys.sidebarPosition);
+    final sidebarIndex = _prefs.getInt(_PrefsKeys.sidebarPosition);
     SidebarPosition? savedSidebarPosition;
     if (sidebarIndex != null && sidebarIndex < SidebarPosition.values.length) {
       savedSidebarPosition = SidebarPosition.values[sidebarIndex];
@@ -121,13 +121,11 @@ class AppConfigNotifier extends StateNotifier<AppConfigState> {
 
   /// Menyimpan pengaturan ke SharedPreferences
   Future<void> _saveToPrefs() async {
-    _prefs ??= await SharedPreferences.getInstance();
-
-    await _prefs?.setString(_PrefsKeys.locale, state.selectedLocale.languageCode);
-    await _prefs?.setString(_PrefsKeys.localeCountry, state.selectedLocale.countryCode ?? '');
-    await _prefs?.setInt(_PrefsKeys.template, state.currentTemplate.index);
-    await _prefs?.setBool(_PrefsKeys.isDarkMode, state.isDarkMode);
-    await _prefs?.setInt(_PrefsKeys.sidebarPosition, state.sidebarPosition.index);
+    await _prefs.setString(_PrefsKeys.locale, state.selectedLocale.languageCode);
+    await _prefs.setString(_PrefsKeys.localeCountry, state.selectedLocale.countryCode ?? '');
+    await _prefs.setInt(_PrefsKeys.template, state.currentTemplate.index);
+    await _prefs.setBool(_PrefsKeys.isDarkMode, state.isDarkMode);
+    await _prefs.setInt(_PrefsKeys.sidebarPosition, state.sidebarPosition.index);
   }
 
   void setSidebarPosition(SidebarPosition position) {

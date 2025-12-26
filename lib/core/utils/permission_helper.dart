@@ -1,5 +1,4 @@
 import 'package:permission_handler/permission_handler.dart';
-import 'package:geolocator/geolocator.dart';
 
 /// Helper class for managing app permissions
 class PermissionHelper {
@@ -51,33 +50,31 @@ class PermissionHelper {
     return cameraGranted && photosGranted;
   }
 
-  /// Request location/GPS permission
+  /// Request location/GPS permission using permission_handler
   /// Returns true if permission is granted
   static Future<bool> requestLocationPermission() async {
-    // First check if location service is enabled
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Location services are not enabled, try to open settings
-      await Geolocator.openLocationSettings();
+    // Check if location service is enabled
+    final serviceStatus = await Permission.location.serviceStatus;
+    if (!serviceStatus.isEnabled) {
+      // Location services are not enabled
+      await openAppSettings();
       return false;
     }
 
     // Request permission
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return false;
-      }
+    final status = await Permission.locationWhenInUse.request();
+
+    if (status.isGranted) {
+      return true;
     }
 
-    if (permission == LocationPermission.deniedForever) {
+    if (status.isPermanentlyDenied) {
       // Permissions are permanently denied
       await openAppSettings();
       return false;
     }
 
-    return true;
+    return false;
   }
 
   /// Check if storage permission is granted
@@ -99,9 +96,8 @@ class PermissionHelper {
 
   /// Check if location permission is granted
   static Future<bool> hasLocationPermission() async {
-    LocationPermission permission = await Geolocator.checkPermission();
-    return permission == LocationPermission.always || 
-           permission == LocationPermission.whileInUse;
+    return await Permission.locationWhenInUse.isGranted ||
+           await Permission.locationAlways.isGranted;
   }
 
   /// Request all permissions at once

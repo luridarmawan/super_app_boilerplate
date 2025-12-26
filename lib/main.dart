@@ -9,20 +9,19 @@ import 'core/config/app_config.dart';
 import 'core/routes/app_router.dart';
 import 'core/l10n/app_localizations.dart';
 import 'core/constants/app_info.dart';
+import 'core/services/prefs_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables from .env file
+  // Load environment variables from .env file (must be first)
   await dotenv.load(fileName: ".env");
 
-  // Set preferred orientations
+  // Run non-blocking UI configurations synchronously
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-
-  // Set system UI mode for edge-to-edge
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -31,19 +30,23 @@ void main() async {
     ),
   );
 
-  // Initialize Firebase only if notifications are enabled AND using Firebase provider
-  // Skip Firebase initialization for 'mock' or 'onesignal' providers
+  // Determine if Firebase should be initialized
   final shouldInitFirebase = AppInfo.enableNotification &&
       (AppInfo.notificationProvider.toLowerCase() == 'firebase' ||
        AppInfo.notificationProvider.toLowerCase() == 'fcm');
 
-  if (shouldInitFirebase) {
-    try {
-      await Firebase.initializeApp();
-    } catch (e) {
-      debugPrint('Firebase initialization error: $e');
-    }
-  }
+  // Initialize services in PARALLEL for better performance
+  // This reduces startup time by running async operations concurrently
+  await Future.wait([
+    // Initialize SharedPreferences early (cached for entire app lifecycle)
+    PrefsService.initialize(),
+    // Initialize Firebase if needed
+    if (shouldInitFirebase)
+      Firebase.initializeApp().catchError((e) {
+        debugPrint('Firebase initialization error: $e');
+        return Firebase.app(); // Return existing app or handle gracefully
+      }),
+  ]);
 
   runApp(
     const ProviderScope(

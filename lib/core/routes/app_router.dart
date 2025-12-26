@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/app_info.dart';
+import '../services/prefs_service.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/register_screen.dart';
@@ -28,17 +28,11 @@ class AppRoutes {
   static const String privacy = '/privacy';
 }
 
-/// Key untuk SharedPreferences
-const String _isLoggedInKey = 'app_is_logged_in';
-
-/// Provider untuk mengecek apakah user sudah login (dari SharedPreferences)
-final isUserLoggedInProvider = FutureProvider<bool>((ref) async {
-  final prefs = await SharedPreferences.getInstance();
-  return prefs.getBool(_isLoggedInKey) ?? false;
-});
-
 /// Router provider untuk navigasi
+/// Uses cached PrefsService for better performance (no async SharedPreferences calls)
 final routerProvider = Provider<GoRouter>((ref) {
+  final prefsService = ref.watch(prefsServiceProvider);
+
   return GoRouter(
     // Always start at splash to check auth state
     initialLocation: AppInfo.enableSplashScreen ? AppRoutes.splash : AppRoutes.login,
@@ -48,10 +42,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.splash,
         builder: (context, state) => SplashScreen(
-          onComplete: () async {
-            // Check if user is logged in from SharedPreferences
-            final prefs = await SharedPreferences.getInstance();
-            final isLoggedIn = prefs.getBool(_isLoggedInKey) ?? false;
+          onComplete: () {
+            // Use cached PrefsService (synchronous, no blocking)
+            final isLoggedIn = prefsService.isLoggedIn;
 
             if (context.mounted) {
               if (isLoggedIn) {
@@ -79,12 +72,9 @@ final routerProvider = Provider<GoRouter>((ref) {
             );
           },
         ),
-        redirect: (context, state) async {
-          // Check if user is already logged in
-          final prefs = await SharedPreferences.getInstance();
-          final isLoggedIn = prefs.getBool(_isLoggedInKey) ?? false;
-
-          if (isLoggedIn) {
+        redirect: (context, state) {
+          // Use cached PrefsService (synchronous)
+          if (prefsService.isLoggedIn) {
             return AppRoutes.dashboard;
           }
           return null;
@@ -107,12 +97,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           onHelpTap: () => context.push(AppRoutes.help),
           // onLogoutTap handled internally by MainDashboard
         ),
-        redirect: (context, state) async {
-          // Protect dashboard - redirect to login if not logged in
-          final prefs = await SharedPreferences.getInstance();
-          final isLoggedIn = prefs.getBool(_isLoggedInKey) ?? false;
-
-          if (!isLoggedIn) {
+        redirect: (context, state) {
+          // Protect dashboard - use cached PrefsService (synchronous)
+          if (!prefsService.isLoggedIn) {
             return AppRoutes.login;
           }
           return null;

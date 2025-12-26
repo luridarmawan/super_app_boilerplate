@@ -218,12 +218,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // Social Login Buttons
                   OutlinedButton.icon(
                     onPressed: _isLoading ? null : _handleGoogleLogin,
-                    icon: Image.network(
-                      'https://www.google.com/favicon.ico',
-                      width: 24,
-                      height: 24,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.g_mobiledata),
+                    icon: Icon(
+                      Icons.g_mobiledata,
+                      size: 24,
+                      color: colorScheme.primary,
                     ),
                     label: const Text('Continue with Google'),
                   ),
