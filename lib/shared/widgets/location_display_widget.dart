@@ -198,7 +198,7 @@ class _LocationDisplayWidgetState extends ConsumerState<LocationDisplayWidget> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
-                  gpsState.hasPosition ? Icons.map : Icons.place,
+                  gpsState.hasPosition ? Icons.pin_drop : Icons.place,
                   color: gpsState.hasPosition
                       ? colorScheme.onPrimary
                       : colorScheme.onPrimaryContainer,
