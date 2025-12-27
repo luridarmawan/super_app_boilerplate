@@ -279,6 +279,25 @@ class AppTheme {
   /// List template yang tersedia
   static List<AppTemplate> get availableTemplates => AppTemplate.values;
 
+  /// Get AppTemplate from string name (case-insensitive)
+  /// Returns null if no match found
+  static AppTemplate? fromString(String? name) {
+    if (name == null || name.isEmpty) return null;
+    final lowerName = name.toLowerCase().replaceAll(' ', '');
+    for (final template in AppTemplate.values) {
+      // Match by enum name (e.g., 'defaultBlue', 'modernPurple')
+      if (template.name.toLowerCase() == lowerName) {
+        return template;
+      }
+      // Match by display name (e.g., 'Default Blue', 'Modern Purple')
+      final displayName = getTemplateName(template).toLowerCase().replaceAll(' ', '');
+      if (displayName == lowerName) {
+        return template;
+      }
+    }
+    return null;
+  }
+
   /// Nama display untuk template
   static String getTemplateName(AppTemplate template) {
     switch (template) {

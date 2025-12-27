@@ -142,6 +142,8 @@ class AppInfo {
 
   static String get flutterLauncherIcon => dotenv.env['LAUNCHER_ICON'] ?? 'assets/images/logo/carik_blue_logo.png';
 
+  static String get themeDefault => dotenv.env['THEME_DEFAULT'] ?? '';
+
   // ============================================
   // DEMO/TESTING CONFIGURATION
   // ============================================

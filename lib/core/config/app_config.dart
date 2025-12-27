@@ -97,7 +97,11 @@ class AppConfigNotifier extends StateNotifier<AppConfigState> {
     final templateIndex = _prefs.getInt(_PrefsKeys.template);
     AppTemplate? savedTemplate;
     if (templateIndex != null && templateIndex < AppTemplate.values.length) {
+      // Use saved template from preferences
       savedTemplate = AppTemplate.values[templateIndex];
+    } else {
+      // First time app runs: use default theme from environment variable
+      savedTemplate = AppTheme.fromString(AppInfo.themeDefault);
     }
 
     // Load dark mode
