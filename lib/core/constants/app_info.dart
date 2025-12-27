@@ -28,7 +28,7 @@ class AppInfo {
   static const String version = '3.3.1';
 
   /// Build number
-  static const int buildNumber = 17;
+  static const int buildNumber = 27;
 
   /// Full version with build number
   static const String fullVersion = '$version+$buildNumber';

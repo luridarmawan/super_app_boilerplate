@@ -1,6 +1,6 @@
 # GPS / Location Feature
 
-Fitur GPS memungkinkan aplikasi mengakses lokasi pengguna menggunakan package `geolocator`. Fitur ini dapat diaktifkan atau dinonaktifkan melalui environment variable.
+The GPS feature allows the application to access user location using the `geolocator` package. This feature can be enabled or disabled via environment variables.
 
 ## Table of Contents
 
@@ -21,7 +21,7 @@ Fitur GPS memungkinkan aplikasi mengakses lokasi pengguna menggunakan package `g
 
 ## Environment Configuration
 
-Tambahkan variabel berikut di file `.env`:
+Add the following variables to your `.env` file:
 
 ```env
 # Enable/disable GPS feature
@@ -35,10 +35,10 @@ GPS_REVERSE_GEO_URL=https://nominatim.openstreetmap.org/reverse?format=json&lat=
 
 | Variable | Description |
 |----------|-------------|
-| `ENABLE_GPS` | `true` untuk enable GPS, `false` untuk disable |
-| `GPS_REVERSE_GEO_URL` | URL API reverse geocoding dengan placeholder `{lat}` dan `{lon}`. Kosongkan untuk disable fitur alamat. |
+| `ENABLE_GPS` | `true` to enable GPS, `false` to disable |
+| `GPS_REVERSE_GEO_URL` | Reverse geocoding API URL with `{lat}` and `{lon}` placeholders. Leave empty to disable address feature. |
 
-Akses di kode melalui `AppInfo`:
+Access in code via `AppInfo`:
 
 ```dart
 import 'package:super_app/core/constants/app_info.dart';
@@ -56,7 +56,7 @@ String url = AppInfo.gpsReverseGeoUrl;
 
 ## Dependencies
 
-Package yang digunakan (`pubspec.yaml`):
+Packages used (`pubspec.yaml`):
 
 ```yaml
 dependencies:
@@ -69,7 +69,7 @@ dependencies:
 
 ### Android
 
-Permission sudah dikonfigurasi di `android/app/src/main/AndroidManifest.xml`:
+Permissions are already configured in `android/app/src/main/AndroidManifest.xml`:
 
 ```xml
 <!-- Location/GPS Permissions -->
@@ -79,7 +79,7 @@ Permission sudah dikonfigurasi di `android/app/src/main/AndroidManifest.xml`:
 
 ### iOS
 
-Permission descriptions sudah dikonfigurasi di `ios/Runner/Info.plist`:
+Permission descriptions are already configured in `ios/Runner/Info.plist`:
 
 ```xml
 <!-- Location Permissions -->
@@ -112,22 +112,23 @@ lib/
 
 ### GpsService (`lib/core/gps/gps_service.dart`)
 
-Singleton service untuk menangani operasi GPS:
+Singleton service for handling GPS operations:
 
 - Permission handling
 - Get current position
 - Get last known position
 - Position stream
 - Distance & bearing calculation
+- Reverse geocoding
 
 ### GpsProvider (`lib/core/gps/gps_provider.dart`)
 
 Riverpod state management:
 
-- `gpsProvider` - StateNotifier untuk GPS state
-- `gpsServiceProvider` - Provider untuk GpsService instance
-- `positionStreamProvider` - StreamProvider untuk real-time updates
-- `isGpsEnabledProvider` - Check apakah GPS enabled
+- `gpsProvider` - StateNotifier for GPS state
+- `gpsServiceProvider` - Provider for GpsService instance
+- `positionStreamProvider` - StreamProvider for real-time updates
+- `isGpsEnabledProvider` - Check if GPS is enabled
 
 ### GpsState
 
@@ -159,13 +160,13 @@ class GpsState {
 
 ### Using LocationDisplayWidget
 
-Widget lengkap untuk menampilkan lokasi dengan UI yang sudah jadi.
+A complete widget for displaying location with a ready-made UI.
 
 ```dart
 import 'package:super_app/shared/widgets/location_display_widget.dart';
 import 'package:super_app/core/constants/app_info.dart';
 
-// Full view (Card dengan detail)
+// Full view (Card with details)
 if (AppInfo.enableGps)
   LocationDisplayWidget(
     onLocationUpdated: (lat, lng) {
@@ -173,7 +174,7 @@ if (AppInfo.enableGps)
     },
   ),
 
-// Compact view (untuk toolbar/header)
+// Compact view (for toolbar/header)
 if (AppInfo.enableGps)
   LocationDisplayWidget(
     compact: true,
@@ -184,20 +185,20 @@ if (AppInfo.enableGps)
 ```
 
 **Full View Features:**
-- Header dengan icon dan koordinat
-- Tombol refresh
-- Detail Latitude, Longitude, Accuracy
-- Error message dengan tombol Open Settings
-- Tombol "Get Location" jika belum ada posisi
+- Map icon with address display
+- Refresh button
+- Tap address to expand/collapse full text
+- Error message (tap to open settings)
+- "My Location" prompt when no position yet
 
 **Compact View Features:**
-- Inline display dengan icon
-- Tap untuk refresh lokasi
-- Koordinat atau "My Location" text
+- Inline display with icon
+- Tap to refresh location
+- Coordinates or "My Location" text
 
 ### Using GetLocationButton
 
-Button sederhana untuk mendapatkan lokasi.
+A simple button to get location.
 
 ```dart
 import 'package:super_app/shared/widgets/location_display_widget.dart';
@@ -214,7 +215,7 @@ GetLocationButton(
 
 ### Using GpsProvider Directly
 
-Untuk kontrol penuh dengan Riverpod.
+For full control with Riverpod.
 
 ```dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -234,6 +235,10 @@ class MyWidget extends ConsumerWidget {
         // Show coordinates
         if (gpsState.hasPosition)
           Text('Location: ${gpsState.coordinatesString}'),
+        
+        // Show address
+        if (gpsState.hasAddress)
+          Text('Address: ${gpsState.address}'),
         
         // Show error
         if (gpsState.errorMessage != null)
@@ -275,6 +280,9 @@ ref.read(gpsProvider.notifier).clearPosition();
 // Clear error
 ref.read(gpsProvider.notifier).clearError();
 
+// Clear address
+ref.read(gpsProvider.notifier).clearAddress();
+
 // Open device location settings
 await ref.read(gpsProvider.notifier).openLocationSettings();
 
@@ -297,7 +305,7 @@ String? address2 = await ref.read(gpsProvider.notifier).getAddressFromCoordinate
 
 ### Using GpsService Directly
 
-Untuk akses low-level tanpa state management.
+For low-level access without state management.
 
 ```dart
 import 'package:super_app/core/gps/gps_service.dart';
@@ -366,7 +374,7 @@ print('Address: $address');
 
 ### Using Position Stream Provider
 
-Untuk real-time location updates.
+For real-time location updates.
 
 ```dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -426,7 +434,7 @@ LocationAccuracy.bestForNavigation  // Best for navigation
 
 ## Localization
 
-GPS strings tersedia dalam Bahasa Indonesia dan English di `lib/core/l10n/app_localizations.dart`:
+GPS strings are available in Indonesian and English in `lib/core/l10n/app_localizations.dart`:
 
 | Key | Indonesian | English |
 |-----|------------|---------|
@@ -447,58 +455,64 @@ GPS strings tersedia dalam Bahasa Indonesia dan English di `lib/core/l10n/app_lo
 
 ## Troubleshooting
 
-### GPS tidak berfungsi
+### GPS not working
 
-1. **Pastikan `ENABLE_GPS=true` di `.env`**
+1. **Ensure `ENABLE_GPS=true` in `.env`**
    ```env
    ENABLE_GPS=true
    ```
 
-2. **Jalankan `flutter pub get`** setelah update pubspec.yaml
+2. **Run `flutter pub get`** after updating pubspec.yaml
 
-3. **Periksa permission** di device settings
+3. **Check permissions** in device settings
 
 ### Permission denied
 
-Widget akan menampilkan error message dengan tombol "Open Settings". User dapat:
+The widget will display an error message with "Open Settings" option. User can:
 1. Tap "Open Settings"
-2. Enable location permission untuk app
-3. Kembali ke app dan refresh
+2. Enable location permission for the app
+3. Return to app and refresh
 
 ### Location service disabled
 
-Jika GPS device dimatikan:
-1. Widget menampilkan error
+If device GPS is turned off:
+1. Widget displays error
 2. Tap "Open Settings"
-3. Enable Location/GPS di device
-4. Kembali ke app dan refresh
+3. Enable Location/GPS on device
+4. Return to app and refresh
+
+### Reverse geocoding returns 403 error
+
+If using Nominatim (OpenStreetMap) API and getting 403 Forbidden:
+- The `GpsService` already includes a `User-Agent` header which is required by Nominatim
+- Ensure your app name is set correctly in `AppInfo.name`
 
 ### iOS Simulator
 
-GPS di iOS Simulator:
-1. Buka Simulator
+GPS in iOS Simulator:
+1. Open Simulator
 2. Features → Location → Custom Location...
-3. Masukkan koordinat atau pilih preset
+3. Enter coordinates or select a preset
 
 ### Android Emulator
 
-GPS di Android Emulator:
-1. Klik "..." di toolbar emulator
+GPS in Android Emulator:
+1. Click "..." on emulator toolbar
 2. Location tab
 3. Set latitude/longitude
-4. Klik "Set Location"
+4. Click "Set Location"
 
 ---
 
 ## Example Implementation
 
-Contoh implementasi di Dashboard (`lib/features/dashboard/main_dashboard.dart`):
+Example implementation in Dashboard (`lib/features/dashboard/main_dashboard.dart`):
 
 ```dart
 // Import
 import '../../shared/widgets/location_display_widget.dart';
 
-// Di dalam _buildHomeContent(), setelah BannerCarousel
+// Inside _buildHomeContent(), after BannerCarousel
 if (AppInfo.enableGps)
   Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16),
