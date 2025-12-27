@@ -120,7 +120,7 @@ class CustomHeader extends ConsumerWidget implements PreferredSizeWidget {
               ),
             ),
           ),
-        if (showNotification)
+        if (showNotification && AppInfo.enableNotification)
           IconButton(
             icon: Badge(
               isLabelVisible: unreadCount > 0,
@@ -241,7 +241,7 @@ class CustomSliverHeader extends ConsumerWidget {
               ),
             ),
           ),
-        if (showNotification)
+        if (showNotification && AppInfo.enableNotification)
           IconButton(
             icon: Badge(
               isLabelVisible: unreadCount > 0,
