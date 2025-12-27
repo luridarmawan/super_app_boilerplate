@@ -26,6 +26,8 @@ class LocationDisplayWidget extends ConsumerStatefulWidget {
 }
 
 class _LocationDisplayWidgetState extends ConsumerState<LocationDisplayWidget> {
+  bool _isAddressExpanded = false;
+
   @override
   void initState() {
     super.initState();
@@ -258,11 +260,28 @@ class _LocationDisplayWidgetState extends ConsumerState<LocationDisplayWidget> {
 
     // Has address
     if (gpsState.hasAddress) {
-      return Text(
-        gpsState.address!,
-        style: Theme.of(context).textTheme.bodyMedium,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
+      return GestureDetector(
+        onTap: () {
+          setState(() {
+            _isAddressExpanded = !_isAddressExpanded;
+          });
+        },
+        child: AnimatedCrossFade(
+          firstChild: Text(
+            gpsState.address!,
+            style: Theme.of(context).textTheme.bodyMedium,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          secondChild: Text(
+            gpsState.address!,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          crossFadeState: _isAddressExpanded
+              ? CrossFadeState.showSecond
+              : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 200),
+        ),
       );
     }
 
