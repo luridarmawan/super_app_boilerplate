@@ -64,6 +64,7 @@ dependencies:
   permission_handler: ^12.0.1
   image_picker: ^1.0.7
   geolocator: ^13.0.2  # GPS & Location
+  url_launcher: ^6.2.5  # Open URLs (Google Maps, etc.)
 
   # Push Notifications
   firebase_core: ^4.3.0

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/constants/app_info.dart';
 import '../../core/gps/gps_provider.dart';
@@ -51,6 +52,16 @@ class _LocationDisplayWidgetState extends ConsumerState<LocationDisplayWidget> {
       if (GpsService.instance.isReverseGeoEnabled) {
         await ref.read(gpsProvider.notifier).getAddressFromCurrentPosition();
       }
+    }
+  }
+
+  /// Open Google Maps with current location coordinates
+  Future<void> _openGoogleMaps(double lat, double lng) async {
+    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+    try {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      debugPrint('Could not launch Google Maps: $e');
     }
   }
 
@@ -170,17 +181,29 @@ class _LocationDisplayWidgetState extends ConsumerState<LocationDisplayWidget> {
         padding: const EdgeInsets.all(12.0),
         child: Row(
           children: [
-            // Map icon
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                Icons.place,
-                color: colorScheme.onPrimaryContainer,
-                size: 24,
+            // Map icon - changes when location is available and opens Google Maps on tap
+            GestureDetector(
+              onTap: gpsState.hasPosition
+                  ? () => _openGoogleMaps(
+                        gpsState.latitude,
+                        gpsState.longitude,
+                      )
+                  : null,
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: gpsState.hasPosition
+                      ? colorScheme.primary
+                      : colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  gpsState.hasPosition ? Icons.map : Icons.place,
+                  color: gpsState.hasPosition
+                      ? colorScheme.onPrimary
+                      : colorScheme.onPrimaryContainer,
+                  size: 24,
+                ),
               ),
             ),
             const SizedBox(width: 12),
