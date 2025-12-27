@@ -5,7 +5,7 @@ class Assets {
   // Logo
   // static const String logo = 'assets/images/logo.png';
   static const String logo = 'assets/images/logo/carik_blue_logo.png';
-  static const String logoWhite = 'assets/images/logo/carik_green_Logo.png.png';
+  static const String logoWhite = 'assets/images/logo/carik_green_logo.png';
 
   // Banner
   static const String offlineModeBanner = 'assets/images/banners/offline_mode.png';
