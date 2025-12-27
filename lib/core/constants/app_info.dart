@@ -147,8 +147,21 @@ class AppInfo {
   // ============================================
 
   /// Default username for demo/testing purposes
-  static String get usernameDefault => dotenv.env['USERNAME_DEFAULT'] ?? '';
+  static String get usernameDefault => _cleanEnvValue(dotenv.env['USERNAME_DEFAULT']);
 
   /// Default password for demo/testing purposes
-  static String get passwordDefault => dotenv.env['PASSWORD_DEFAULT'] ?? '';
+  static String get passwordDefault => _cleanEnvValue(dotenv.env['PASSWORD_DEFAULT']);
+
+  /// Helper to clean env values (remove surrounding quotes and handle empty)
+  static String _cleanEnvValue(String? value) {
+    if (value == null || value.isEmpty) return '';
+    // Remove surrounding quotes if present
+    if (value.startsWith('"') && value.endsWith('"')) {
+      value = value.substring(1, value.length - 1);
+    }
+    if (value.startsWith("'") && value.endsWith("'")) {
+      value = value.substring(1, value.length - 1);
+    }
+    return value;
+  }
 }

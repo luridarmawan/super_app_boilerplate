@@ -28,6 +28,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
 
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   print('usernameDefault: "${AppInfo.usernameDefault}"');
+  //   print('passwordDefault: "${AppInfo.passwordDefault}"');
+  // }
+
   @override
   void dispose() {
     _emailController.dispose();
