@@ -26,21 +26,30 @@ Tambahkan variabel berikut di file `.env`:
 ```env
 # Enable/disable GPS feature
 ENABLE_GPS=true
+
+# Reverse geocoding URL (optional)
+# Use {lat} and {lon} as placeholders
+# Leave empty to disable address lookup
+GPS_REVERSE_GEO_URL=https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}
 ```
 
-| Value | Description |
-|-------|-------------|
-| `true` | GPS feature enabled, widgets ditampilkan |
-| `false` | GPS feature disabled, widgets disembunyikan |
+| Variable | Description |
+|----------|-------------|
+| `ENABLE_GPS` | `true` untuk enable GPS, `false` untuk disable |
+| `GPS_REVERSE_GEO_URL` | URL API reverse geocoding dengan placeholder `{lat}` dan `{lon}`. Kosongkan untuk disable fitur alamat. |
 
-Akses di kode melalui `AppInfo.enableGps`:
+Akses di kode melalui `AppInfo`:
 
 ```dart
 import 'package:super_app/core/constants/app_info.dart';
 
+// Check if GPS is enabled
 if (AppInfo.enableGps) {
   // GPS is enabled
 }
+
+// Get reverse geocoding URL
+String url = AppInfo.gpsReverseGeoUrl;
 ```
 
 ---
@@ -129,10 +138,13 @@ class GpsState {
   final bool hasPermission;
   final bool isServiceEnabled;
   final String? errorMessage;
+  final String? address;          // Address from reverse geocoding
+  final bool isLoadingAddress;    // Loading state for address fetch
   
   // Computed properties
   bool get isReady;
   bool get hasPosition;
+  bool get hasAddress;  // Check if address is available
   double get latitude;
   double get longitude;
   double get accuracy;
@@ -275,6 +287,12 @@ double? meters = ref.read(gpsProvider.notifier).distanceTo(-6.2, 106.8);
 // Get formatted distance
 String? distance = ref.read(gpsProvider.notifier).formattedDistanceTo(-6.2, 106.8);
 // Returns: "500 m" or "1.5 km"
+
+// Get address from current position (reverse geocoding)
+String? address = await ref.read(gpsProvider.notifier).getAddressFromCurrentPosition();
+
+// Get address from specific coordinates
+String? address2 = await ref.read(gpsProvider.notifier).getAddressFromCoordinates(-6.2, 106.8);
 ```
 
 ### Using GpsService Directly
@@ -337,6 +355,13 @@ String formatted2 = gpsService.formatDistance(500);   // "500 m"
 // Open device settings
 await gpsService.openLocationSettings();
 await gpsService.openAppSettings();
+
+// Check if reverse geocoding is available
+bool hasReverseGeo = gpsService.isReverseGeoEnabled;
+
+// Get address from coordinates (reverse geocoding)
+String? address = await gpsService.reverseGeocode(-6.2088, 106.8456);
+print('Address: $address');
 ```
 
 ### Using Position Stream Provider
@@ -383,6 +408,8 @@ class LiveLocationWidget extends ConsumerWidget {
 | `openLocationSettings()` | `Future<bool>` | Open device location settings |
 | `openAppSettings()` | `Future<bool>` | Open app permission settings |
 | `formatDistance()` | `String` | Format distance for display |
+| `isReverseGeoEnabled` | `bool` | Check if reverse geocoding URL is configured |
+| `reverseGeocode()` | `Future<String?>` | Get address from coordinates |
 
 ### LocationAccuracy Options
 
@@ -414,6 +441,7 @@ GPS strings tersedia dalam Bahasa Indonesia dan English di `lib/core/l10n/app_lo
 | `locationUpdated` | Lokasi diperbarui | Location updated |
 | `failedToGetLocation` | Gagal mendapatkan lokasi | Failed to get location |
 | `accuracy` | Akurasi | Accuracy |
+| `address` | Alamat | Address |
 
 ---
 

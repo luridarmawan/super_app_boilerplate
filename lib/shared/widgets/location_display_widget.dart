@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/app_info.dart';
 import '../../core/gps/gps_provider.dart';
+import '../../core/gps/gps_service.dart';
 import '../../core/l10n/app_localizations.dart';
 
 /// Widget to display current GPS location
@@ -40,24 +41,31 @@ class _LocationDisplayWidgetState extends ConsumerState<LocationDisplayWidget> {
     final l10n = context.l10n;
     final position = await ref.read(gpsProvider.notifier).getCurrentLocation();
 
-    if (position != null && widget.onLocationUpdated != null) {
-      widget.onLocationUpdated!(position.latitude, position.longitude);
+    if (position != null) {
+      if (widget.onLocationUpdated != null) {
+        widget.onLocationUpdated!(position.latitude, position.longitude);
+      }
+
+      // Fetch address if reverse geocoding URL is configured
+      if (GpsService.instance.isReverseGeoEnabled) {
+        await ref.read(gpsProvider.notifier).getAddressFromCurrentPosition();
+      }
     }
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            position != null
-                ? '${l10n.locationUpdated}: ${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}'
-                : l10n.failedToGetLocation,
-          ),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: position != null
-              ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).colorScheme.error,
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(
+      //     content: Text(
+      //       position != null
+      //           ? '${l10n.locationUpdated}: ${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}'
+      //           : l10n.failedToGetLocation,
+      //     ),
+      //     behavior: SnackBarBehavior.floating,
+      //     backgroundColor: position != null
+      //         ? Theme.of(context).colorScheme.primary
+      //         : Theme.of(context).colorScheme.error,
+      //   ),
+      // );
     }
   }
 
@@ -238,20 +246,27 @@ class _LocationDisplayWidgetState extends ConsumerState<LocationDisplayWidget> {
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 12),
-              _buildInfoRow(
-                context,
-                icon: Icons.my_location,
-                label: 'Latitude',
-                value: gpsState.latitude.toStringAsFixed(6),
-              ),
-              const SizedBox(height: 8),
-              _buildInfoRow(
-                context,
-                icon: Icons.my_location,
-                label: 'Longitude',
-                value: gpsState.longitude.toStringAsFixed(6),
-              ),
-              const SizedBox(height: 8),
+              
+              // Address section (only if reverse geocoding is configured)
+              if (GpsService.instance.isReverseGeoEnabled) ...[
+                _buildAddressSection(context, l10n, colorScheme, gpsState),
+                const SizedBox(height: 12),
+              ],
+              
+              // _buildInfoRow(
+              //   context,
+              //   icon: Icons.my_location,
+              //   label: 'Latitude',
+              //   value: gpsState.latitude.toStringAsFixed(6),
+              // ),
+              // const SizedBox(height: 8),
+              // _buildInfoRow(
+              //   context,
+              //   icon: Icons.my_location,
+              //   label: 'Longitude',
+              //   value: gpsState.longitude.toStringAsFixed(6),
+              // ),
+              // const SizedBox(height: 8),
               _buildInfoRow(
                 context,
                 icon: Icons.radar,
@@ -336,13 +351,105 @@ class _LocationDisplayWidgetState extends ConsumerState<LocationDisplayWidget> {
               ),
         ),
         const SizedBox(width: 4),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+        Flexible(
+          child: Text(
+            value,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
+    );
+  }
+
+  Widget _buildAddressSection(
+    BuildContext context,
+    AppLocalizations l10n,
+    ColorScheme colorScheme,
+    GpsState gpsState,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.place,
+            size: 18,
+            color: colorScheme.primary,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.address,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: colorScheme.outline,
+                      ),
+                ),
+                const SizedBox(height: 2),
+                if (gpsState.isLoadingAddress)
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 12,
+                        height: 12,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.gettingLocation,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: colorScheme.outline,
+                            ),
+                      ),
+                    ],
+                  )
+                else if (gpsState.hasAddress)
+                  Text(
+                    gpsState.address!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                  )
+                else
+                  Text(
+                    l10n.notSet,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.outline,
+                          fontStyle: FontStyle.italic,
+                        ),
+                  ),
+              ],
+            ),
+          ),
+          // Refresh address button
+          if (!gpsState.isLoadingAddress)
+            IconButton(
+              onPressed: () {
+                ref.read(gpsProvider.notifier).getAddressFromCurrentPosition();
+              },
+              icon: Icon(
+                Icons.refresh,
+                size: 18,
+                color: colorScheme.primary,
+              ),
+              constraints: const BoxConstraints(),
+              padding: EdgeInsets.zero,
+            ),
+        ],
+      ),
     );
   }
 }

@@ -15,6 +15,8 @@ class GpsState {
   final bool hasPermission;
   final bool isServiceEnabled;
   final String? errorMessage;
+  final String? address;
+  final bool isLoadingAddress;
 
   const GpsState({
     this.currentPosition,
@@ -22,6 +24,8 @@ class GpsState {
     this.hasPermission = false,
     this.isServiceEnabled = false,
     this.errorMessage,
+    this.address,
+    this.isLoadingAddress = false,
   });
 
   GpsState copyWith({
@@ -30,8 +34,11 @@ class GpsState {
     bool? hasPermission,
     bool? isServiceEnabled,
     String? errorMessage,
+    String? address,
+    bool? isLoadingAddress,
     bool clearPosition = false,
     bool clearError = false,
+    bool clearAddress = false,
   }) {
     return GpsState(
       currentPosition: clearPosition ? null : (currentPosition ?? this.currentPosition),
@@ -39,6 +46,8 @@ class GpsState {
       hasPermission: hasPermission ?? this.hasPermission,
       isServiceEnabled: isServiceEnabled ?? this.isServiceEnabled,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      address: clearAddress ? null : (address ?? this.address),
+      isLoadingAddress: isLoadingAddress ?? this.isLoadingAddress,
     );
   }
 
@@ -47,6 +56,9 @@ class GpsState {
 
   /// Check if we have a valid position
   bool get hasPosition => currentPosition != null;
+
+  /// Check if we have an address
+  bool get hasAddress => address != null && address!.isNotEmpty;
 
   /// Get latitude (or 0 if no position)
   double get latitude => currentPosition?.latitude ?? 0;
@@ -159,12 +171,59 @@ class GpsNotifier extends StateNotifier<GpsState> {
 
   /// Clear current position
   void clearPosition() {
-    state = state.copyWith(clearPosition: true, clearError: true);
+    state = state.copyWith(clearPosition: true, clearError: true, clearAddress: true);
   }
 
   /// Clear error message
   void clearError() {
     state = state.copyWith(clearError: true);
+  }
+
+  /// Clear address
+  void clearAddress() {
+    state = state.copyWith(clearAddress: true);
+  }
+
+  /// Get address from current position using reverse geocoding
+  /// Returns null if GPS_REVERSE_GEO_URL is not configured or request fails
+  Future<String?> getAddressFromCurrentPosition() async {
+    if (!state.hasPosition) {
+      return null;
+    }
+
+    if (!_gpsService.isReverseGeoEnabled) {
+      return null;
+    }
+
+    state = state.copyWith(isLoadingAddress: true);
+
+    try {
+      final address = await _gpsService.reverseGeocode(
+        state.latitude,
+        state.longitude,
+      );
+
+      state = state.copyWith(
+        isLoadingAddress: false,
+        address: address,
+      );
+
+      return address;
+    } catch (e) {
+      state = state.copyWith(
+        isLoadingAddress: false,
+      );
+      return null;
+    }
+  }
+
+  /// Get address from specific coordinates
+  Future<String?> getAddressFromCoordinates(double lat, double lng) async {
+    if (!_gpsService.isReverseGeoEnabled) {
+      return null;
+    }
+
+    return await _gpsService.reverseGeocode(lat, lng);
   }
 
   /// Open device location settings

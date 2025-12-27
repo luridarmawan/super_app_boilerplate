@@ -98,6 +98,7 @@ class AppInfo {
 
   /// Enable/disable GPS/Location feature
   static bool get enableGps => dotenv.env['ENABLE_GPS']?.toLowerCase() == 'true';
+  static String get gpsReverseGeoUrl => dotenv.env['GPS_REVERSE_GEO_URL'] ?? '';
 
   // ============================================
   // AUTH CONFIGURATION

@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -172,6 +175,70 @@ class GpsService {
     } else {
       final km = distanceInMeters / 1000;
       return '${km.toStringAsFixed(1)} km';
+    }
+  }
+
+  /// Check if reverse geocoding is available
+  bool get isReverseGeoEnabled => AppInfo.gpsReverseGeoUrl.isNotEmpty;
+
+  /// Get address from coordinates using reverse geocoding API
+  /// URL template from GPS_REVERSE_GEO_URL env variable
+  /// Replaces {lat} and {lon} with actual coordinates
+  /// Returns the "display_name" field from JSON response
+  /// Returns null if URL is empty or request fails
+  Future<String?> reverseGeocode(double latitude, double longitude) async {
+    final urlTemplate = AppInfo.gpsReverseGeoUrl;
+    
+    if (urlTemplate.isEmpty) {
+      debugPrint('GpsService: GPS_REVERSE_GEO_URL is not configured');
+      return null;
+    }
+
+    // Replace placeholders with actual coordinates
+    final url = urlTemplate
+        .replaceAll('{lat}', latitude.toString())
+        .replaceAll('{lon}', longitude.toString());
+
+    debugPrint('GpsService: Fetching address from $url');
+
+    try {
+      final response = await _httpGet(url);
+      if (response != null) {
+        // Parse JSON response and extract display_name
+        final jsonData = json.decode(response);
+        if (jsonData is Map<String, dynamic> && jsonData.containsKey('display_name')) {
+          final displayName = jsonData['display_name'] as String?;
+          debugPrint('GpsService: Got address: $displayName');
+          return displayName;
+        } else {
+          debugPrint('GpsService: display_name not found in response');
+          return null;
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('GpsService: Error fetching address - $e');
+      return null;
+    }
+  }
+
+  /// Simple HTTP GET request
+  Future<String?> _httpGet(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      final request = await HttpClient().getUrl(uri);
+      final response = await request.close();
+      
+      if (response.statusCode == 200) {
+        final contents = await response.transform(const Utf8Decoder()).join();
+        return contents;
+      } else {
+        debugPrint('GpsService: HTTP error ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      debugPrint('GpsService: HTTP request failed - $e');
+      return null;
     }
   }
 }
