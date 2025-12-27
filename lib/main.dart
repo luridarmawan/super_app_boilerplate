@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_core/firebase_core.dart';  // Disabled to reduce APK size
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'core/config/app_config.dart';
@@ -30,22 +30,23 @@ void main() async {
     ),
   );
 
-  // Determine if Firebase should be initialized
-  final shouldInitFirebase = AppInfo.enableNotification &&
-      (AppInfo.notificationProvider.toLowerCase() == 'firebase' ||
-       AppInfo.notificationProvider.toLowerCase() == 'fcm');
+  // Firebase disabled to reduce APK size
+  // Uncomment below to re-enable Firebase
+  // final shouldInitFirebase = AppInfo.enableNotification &&
+  //     (AppInfo.notificationProvider.toLowerCase() == 'firebase' ||
+  //      AppInfo.notificationProvider.toLowerCase() == 'fcm');
 
   // Initialize services in PARALLEL for better performance
   // This reduces startup time by running async operations concurrently
   await Future.wait([
     // Initialize SharedPreferences early (cached for entire app lifecycle)
     PrefsService.initialize(),
-    // Initialize Firebase if needed
-    if (shouldInitFirebase)
-      Firebase.initializeApp().catchError((e) {
-        debugPrint('Firebase initialization error: $e');
-        return Firebase.app(); // Return existing app or handle gracefully
-      }),
+    // Firebase initialization disabled
+    // if (shouldInitFirebase)
+    //   Firebase.initializeApp().catchError((e) {
+    //     debugPrint('Firebase initialization error: $e');
+    //     return Firebase.app(); // Return existing app or handle gracefully
+    //   }),
   ]);
 
   runApp(

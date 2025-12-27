@@ -1,3 +1,16 @@
+// ============================================================================
+// FCM NOTIFICATION SERVICE - DISABLED TO REDUCE APK SIZE
+// ============================================================================
+// Uncomment the code below to re-enable Firebase Cloud Messaging
+// Also uncomment in pubspec.yaml:
+//   - firebase_core
+//   - firebase_messaging
+// And in notification_provider.dart:
+//   - import 'fcm_notification_service.dart'
+//   - case PushProvider.firebase: return FcmNotificationService();
+// ============================================================================
+
+/*
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -278,3 +291,4 @@ class FcmNotificationService implements BaseNotificationService {
     await _tokenRefreshController.close();
   }
 }
+*/

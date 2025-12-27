@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_info.dart';
 import 'notification_interface.dart';
-import 'fcm_notification_service.dart';
-import 'onesignal_notification_service.dart';
+// import 'fcm_notification_service.dart';  // Disabled to reduce APK size
+// import 'onesignal_notification_service.dart';  // Disabled to reduce APK size
 import 'mock_notification_service.dart';
 
 /// Enum untuk push notification provider
@@ -24,7 +24,7 @@ PushProvider get currentPushProvider {
     case 'test':
       return PushProvider.mock;
     default:
-      return PushProvider.firebase; // Default to Firebase
+      return PushProvider.mock; // Default to mock (Firebase disabled to reduce APK size)
   }
 }
 
@@ -39,9 +39,9 @@ final notificationServiceProvider = Provider<BaseNotificationService>((ref) {
 
   switch (currentPushProvider) {
     case PushProvider.firebase:
-      return FcmNotificationService();
+      return MockNotificationService(); // FcmNotificationService disabled to reduce APK size
     case PushProvider.onesignal:
-      return OneSignalNotificationService();
+      return MockNotificationService(); // OneSignalNotificationService disabled to reduce APK size
     case PushProvider.mock:
       return MockNotificationService();
   }

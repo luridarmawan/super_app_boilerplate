@@ -1,3 +1,15 @@
+// ============================================================================
+// ONESIGNAL NOTIFICATION SERVICE - DISABLED TO REDUCE APK SIZE
+// ============================================================================
+// Uncomment the code below to re-enable OneSignal Push Notifications
+// Also uncomment in pubspec.yaml:
+//   - onesignal_flutter
+// And in notification_provider.dart:
+//   - import 'onesignal_notification_service.dart'
+//   - case PushProvider.onesignal: return OneSignalNotificationService();
+// ============================================================================
+
+/*
 import 'dart:async';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -229,3 +241,4 @@ class OneSignalNotificationService implements BaseNotificationService {
     await _tokenRefreshController.close();
   }
 }
+*/
