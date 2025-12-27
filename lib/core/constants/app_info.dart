@@ -96,6 +96,9 @@ class AppInfo {
   /// Enable/disable Delete Account feature
   static bool get enableDeleteAccount => dotenv.env['ENABLE_DELETE_ACCOUNT']?.toLowerCase() == 'true';
 
+  /// Enable/disable GPS/Location feature
+  static bool get enableGps => dotenv.env['ENABLE_GPS']?.toLowerCase() == 'true';
+
   // ============================================
   // AUTH CONFIGURATION
   // ============================================

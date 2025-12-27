@@ -63,6 +63,7 @@ dependencies:
   # Permissions & Device Features
   permission_handler: ^12.0.1
   image_picker: ^1.0.7
+  geolocator: ^13.0.2  # GPS & Location
 
   # Push Notifications
   firebase_core: ^4.3.0

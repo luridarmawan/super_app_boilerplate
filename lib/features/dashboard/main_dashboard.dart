@@ -23,6 +23,7 @@ import 'widgets/banner_carousel.dart';
 import 'widgets/menu_grid.dart';
 import 'widgets/article_list.dart';
 import '../profile/profile_screen.dart';
+import '../../shared/widgets/location_display_widget.dart';
 
 /// Current navigation index
 final currentNavIndexProvider = StateProvider<int>((ref) => 0);
@@ -334,6 +335,19 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
                 );
               },
             ),
+
+            const SizedBox(height: 24),
+
+            // GPS Location Widget (only shown if ENABLE_GPS=true)
+            if (AppInfo.enableGps)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: LocationDisplayWidget(
+                  onLocationUpdated: (lat, lng) {
+                    debugPrint('Location updated: $lat, $lng');
+                  },
+                ),
+              ),
 
             const SizedBox(height: 24),
 

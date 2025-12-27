@@ -296,6 +296,21 @@ class AppLocalizations {
   String get deleteAccount => translate('deleteAccount');
   String get deleteAccountConfirm => translate('deleteAccountConfirm');
   String get accountDeletionRequested => translate('accountDeletionRequested');
+
+  // ============================================
+  // GPS / LOCATION STRINGS
+  // ============================================
+  String get location => translate('location');
+  String get myLocation => translate('myLocation');
+  String get gettingLocation => translate('gettingLocation');
+  String get gpsDisabled => translate('gpsDisabled');
+  String get gpsDisabledDesc => translate('gpsDisabledDesc');
+  String get locationPermissionDenied => translate('locationPermissionDenied');
+  String get locationServiceDisabled => translate('locationServiceDisabled');
+  String get openSettings => translate('openSettings');
+  String get locationUpdated => translate('locationUpdated');
+  String get failedToGetLocation => translate('failedToGetLocation');
+  String get accuracy => translate('accuracy');
 }
 
 // ============================================
@@ -522,6 +537,19 @@ const Map<String, String> _idStrings = {
   'deleteAccount': 'Hapus Akun',
   'deleteAccountConfirm': 'Apakah Anda yakin ingin menghapus akun? Tindakan ini tidak dapat dibatalkan.',
   'accountDeletionRequested': 'Permintaan penghapusan akun terkirim',
+
+  // GPS / Location
+  'location': 'Lokasi',
+  'myLocation': 'Lokasi Saya',
+  'gettingLocation': 'Mendapatkan lokasi...',
+  'gpsDisabled': 'GPS Nonaktif',
+  'gpsDisabledDesc': 'Fitur GPS tidak diaktifkan di konfigurasi aplikasi',
+  'locationPermissionDenied': 'Izin lokasi ditolak',
+  'locationServiceDisabled': 'Layanan lokasi tidak aktif',
+  'openSettings': 'Buka Pengaturan',
+  'locationUpdated': 'Lokasi diperbarui',
+  'failedToGetLocation': 'Gagal mendapatkan lokasi',
+  'accuracy': 'Akurasi',
 };
 
 // ============================================
@@ -748,6 +776,19 @@ const Map<String, String> _enStrings = {
   'deleteAccount': 'Delete Account',
   'deleteAccountConfirm': 'Are you sure you want to delete your account? This action cannot be undone.',
   'accountDeletionRequested': 'Account deletion requested',
+
+  // GPS / Location
+  'location': 'Location',
+  'myLocation': 'My Location',
+  'gettingLocation': 'Getting location...',
+  'gpsDisabled': 'GPS Disabled',
+  'gpsDisabledDesc': 'GPS feature is not enabled in app configuration',
+  'locationPermissionDenied': 'Location permission denied',
+  'locationServiceDisabled': 'Location service is disabled',
+  'openSettings': 'Open Settings',
+  'locationUpdated': 'Location updated',
+  'failedToGetLocation': 'Failed to get location',
+  'accuracy': 'Accuracy',
 };
 
 /// Extension untuk akses mudah lokalisasi dari BuildContext
