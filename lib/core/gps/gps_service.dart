@@ -222,13 +222,19 @@ class GpsService {
     }
   }
 
-  /// Simple HTTP GET request
+  /// Simple HTTP GET request with User-Agent header
+  /// User-Agent is required by some APIs like Nominatim (OpenStreetMap)
   Future<String?> _httpGet(String url) async {
     try {
       final uri = Uri.parse(url);
-      final request = await HttpClient().getUrl(uri);
+      final client = HttpClient();
+      final request = await client.getUrl(uri);
+
+      // Add User-Agent header (required by Nominatim API)
+      request.headers.set('User-Agent', '${AppInfo.name}/1.0 (Flutter App)');
+
       final response = await request.close();
-      
+
       if (response.statusCode == 200) {
         final contents = await response.transform(const Utf8Decoder()).join();
         return contents;
