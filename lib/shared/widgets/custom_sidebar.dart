@@ -100,11 +100,7 @@ class CustomSidebar extends ConsumerWidget {
           label: Text(l10n.favorites),
         ),
         
-        NavigationDrawerDestination(
-          icon: const Icon(Icons.bookmark_outline),
-          selectedIcon: const Icon(Icons.bookmark),
-          label: Text(l10n.saved),
-        ),
+
         
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
@@ -301,18 +297,13 @@ class CustomSidebar extends ConsumerWidget {
           SnackBar(content: Text(l10n.favorites)),
         );
         break;
-      case 4: // Saved
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.saved)),
-        );
-        break;
-      case 5: // Settings
+      case 4: // Settings
         onSettingsTap?.call();
         break;
-      case 6: // Help
+      case 5: // Help
         onHelpTap?.call();
         break;
-      case 7: // Notification Test (only if shown)
+      case 6: // Notification Test (only if shown)
         if (AppInfo.enableNotification &&
             (AppInfo.notificationProvider.toLowerCase() == 'mock' ||
              AppInfo.notificationProvider.toLowerCase() == 'test')) {
