@@ -140,16 +140,17 @@ class ProfileScreen extends ConsumerWidget {
                           title: l10n.email,
                           value: user?.email ?? l10n.notSet,
                         ),
-                        const Divider(height: 1),
-                        _buildInfoTile(
-                          context,
-                          icon: Icons.verified_outlined,
-                          title: l10n.emailVerified,
-                          value: user?.isEmailVerified == true ? l10n.yes : l10n.no,
-                          valueColor: user?.isEmailVerified == true
-                              ? Colors.green
-                              : colorScheme.error,
-                        ),
+                        // Email Verified - hidden
+                        // const Divider(height: 1),
+                        // _buildInfoTile(
+                        //   context,
+                        //   icon: Icons.verified_outlined,
+                        //   title: l10n.emailVerified,
+                        //   value: user?.isEmailVerified == true ? l10n.yes : l10n.no,
+                        //   valueColor: user?.isEmailVerified == true
+                        //       ? Colors.green
+                        //       : colorScheme.error,
+                        // ),
                       ],
                     ),
                   ),
@@ -442,16 +443,17 @@ class EmbeddedProfileContent extends ConsumerWidget {
                         title: l10n.email,
                         value: user?.email ?? l10n.notSet,
                       ),
-                      const Divider(height: 1),
-                      _buildInfoTile(
-                        context,
-                        icon: Icons.verified_outlined,
-                        title: l10n.emailVerified,
-                        value: user?.isEmailVerified == true ? l10n.yes : l10n.no,
-                        valueColor: user?.isEmailVerified == true
-                            ? Colors.green
-                            : colorScheme.error,
-                      ),
+                      // Email Verified - hidden
+                      // const Divider(height: 1),
+                      // _buildInfoTile(
+                      //   context,
+                      //   icon: Icons.verified_outlined,
+                      //   title: l10n.emailVerified,
+                      //   value: user?.isEmailVerified == true ? l10n.yes : l10n.no,
+                      //   valueColor: user?.isEmailVerified == true
+                      //       ? Colors.green
+                      //       : colorScheme.error,
+                      // ),
                     ],
                   ),
                 ),
