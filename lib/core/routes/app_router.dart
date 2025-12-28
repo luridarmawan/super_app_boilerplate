@@ -35,10 +35,13 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   // Determine if splash screen should be shown based on:
   // 1. ENABLE_SPLASH_SCREEN flag must be true
-  // 2. Show on first [SPLASH_SHOW_COUNT] app launches (default: 5)
-  // 3. After that, show only if app hasn't been opened for [SPLASH_DELAY] hours (default: 24)
+  // 2. If user is NOT logged in, always show splash
+  // 3. If user IS logged in:
+  //    - Show on first [SPLASH_SHOW_COUNT] app launches (default: 5)
+  //    - After that, show only if app hasn't been opened for [SPLASH_DELAY] hours (default: 24)
   final shouldShowSplash = AppInfo.enableSplashScreen &&
-      prefsService.shouldShowSplash(AppInfo.splashShowCount, AppInfo.splashDelayHours);
+      (!prefsService.isLoggedIn ||
+          prefsService.shouldShowSplash(AppInfo.splashShowCount, AppInfo.splashDelayHours));
 
   // Record this app open (update counters and last opened time)
   prefsService.recordAppOpen();
