@@ -1,0 +1,29 @@
+# flutter_launcher_icons configuration
+# Auto-generated from .env LAUNCHER_ICON
+# Do not edit manually - run: dart run tool/generate_launcher_icons.dart
+
+flutter_launcher_icons:
+  image_path: "assets/images/logo/carik_blue_logo.png"
+
+  android: "launcher_icon"
+  min_sdk_android: 21
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/logo/carik_blue_logo.png"
+
+  ios: true
+  remove_alpha_ios: true
+
+  web:
+    generate: true
+    image_path: "assets/images/logo/carik_blue_logo.png"
+    background_color: "#FFFFFF"
+    theme_color: "#1565C0"
+
+  windows:
+    generate: true
+    image_path: "assets/images/logo/carik_blue_logo.png"
+    icon_size: 48
+
+  macos:
+    generate: true
+    image_path: "assets/images/logo/carik_blue_logo.png"
