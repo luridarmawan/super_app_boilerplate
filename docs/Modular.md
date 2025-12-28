@@ -540,10 +540,10 @@ lib/
 | 1️⃣ | **Module Base Class** | Buat `BaseModule` abstract class sebagai kontrak untuk semua modul | ✅ Selesai |
 | 2️⃣ | **Module Registry** | Sistem untuk mendaftarkan dan mengelola modul aktif | ✅ Selesai |
 | 3️⃣ | **Dynamic Routes** | Modifikasi router untuk menerima routes dari modul | ✅ Selesai |
-| 4️⃣ | **Dashboard Slots** | Sistem slot widget di dashboard | ⬜ Belum |
-| 5️⃣ | **Branding Config** | Pisahkan konfigurasi branding | ⬜ Belum |
+| 4️⃣ | **Dashboard Slots** | Sistem slot widget di dashboard | ✅ Selesai |
+| 5️⃣ | **Branding Config** | Pisahkan konfigurasi branding | ✅ Selesai |
 | 6️⃣ | **Sample Module** | Buat contoh modul (misal: "News Module") | ✅ Selesai |
-| 7️⃣ | **CLI Tool** | Script untuk generate modul baru | ⬜ Belum |
+| 7️⃣ | **CLI Tool** | Script untuk generate modul baru | ✅ Selesai |
 
 ### File yang Sudah Dibuat
 
@@ -555,6 +555,11 @@ lib/
 | `lib/modules/modules.dart` | Barrel file untuk export |
 | `lib/modules/sample/sample_module.dart` | Contoh implementasi modul |
 | `lib/modules/sample/screens/sample_screen.dart` | Screen contoh untuk Sample module |
+| `lib/shared/widgets/module_dashboard_slots.dart` | Widget untuk menampilkan dashboard widgets dari modul aktif |
+| `lib/branding/branding_config.dart` | Konfigurasi branding (identity, colors, assets, social links) |
+| `lib/branding/assets_config.dart` | Konfigurasi path aset (logo, placeholder, illustrations) |
+| `lib/branding/branding.dart` | Barrel file untuk export branding classes |
+| `tool/generate_module.dart` | CLI tool untuk generate modul baru |
 
 ### File yang Sudah Dimodifikasi
 
@@ -562,13 +567,43 @@ lib/
 |------|-----------|
 | `lib/main.dart` | Integrasi ModuleRegistry dan SampleModule |
 | `lib/core/routes/app_router.dart` | Dynamic routes dari modul |
+| `lib/features/dashboard/main_dashboard.dart` | Integrasi ModuleDashboardSlots ke Home content |
+| `lib/core/l10n/app_localizations.dart` | Menambahkan key `activeModules` |
 | `.env.example` | Menambahkan section MODULE FLAGS |
 
 ---
 
 ## Cara Membuat Modul Baru
 
-### Langkah 1: Buat Folder Modul
+### Opsi 1: Menggunakan CLI Tool (Rekomendasi)
+
+Cara tercepat untuk membuat modul baru adalah menggunakan CLI tool:
+
+```bash
+dart run tool/generate_module.dart <nama_modul>
+```
+
+Contoh:
+```bash
+dart run tool/generate_module.dart news
+dart run tool/generate_module.dart ecommerce
+dart run tool/generate_module.dart booking
+```
+
+CLI tool akan otomatis membuat:
+- File modul utama (`<nama>_module.dart`)
+- Screen utama (`screens/<nama>_screen.dart`)
+- Dashboard card widget (`widgets/<nama>_dashboard_card.dart`)
+
+Setelah di-generate, Anda hanya perlu:
+1. **Register modul** di `lib/main.dart`
+2. **Enable modul** di `.env`
+
+### Opsi 2: Membuat Manual
+
+Jika ingin membuat secara manual, ikuti langkah berikut:
+
+#### Langkah 1: Buat Folder Modul
 
 ```
 lib/modules/[nama_modul]/
