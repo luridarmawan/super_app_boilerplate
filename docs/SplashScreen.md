@@ -1,14 +1,14 @@
 # Splash Screen 
 
-Cara kerja splash screen:
+How the splash screen works:
 
-1. **Jika belum login**: Splash screen akan **selalu ditampilkan**.
-2. **Jika sudah login**:
-   - Splash screen ditampilkan pada 5 peluncuran awal aplikasi.
-   - Setelah itu, splash screen hanya akan muncul kembali apabila pengguna tidak membuka aplikasi selama lebih dari 24 jam (nilai dapat dikonfigurasi melalui .env).
+1. **If not logged in**: Splash screen will **always be displayed**.
+2. **If logged in**:
+   - Splash screen is displayed on the first 5 app launches.
+   - After that, splash screen will only appear again if the user hasn't opened the app for more than 24 hours (configurable via .env).
 
 
-## Konfigurasi .env
+## .env Configuration
 
 ```env
 ENABLE_SPLASH_SCREEN=true
@@ -16,30 +16,30 @@ SPLASH_SHOW_COUNT=5
 SPLASH_DELAY=24
 ```
 
-| Variable | Deskripsi | Default |
-|----------|-----------|---------|
-| `ENABLE_SPLASH_SCREEN` | Aktifkan/nonaktifkan splash screen | `false` |
-| `SPLASH_SHOW_COUNT` | Jumlah peluncuran awal yang menampilkan splash screen (untuk user yang sudah login) | `5` |
-| `SPLASH_DELAY` | Jam tidak aktif sebelum splash screen ditampilkan kembali (untuk user yang sudah login) | `24` |
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `ENABLE_SPLASH_SCREEN` | Enable/disable splash screen | `false` |
+| `SPLASH_SHOW_COUNT` | Number of initial launches that display splash screen (for logged-in users) | `5` |
+| `SPLASH_DELAY` | Hours of inactivity before splash screen is displayed again (for logged-in users) | `24` |
 
 
-## Implementasi Teknis
+## Technical Implementation
 
-### File yang Terlibat
+### Files Involved
 
 1. **`lib/core/constants/app_info.dart`**
-   - `enableSplashScreen`: Flag untuk mengaktifkan splash screen
-   - `splashShowCount`: Jumlah launch awal untuk menampilkan splash
-   - `splashDelayHours`: Jam delay sebelum splash muncul kembali
+   - `enableSplashScreen`: Flag to enable splash screen
+   - `splashShowCount`: Number of initial launches to show splash
+   - `splashDelayHours`: Hours of delay before splash appears again
 
 2. **`lib/core/services/prefs_service.dart`**
-   - `splashOpenCount`: Menghitung berapa kali app dibuka
-   - `lastOpenedTime`: Waktu terakhir app dibuka
-   - `shouldShowSplash()`: Menentukan apakah splash harus ditampilkan
-   - `recordAppOpen()`: Mencatat setiap pembukaan app
+   - `splashOpenCount`: Counts how many times app has been opened
+   - `lastOpenedTime`: Last time the app was opened
+   - `shouldShowSplash()`: Determines if splash should be displayed
+   - `recordAppOpen()`: Records each app opening
 
 3. **`lib/core/routes/app_router.dart`**
-   - Logic untuk menentukan `initialLocation` berdasarkan kondisi splash dan status login
+   - Logic to determine `initialLocation` based on splash conditions and login status
 
 ### Flow Logic
 
