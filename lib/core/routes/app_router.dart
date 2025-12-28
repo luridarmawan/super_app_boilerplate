@@ -33,9 +33,29 @@ class AppRoutes {
 final routerProvider = Provider<GoRouter>((ref) {
   final prefsService = ref.watch(prefsServiceProvider);
 
+  // Determine if splash screen should be shown based on:
+  // 1. ENABLE_SPLASH_SCREEN flag must be true
+  // 2. Show on first [SPLASH_SHOW_COUNT] app launches (default: 5)
+  // 3. After that, show only if app hasn't been opened for [SPLASH_DELAY] hours (default: 24)
+  final shouldShowSplash = AppInfo.enableSplashScreen &&
+      prefsService.shouldShowSplash(AppInfo.splashShowCount, AppInfo.splashDelayHours);
+
+  // Record this app open (update counters and last opened time)
+  prefsService.recordAppOpen();
+
+  // Determine initial location
+  String initialLocation;
+  if (shouldShowSplash) {
+    initialLocation = AppRoutes.splash;
+  } else if (prefsService.isLoggedIn) {
+    initialLocation = AppRoutes.dashboard;
+  } else {
+    initialLocation = AppRoutes.login;
+  }
+
   return GoRouter(
-    // Always start at splash to check auth state
-    initialLocation: AppInfo.enableSplashScreen ? AppRoutes.splash : AppRoutes.login,
+    // Start based on splash logic and auth state
+    initialLocation: initialLocation,
     debugLogDiagnostics: true,
     routes: [
       // Splash Screen

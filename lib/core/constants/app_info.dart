@@ -82,6 +82,12 @@ class AppInfo {
   /// Duration of splash screen display (only applies if enableSplashScreen is true)
   static const Duration splashScreenDuration = Duration(seconds: 3);
 
+  /// Number of initial app launches to show splash screen (default: 5)
+  static int get splashShowCount => int.tryParse(dotenv.env['SPLASH_SHOW_COUNT'] ?? '5') ?? 5;
+
+  /// Hours of inactivity after which splash screen will show again (default: 24)
+  static int get splashDelayHours => int.tryParse(dotenv.env['SPLASH_DELAY'] ?? '24') ?? 24;
+
   // ============================================
   // FEATURE FLAGS
   // ============================================
