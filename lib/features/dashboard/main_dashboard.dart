@@ -372,7 +372,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
             // Module Dashboard Slots
             // Displays widgets from all active modules
             ModuleDashboardSlots(
-              title: context.l10n.activeModules,
+              title: context.l10n.workspace,
               showTitle: true,
               crossAxisCount: 2,
               childAspectRatio: 1.5,
