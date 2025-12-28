@@ -69,7 +69,7 @@ class AppInfo {
   static bool get enableSplashScreen => dotenv.env['ENABLE_SPLASH_SCREEN']?.toLowerCase() == 'true';
 
   /// Duration of splash screen display (only applies if enableSplashScreen is true)
-  static const Duration splashScreenDuration = Duration(seconds: 4);
+  static const Duration splashScreenDuration = Duration(seconds: 3);
 
   // ============================================
   // FEATURE FLAGS
