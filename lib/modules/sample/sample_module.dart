@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../shared/widgets/workspace_icon.dart';
 import '../module_base.dart';
 import '../navigation_item.dart';
 import 'screens/sample_screen.dart';
@@ -114,60 +115,11 @@ class SampleDashboardCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Card(
-      elevation: 2,
-      child: InkWell(
-        onTap: () => context.push('/sample'),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                flex: 2,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Icon(
-                    Icons.widgets,
-                    size: 40,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    'Sample Module',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 2),
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    'Tap to explore',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return const WorkspaceIcon(
+      pushUrl: '/sample',
+      title: 'Sample Module',
+      subTitle: 'Tap to explore',
+      icon: Icons.widgets,
     );
   }
 }
