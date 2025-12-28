@@ -561,16 +561,6 @@ lib/
 | `lib/branding/branding.dart` | Barrel file untuk export branding classes |
 | `tool/generate_module.dart` | CLI tool untuk generate modul baru |
 
-### File yang Sudah Dimodifikasi
-
-| File | Perubahan |
-|------|-----------|
-| `lib/main.dart` | Integrasi ModuleRegistry dan SampleModule |
-| `lib/core/routes/app_router.dart` | Dynamic routes dari modul |
-| `lib/features/dashboard/main_dashboard.dart` | Integrasi ModuleDashboardSlots ke Home content |
-| `lib/core/l10n/app_localizations.dart` | Menambahkan key `activeModules` |
-| `.env.example` | Menambahkan section MODULE FLAGS |
-
 ---
 
 ## Cara Membuat Modul Baru

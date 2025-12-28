@@ -32,10 +32,16 @@ class _LocationDisplayWidgetState extends ConsumerState<LocationDisplayWidget> {
   @override
   void initState() {
     super.initState();
-    // Initialize GPS after first frame
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Initialize GPS after first frame and get location immediately if ready
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (AppInfo.enableGps) {
-        ref.read(gpsProvider.notifier).initialize();
+        await ref.read(gpsProvider.notifier).initialize();
+
+        // If GPS is ready (service enabled & has permission), get location immediately
+        final gpsState = ref.read(gpsProvider);
+        if (gpsState.isReady) {
+          _getCurrentLocation();
+        }
       }
     });
   }
