@@ -155,12 +155,12 @@ class CustomApiAuthProvider implements BaseAuthService {
       // 3. { id: ..., email: ..., name: ..., token: "..." }
       
       Map<String, dynamic>? userData;
-      String? accessToken;
-      String? refreshToken;
+      String? accessToken; // ignore: unused_local_variable
+      String? refreshToken; // ignore: unused_local_variable
 
       // check response data, jika json dan memiliki field "code", check value-nya
       // code 0 atau 200 artinya success
-      if (responseData is Map<String, dynamic> && responseData.containsKey('code')) {
+      if (responseData.containsKey('code')) {
         if (responseData['code'] != 0 && responseData['code'] != 200) {
           return AuthResult.failure(responseData['message']?.toString() ?? 'Login failed');
         }
