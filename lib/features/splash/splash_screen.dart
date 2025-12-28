@@ -235,7 +235,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               left: 0,
               right: 0,
               child: Text(
-                'v${AppInfo.version}',
+                'v${AppInfo.version} build ${AppInfo.buildNumber}',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Colors.white.withValues(alpha: 0.5),
