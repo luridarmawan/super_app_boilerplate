@@ -1,23 +1,23 @@
 // ignore_for_file: avoid_print
-/// Module Generator CLI Tool
-///
-/// This script generates a new module with the standard folder structure
-/// and boilerplate code.
-///
-/// Usage:
-///   dart run tool/generate_module.dart <module_name>
-///
-/// Example:
-///   dart run tool/generate_module.dart news
-///   dart run tool/generate_module.dart ecommerce
-///
-/// This will create:
-///   lib/modules/<module_name>/
-///   ├── <module_name>_module.dart
-///   ├── screens/
-///   │   └── <module_name>_screen.dart
-///   └── widgets/
-///       └── <module_name>_dashboard_card.dart
+// Module Generator CLI Tool
+//
+// This script generates a new module with the standard folder structure
+// and boilerplate code.
+//
+// Usage:
+//   dart run tool/generate_module.dart [module_name]
+//
+// Example:
+//   dart run tool/generate_module.dart news
+//   dart run tool/generate_module.dart ecommerce
+//
+// This will create:
+//   lib/modules/[module_name]/
+//   ├── [module_name]_module.dart
+//   ├── screens/
+//   │   └── [module_name]_screen.dart
+//   └── widgets/
+//       └── [module_name]_dashboard_card.dart
 
 import 'dart:io';
 
