@@ -1,4 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 /// Application information from pubspec.yaml
 /// This file stores constants that correspond to data in pubspec.yaml
@@ -24,14 +25,24 @@ class AppInfo {
   /// Application tagline
   static String get tagline => dotenv.env['APP_TAGLINE'] ?? 'Your All-in-One Solution.';
 
-  /// Application version
-  static const String version = '3.3.1';
+  /// Application version (from pubspec.yaml via package_info_plus)
+  static String _version = '1.0.0';
+  static String get version => _version;
 
-  /// Build number
-  static const int buildNumber = 27;
+  /// Build number (from pubspec.yaml via package_info_plus)
+  static String _buildNumber = '1';
+  static String get buildNumber => _buildNumber;
 
   /// Full version with build number
-  static const String fullVersion = '$version+$buildNumber';
+  static String get fullVersion => '$_version+$_buildNumber';
+
+  /// Initialize version info from pubspec.yaml
+  /// Call this method in main() after WidgetsFlutterBinding.ensureInitialized()
+  static Future<void> initialize() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    _version = packageInfo.version;
+    _buildNumber = packageInfo.buildNumber;
+  }
 
   static const double bottomMargin = 58;
 

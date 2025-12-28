@@ -41,6 +41,8 @@ void main() async {
   await Future.wait([
     // Initialize SharedPreferences early (cached for entire app lifecycle)
     PrefsService.initialize(),
+    // Initialize version info from pubspec.yaml
+    AppInfo.initialize(),
     // Firebase initialization disabled
     // if (shouldInitFirebase)
     //   Firebase.initializeApp().catchError((e) {
