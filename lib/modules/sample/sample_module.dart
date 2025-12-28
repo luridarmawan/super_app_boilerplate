@@ -122,27 +122,46 @@ class SampleDashboardCard extends StatelessWidget {
         onTap: () => context.push('/sample'),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.widgets,
-                size: 48,
-                color: theme.colorScheme.primary,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Sample Module',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+              Flexible(
+                flex: 2,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Icon(
+                    Icons.widgets,
+                    size: 40,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                'Tap to explore',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+              const SizedBox(height: 6),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'Sample Module',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'Tap to explore',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
             ],
