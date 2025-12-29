@@ -165,6 +165,11 @@ class AppInfo {
 
   static String get themeDefault => dotenv.env['THEME_DEFAULT'] ?? '';
 
+  // CONTENT LINK
+  static String get bannerApiURL => dotenv.env['BANNER_API_URL'] ?? 'https://api.carik.id/dummy/banner.json';
+  static String get articleApiURL => dotenv.env['ARTICLE_API_URL'] ?? 'https://api.carik.id/dummy/article.json';
+
+
   // ============================================
   // DEMO/TESTING CONFIGURATION
   // ============================================

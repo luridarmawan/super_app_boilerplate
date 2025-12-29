@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api_client.dart';
 import '../repository/base_repository.dart';
 import '../models/base_response.dart';
+import '../../constants/app_info.dart';
 
 /// Article Model
 /// Model untuk data artikel dari API
@@ -55,8 +56,8 @@ class ArticleModel {
 /// Repository untuk mengambil data artikel dari API
 class ArticleRepository extends BaseRepository {
   /// Base URL untuk API artikel
-  /// Ganti dengan URL API Anda
-  static const String _articleApiUrl = 'https://api.carik.id/dummy/article.json';
+  /// Configured via ARTICLE_API_URL in .env file
+  static String get _articleApiUrl => AppInfo.articleApiURL;
 
   ArticleRepository({required super.apiClient});
 
