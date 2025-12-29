@@ -65,13 +65,10 @@ lib/
 │       ├── custom_sidebar.dart     # NavigationDrawer Material 3
 │       └── module_dashboard_slots.dart # Dashboard widget slots
 │
-├── branding/                       # Client-specific branding (NEW)
-│   ├── branding_config.dart        # Branding configuration
-│   ├── assets_config.dart          # Asset paths
-│   └── branding.dart               # Barrel file
-│
 └── main.dart                       # Entry point dengan Riverpod
 ```
+
+> **Note:** Konfigurasi branding (colors, company info, social links, legal URLs) sudah terintegrasi di `lib/core/constants/app_info.dart`
 
 ---
 
@@ -382,7 +379,7 @@ flutter run -d emulator-5554
 - `lib/features/dashboard/main_dashboard.dart` - Halaman utama
 - `lib/modules/module_base.dart` - Abstract class untuk modular system
 - `lib/modules/module_registry.dart` - Registry untuk manajemen modul
-- `lib/branding/branding_config.dart` - Konfigurasi branding per client
+- `lib/core/constants/app_info.dart` - App info & branding configuration
 - `tool/generate_module.dart` - CLI tool untuk generate modul baru
 
 ---
