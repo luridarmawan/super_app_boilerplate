@@ -175,6 +175,8 @@ class AppLocalizations {
   String get language => translate('language');
   String get layout => translate('layout');
   String get sidebarPosition => translate('sidebarPosition');
+  String get showQuickActionsLabel => translate('showQuickActionsLabel');
+  String get showQuickActionsDesc => translate('showQuickActionsDesc');
   String get authentication => translate('authentication');
   String get authProvider => translate('authProvider');
   String get about => translate('about');
@@ -431,6 +433,8 @@ const Map<String, String> _idStrings = {
   'language': 'Bahasa',
   'layout': 'Tata Letak',
   'sidebarPosition': 'Posisi Sidebar',
+  'showQuickActionsLabel': 'Tampilkan Aksi Cepat',
+  'showQuickActionsDesc': 'Tampilkan menu aksi cepat di dashboard',
   'authentication': 'Autentikasi',
   'authProvider': 'Penyedia Auth',
   'about': 'Tentang',
@@ -671,6 +675,8 @@ const Map<String, String> _enStrings = {
   'language': 'Language',
   'layout': 'Layout',
   'sidebarPosition': 'Sidebar Position',
+  'showQuickActionsLabel': 'Show Quick Actions',
+  'showQuickActionsDesc': 'Display quick action menu on dashboard',
   'authentication': 'Authentication',
   'authProvider': 'Auth Provider',
   'about': 'About',
