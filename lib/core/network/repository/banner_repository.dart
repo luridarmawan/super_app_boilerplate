@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api_client.dart';
 import '../repository/base_repository.dart';
 import '../models/base_response.dart';
+import '../../constants/app_info.dart';
 
 /// Banner Model
 /// Model for banner data from API
@@ -37,8 +38,8 @@ class BannerModel {
 /// Repository to fetch banner data from API
 class BannerRepository extends BaseRepository {
   /// Base URL for banner API
-  /// Replace with your API URL
-  static const String _bannerApiUrl = 'https://api.carik.id/dummy/banner.json';
+  /// Configured via BANNER_API_URL in .env file
+  static String get _bannerApiUrl => AppInfo.bannerApiURL;
 
   BannerRepository({required super.apiClient});
 

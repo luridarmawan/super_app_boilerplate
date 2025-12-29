@@ -147,6 +147,7 @@ class AppLocalizations {
   String get guestUser => translate('guestUser');
   String get pleaseLoginToContinue => translate('pleaseLoginToContinue');
   String get editProfile => translate('editProfile');
+  String get workspace => translate('workspace');
 
   // ============================================
   // SCAN & PHOTO STRINGS
@@ -406,6 +407,7 @@ const Map<String, String> _idStrings = {
   'guestUser': 'Pengguna Tamu',
   'pleaseLoginToContinue': 'Silakan masuk untuk melanjutkan',
   'editProfile': 'Edit Profil',
+  'workspace': 'Workspace',
 
   // Scan & Photo
   'scanAndPhoto': 'Scan & Foto',
@@ -645,6 +647,7 @@ const Map<String, String> _enStrings = {
   'guestUser': 'Guest User',
   'pleaseLoginToContinue': 'Please login to continue',
   'editProfile': 'Edit Profile',
+  'workspace': 'Workspace',
 
   // Scan & Photo
   'scanAndPhoto': 'Scan & Photo',

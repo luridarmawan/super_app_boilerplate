@@ -24,6 +24,7 @@ import 'widgets/menu_grid.dart';
 import 'widgets/article_list.dart';
 import '../profile/profile_screen.dart';
 import '../../shared/widgets/location_display_widget.dart';
+import '../../shared/widgets/module_dashboard_slots.dart';
 
 /// Current navigation index
 final currentNavIndexProvider = StateProvider<int>((ref) => 0);
@@ -364,6 +365,17 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
             const SizedBox(height: 12),
             MenuGrid(
               items: MenuGrid.sampleItems,
+            ),
+
+            const SizedBox(height: 24),
+
+            // Module Dashboard Slots
+            // Displays widgets from all active modules
+            ModuleDashboardSlots(
+              title: context.l10n.workspace,
+              showTitle: true,
+              crossAxisCount: 2,
+              childAspectRatio: 1.5,
             ),
 
             const SizedBox(height: 24),

@@ -11,6 +11,10 @@ import 'core/l10n/app_localizations.dart';
 import 'core/constants/app_info.dart';
 import 'core/services/prefs_service.dart';
 
+// Modular Architecture
+import 'modules/module_registry.dart';
+import 'modules/sample/sample_module.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -36,6 +40,18 @@ void main() async {
   //     (AppInfo.notificationProvider.toLowerCase() == 'firebase' ||
   //      AppInfo.notificationProvider.toLowerCase() == 'fcm');
 
+  // ============================================
+  // REGISTER MODULES
+  // ============================================
+  // Add your modules here. They will only be active if enabled in .env
+  // Example: ENABLE_MODULE_SAMPLE=true
+  ModuleRegistry.register(SampleModule());
+  // ModuleRegistry.register(NewsModule());
+  // ModuleRegistry.register(EcommerceModule());
+  
+  // Print module status for debugging
+  ModuleRegistry.printDebugInfo();
+
   // Initialize services in PARALLEL for better performance
   // This reduces startup time by running async operations concurrently
   await Future.wait([
@@ -43,6 +59,8 @@ void main() async {
     PrefsService.initialize(),
     // Initialize version info from pubspec.yaml
     AppInfo.initialize(),
+    // Initialize all active modules
+    ModuleRegistry.initializeAll(),
     // Firebase initialization disabled
     // if (shouldInitFirebase)
     //   Firebase.initializeApp().catchError((e) {

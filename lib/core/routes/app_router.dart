@@ -14,6 +14,9 @@ import '../../shared/info/help_screen.dart';
 import '../../shared/info/tos_screen.dart';
 import '../../shared/info/privacy_screen.dart';
 
+// Modular Architecture
+import '../../modules/module_registry.dart';
+
 
 /// Route names
 class AppRoutes {
@@ -55,6 +58,10 @@ final routerProvider = Provider<GoRouter>((ref) {
   } else {
     initialLocation = AppRoutes.login;
   }
+
+  // Get routes from active modules
+  final moduleRoutes = ModuleRegistry.allRoutes;
+  debugPrint('📍 Loaded ${moduleRoutes.length} routes from modules');
 
   return GoRouter(
     // Start based on splash logic and auth state
@@ -172,6 +179,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           onBackTap: () => context.pop(),
         ),
       ),
+
+      // ============================================
+      // DYNAMIC MODULE ROUTES
+      // ============================================
+      // Routes from active modules are automatically added here
+      ...moduleRoutes,
     ],
 
     // Error page
