@@ -262,14 +262,7 @@ class AppInfo {
   // BRANDING - ASSETS
   // ============================================
 
-  /// Main app logo path
-  static String get logoPath =>
-      dotenv.env['LOGO_PATH'] ?? 'assets/images/logo/app_logo.png';
-
   /// Default avatar/placeholder image
   static String get defaultAvatarPath =>
       dotenv.env['DEFAULT_AVATAR'] ?? 'assets/images/default_avatar.png';
-
-  /// Login/Register background image (optional)
-  static String? get authBackgroundPath => dotenv.env['AUTH_BACKGROUND'];
 }
