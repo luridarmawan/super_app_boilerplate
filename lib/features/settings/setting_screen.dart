@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/config/app_config.dart';
 import '../../core/constants/app_info.dart';
 import '../../core/theme/app_theme.dart';
@@ -160,6 +161,28 @@ class SettingScreen extends ConsumerWidget {
                     ref.read(appConfigProvider.notifier).setShowQuickActions(value);
                   },
                 ),
+                // Show Quick Action Manager when enabled
+                if (config.showQuickActions) ...[
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.tune_outlined,
+                        color: colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                    title: Text(l10n.quickActionsManager),
+                    subtitle: Text(l10n.quickActionsManagerDesc),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push('/quick-actions'),
+                  ),
+                ],
               ],
             ),
           ),
