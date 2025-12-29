@@ -1,6 +1,8 @@
 // Dart script untuk increment build number di pubspec.yaml
 // Jalankan: dart run tool/add_version.dart
 
+// ignore_for_file: avoid_print
+
 import 'dart:io';
 
 void main() {

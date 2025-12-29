@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../shared/widgets/workspace_icon.dart';
 import '../module_base.dart';
 import '../navigation_item.dart';
+import '../quick_action_item.dart';
 import 'screens/sample_screen.dart';
 
 /// Sample module demonstrating how to create a pluggable module.
@@ -66,6 +67,51 @@ class SampleModule extends BaseModule {
       route: '/sample',
       order: 50,
       requiresAuth: true,
+    ),
+  ];
+
+  @override
+  List<QuickActionItem> get quickActions => [
+    // Example: Route-based quick action
+    QuickActionItem(
+      id: 'sample_explore',
+      moduleId: name,
+      icon: Icons.explore_outlined,
+      label: 'Explore',
+      color: const Color(0xFF7C4DFF),
+      route: '/sample',
+      order: 100,
+      description: 'Explore sample features',
+    ),
+    // Example: Custom callback quick action
+    QuickActionItem(
+      id: 'sample_action',
+      moduleId: name,
+      icon: Icons.flash_on_outlined,
+      label: 'Quick',
+      color: const Color(0xFFFF6D00),
+      onTap: (context) {
+        // Custom action - show a snackbar
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Sample quick action executed!'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+      order: 101,
+      description: 'Execute a quick action',
+    ),
+    // Example: Another route-based action
+    QuickActionItem(
+      id: 'sample_detail',
+      moduleId: name,
+      icon: Icons.info_outline,
+      label: 'Details',
+      color: const Color(0xFF00BFA5),
+      route: '/sample/detail/1',
+      order: 102,
+      description: 'View sample details',
     ),
   ];
 

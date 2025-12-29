@@ -12,3 +12,4 @@
 export 'module_base.dart';
 export 'module_registry.dart';
 export 'navigation_item.dart';
+export 'quick_action_item.dart';
