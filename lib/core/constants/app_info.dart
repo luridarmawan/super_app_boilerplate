@@ -1,10 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 /// Application information and branding configuration.
 /// This file stores constants from pubspec.yaml and .env file.
-/// All branding, colors, social links, and assets are centralized here.
+/// All branding, social links, and assets are centralized here.
 class AppInfo {
   AppInfo._();
   static const bool enableDemo = true;
@@ -194,50 +193,6 @@ class AppInfo {
     }
     return value;
   }
-
-  // ============================================
-  // BRANDING - COLORS
-  // ============================================
-
-  /// Primary brand color (hex format: #RRGGBB)
-  static Color get primaryColor =>
-      _parseColor(dotenv.env['PRIMARY_COLOR']) ?? const Color(0xFF1565C0);
-
-  /// Secondary/Accent color
-  static Color get accentColor =>
-      _parseColor(dotenv.env['ACCENT_COLOR']) ?? const Color(0xFF00BCD4);
-
-  /// Error color
-  static Color get errorColor =>
-      _parseColor(dotenv.env['ERROR_COLOR']) ?? const Color(0xFFB00020);
-
-  /// Success color
-  static Color get successColor =>
-      _parseColor(dotenv.env['SUCCESS_COLOR']) ?? const Color(0xFF4CAF50);
-
-  /// Warning color
-  static Color get warningColor =>
-      _parseColor(dotenv.env['WARNING_COLOR']) ?? const Color(0xFFFFC107);
-
-  /// Parse hex color string to Color
-  static Color? _parseColor(String? hexColor) {
-    if (hexColor == null || hexColor.isEmpty) return null;
-    try {
-      String hex = hexColor.replaceAll('#', '');
-      if (hex.length == 6) hex = 'FF$hex';
-      if (hex.length == 8) return Color(int.parse(hex, radix: 16));
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /// Get gradient for branded backgrounds
-  static LinearGradient get primaryGradient => LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [primaryColor, primaryColor.withValues(alpha: 0.7)],
-      );
 
   // ============================================
   // BRANDING - COMPANY INFO
