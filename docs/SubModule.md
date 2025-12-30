@@ -33,7 +33,7 @@ dart run tool/add_submodule.dart git@github.com:username/repo-name.git
 
 **Apa yang dilakukan tool ini secara otomatis?**
 1.  Menjalankan `git submodule add` ke dalam direktori `modules/`.
-2.  Mengkonversi nama repo (misal `artificial-intelligence`) menjadi nama package yang valid (`artificial_intelligence`).
+2.  Mengkonversi nama repo (misal `repo-name`) menjadi nama package yang valid (`repo_name`).
 3.  Mendaftarkan module path di `pubspec.yaml` utama.
 4.  Menambahkan import dan registrasi di `lib/modules/all_modules.dart`.
 5.  Menjalankan `flutter pub get`.
@@ -44,7 +44,7 @@ Sebelum menambahkan submodule, pastikan repository modul Anda memiliki struktur 
 
 **`pubspec.yaml` (Modul):**
 ```yaml
-name: artificial_intelligence
+name: repo_name
 dependencies:
   flutter:
     sdk: flutter
@@ -53,13 +53,13 @@ dependencies:
     path: ../../packages/module_interface
 ```
 
-**`lib/artificial_intelligence_module.dart`:**
+**`lib/repo_name_module.dart`:**
 ```dart
 import 'package:module_interface/module_interface.dart';
 
 class artificialIntelligenceModule extends BaseModule {
   @override
-  String get name => 'artificial_intelligence';
+  String get name => 'repo_name';
   
   @override
   String get version => '1.0.0';
