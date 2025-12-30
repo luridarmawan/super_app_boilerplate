@@ -78,6 +78,9 @@ void main(List<String> args) {
     _generateDashboardCardCode(moduleName, moduleNamePascal, moduleNameCapitalized),
   );
 
+  print('🔄 Updating module manifest...');
+  _syncModules();
+
   print('');
   print('✅ Module "$moduleName" generated successfully!');
   print('');
@@ -87,15 +90,58 @@ void main(List<String> args) {
   print('   $widgetsPath/${moduleName}_dashboard_card.dart');
   print('');
   print('📋 Next steps:');
-  print('   1. Register the module in lib/main.dart:');
-  print('      ModuleRegistry.register(${moduleNamePascal}Module());');
-  print('');
-  print('   2. Enable the module in .env:');
+  print('   1. Enable the module in .env:');
   print('      ENABLE_MODULE_${moduleName.toUpperCase()}=true');
   print('');
-  print('   3. Run flutter analyze to check for errors:');
+  print('   2. Run flutter analyze to check for errors:');
   print('      flutter analyze lib/modules/$moduleName');
   print('');
+}
+
+void _syncModules() {
+  final modulesDir = Directory('lib/modules');
+  if (!modulesDir.existsSync()) return;
+
+  final List<String> imports = [];
+  final List<String> registrations = [];
+
+  final entities = modulesDir.listSync(recursive: true);
+  for (final entity in entities) {
+    if (entity is File && entity.path.endsWith('_module.dart')) {
+      final fileName = entity.path.split(Platform.pathSeparator).last;
+      if (fileName == 'module_base.dart' || fileName == 'all_modules.dart') continue;
+
+      final content = entity.readAsStringSync();
+      final classMatch = RegExp(r'class\s+(\w+)\s+extends\s+BaseModule').firstMatch(content);
+
+      if (classMatch != null) {
+        final className = classMatch.group(1)!;
+        String relativePath = entity.path
+            .replaceFirst('lib/modules/', '')
+            .replaceAll('\\', '/');
+
+        imports.add("import '$relativePath';");
+        registrations.add("    ModuleRegistry.register($className());");
+      }
+    }
+  }
+
+  imports.sort();
+  registrations.sort();
+
+  final manifestContent = '''import 'module_registry.dart';
+${imports.join('\n')}
+
+/// Auto-generated file. Do not edit manually.
+/// This file registers all available modules to the registry.
+class ModuleManifest {
+  static void register() {
+${registrations.join('\n')}
+  }
+}
+''';
+
+  File('lib/modules/all_modules.dart').writeAsStringSync(manifestContent);
 }
 
 void _createDirectory(String path) {
