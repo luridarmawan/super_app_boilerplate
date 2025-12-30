@@ -4,7 +4,7 @@ import 'dart:io';
 /// Add Submodule CLI Tool
 ///
 /// Usage:
-///   dart run tool/add_submodule.dart <repository_url> [module_name]
+///   dart run tool/add_submodule.dart [repository_url] [module_name]
 ///
 /// Example:
 ///   dart run tool/add_submodule.dart https://github.com/ihasa-id/archery_intelligence
@@ -116,7 +116,7 @@ void main(List<String> args) async {
   String manifestContent = manifestFile.readAsStringSync();
 
   // Try to find the module class name from the submodule's pubspec.yaml
-  String className = _toPascalCase(moduleName) + 'Module';
+  String className = '${_toPascalCase(moduleName)}Module';
   
   final importStatement = "import 'package:$moduleName/${moduleName}_module.dart';";
   final registrationStatement = "    ModuleRegistry.register($className());";
@@ -125,12 +125,12 @@ void main(List<String> args) async {
     // Insert import
     final lastImportIndex = manifestContent.lastIndexOf('import \'');
     final nextLineIndex = manifestContent.indexOf('\n', lastImportIndex) + 1;
-    manifestContent = manifestContent.substring(0, nextLineIndex) + importStatement + '\n' + manifestContent.substring(nextLineIndex);
+    manifestContent = '${manifestContent.substring(0, nextLineIndex)}$importStatement\n${manifestContent.substring(nextLineIndex)}';
     
     // Insert registration
     final lastRegIndex = manifestContent.lastIndexOf('ModuleRegistry.register');
     final regNextLineIndex = manifestContent.indexOf('\n', lastRegIndex) + 1;
-    manifestContent = manifestContent.substring(0, regNextLineIndex) + registrationStatement + '\n' + manifestContent.substring(regNextLineIndex);
+    manifestContent = '${manifestContent.substring(0, regNextLineIndex)}$registrationStatement\n${manifestContent.substring(regNextLineIndex)}';
     
     manifestFile.writeAsStringSync(manifestContent);
     print('   ✓ Added to all_modules.dart');

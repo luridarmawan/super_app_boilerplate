@@ -1,4 +1,3 @@
-library module_interface;
 
 export 'src/module_base.dart';
 export 'src/navigation_item.dart';

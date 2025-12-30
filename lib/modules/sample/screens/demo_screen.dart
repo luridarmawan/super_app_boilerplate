@@ -20,7 +20,7 @@ class DemoScreen extends StatelessWidget {
             Icon(
               Icons.science_outlined,
               size: 80,
-              color: colorScheme.primary.withOpacity(0.5),
+              color: colorScheme.primary.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 24),
             Text(
