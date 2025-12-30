@@ -37,13 +37,18 @@ void main(List<String> args) async {
   print('📦 Adding submodule: $moduleName');
   print('🔗 URL: $repoUrl');
 
-  // 1. Create modules directory if not exists
+  // 1. Ask for template generation
+  stdout.write('❓ Ingin dibuatkan template file/folder sub module? (y/N): ');
+  final response = stdin.readLineSync()?.toLowerCase() ?? 'n';
+  final shouldGenerateTemplate = response == 'y' || response == 'yes';
+
+  // 2. Create modules directory if not exists
   final modulesDir = Directory('modules');
   if (!modulesDir.existsSync()) {
     modulesDir.createSync();
   }
 
-  // 2. Run git submodule add
+  // 3. Run git submodule add
   print('🚀 Running git submodule add...');
   final targetPath = 'modules/$moduleName';
   final gitResult = await Process.run('git', [
@@ -54,14 +59,20 @@ void main(List<String> args) async {
   ]);
 
   if (gitResult.exitCode != 0) {
-    print('❌ Git Error: ${gitResult.stderr}');
+    final stderr = gitResult.stderr.toString();
+    print('❌ Git Error: $stderr');
     // If it already exists, we continue to registration
-    if (!gitResult.stderr.toString().contains('already exists')) {
+    if (!stderr.contains('already exists')) {
        exit(1);
     }
   }
 
-  // 3. Add to pubspec.yaml
+  // 4. Generate Template if requested
+  if (shouldGenerateTemplate) {
+    _generateModuleTemplate(targetPath, moduleName);
+  }
+
+  // 5. Add to pubspec.yaml
   print('📝 Updating pubspec.yaml...');
   final pubspecFile = File('pubspec.yaml');
   String pubspecContent = pubspecFile.readAsStringSync();
@@ -92,22 +103,14 @@ void main(List<String> args) async {
     print('   ⚠ Already exists in pubspec.yaml');
   }
 
-  // 4. Update all_modules.dart
+  // 6. Update all_modules.dart
   print('🔄 Updating module registration...');
   final manifestFile = File('lib/modules/all_modules.dart');
   String manifestContent = manifestFile.readAsStringSync();
 
   // Try to find the module class name from the submodule's pubspec.yaml
   String className = _toPascalCase(moduleName) + 'Module';
-  final subPubspecFile = File('$targetPath/pubspec.yaml');
-  if (subPubspecFile.existsSync()) {
-    final subName = subPubspecFile.readAsStringSync().split('\n').firstWhere((l) => l.startsWith('name:'), orElse: () => '').split(':').last.trim();
-    if (subName.isNotEmpty) {
-      // If the package name is different from folder name
-      // but usually they match
-    }
-  }
-
+  
   final importStatement = "import 'package:$moduleName/${moduleName}_module.dart';";
   final registrationStatement = "    ModuleRegistry.register($className());";
 
@@ -137,6 +140,74 @@ void main(List<String> args) async {
   print('   1. Ensure the module implements BaseModule from package:module_interface');
   print('   2. Enable the module in .env:');
   print('      ENABLE_MODULE_${moduleName.toUpperCase()}=true');
+}
+
+void _generateModuleTemplate(String targetPath, String moduleName) {
+  print('🛠 Generating template for $moduleName...');
+  final modulePascal = _toPascalCase(moduleName);
+
+  // 1. Create pubspec.yaml
+  final pubspecContent = '''name: $moduleName
+description: $modulePascal module for Super App
+version: 1.0.0
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  module_interface:
+    path: ../../packages/module_interface
+''';
+  _createFile('$targetPath/pubspec.yaml', pubspecContent);
+
+  // 2. Create folder structure
+  final libPath = '$targetPath/lib';
+  _createDir('$libPath/screens');
+  _createDir('$libPath/widgets');
+  _createDir('$libPath/providers');
+  _createDir('$libPath/services');
+
+  // 3. Create module main file
+  final moduleContent = '''import 'package:flutter/material.dart';
+import 'package:module_interface/module_interface.dart';
+
+class ${modulePascal}Module extends BaseModule {
+  @override
+  String get name => '$moduleName';
+
+  @override
+  String get version => '1.0.0';
+
+  @override
+  String get description => '$modulePascal module';
+
+  @override
+  Future<void> initialize() async {
+    debugPrint('${modulePascal}Module: Initialized');
+  }
+}
+''';
+  _createFile('$libPath/${moduleName}_module.dart', moduleContent);
+}
+
+void _createDir(String path) {
+  final dir = Directory(path);
+  if (!dir.existsSync()) {
+    dir.createSync(recursive: true);
+    print('   ✓ Folder created: $path');
+  }
+}
+
+void _createFile(String path, String content) {
+  final file = File(path);
+  if (!file.existsSync()) {
+    file.writeAsStringSync(content);
+    print('   ✓ File created: $path');
+  } else {
+     print('   ⚠ File already exists: $path (skipped)');
+  }
 }
 
 String _capitalize(String s) {
