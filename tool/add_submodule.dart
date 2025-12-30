@@ -7,7 +7,7 @@ import 'dart:io';
 ///   dart run tool/add_submodule.dart [repository_url] [module_name]
 ///
 /// Example:
-///   dart run tool/add_submodule.dart https://github.com/ihasa-id/archery_intelligence
+///   dart run tool/add_submodule.dart https://github.com/ihasa-id/repo_name
 void main(List<String> args) async {
   print('╔══════════════════════════════════════════╗');
   print('║       GIT SUBMODULE ADDER TOOL           ║');
