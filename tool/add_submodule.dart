@@ -63,7 +63,7 @@ void main(List<String> args) async {
     branchName,
     repoUrl,
     targetPath,
-  ]);
+  ], runInShell: true);
 
   if (gitResult.exitCode != 0) {
     final stderr = gitResult.stderr.toString();
@@ -137,7 +137,7 @@ void main(List<String> args) async {
   }
 
   print('📦 Running flutter pub get...');
-  await Process.run('flutter', ['pub', 'get']);
+  await Process.run('flutter', ['pub', 'get'], runInShell: true);
 
   print('');
   print('✅ Submodule "$moduleName" (branch: $branchName) added and registered successfully!');
