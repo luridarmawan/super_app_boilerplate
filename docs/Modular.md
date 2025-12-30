@@ -541,6 +541,7 @@ lib/
 | 5️⃣ | **Branding Config** | Konfigurasi branding terintegrasi di `AppInfo` | ✅ Selesai |
 | 6️⃣ | **Sample Module** | Buat contoh modul (misal: "News Module") | ✅ Selesai |
 | 7️⃣ | **CLI Tool** | Script untuk generate modul baru | ✅ Selesai |
+| 8️⃣ | **Module Manifest** | Registrasi otomatis via `ModuleManifest` & `sync_modules.dart` | ✅ Selesai |
 
 ### File yang Sudah Dibuat
 
@@ -548,13 +549,12 @@ lib/
 |------|-----------|
 | `lib/modules/module_base.dart` | Abstract class `BaseModule` dengan lifecycle methods |
 | `lib/modules/module_registry.dart` | Registry untuk registrasi dan manajemen modul |
-| `lib/modules/navigation_item.dart` | Model `NavigationItem` untuk menu item |
-| `lib/modules/modules.dart` | Barrel file untuk export |
+| `lib/modules/all_modules.dart` | Manifest pendaftaran modul (Auto-generated) |
 | `lib/modules/sample/sample_module.dart` | Contoh implementasi modul |
-| `lib/modules/sample/screens/sample_screen.dart` | Screen contoh untuk Sample module |
+| `lib/modules/sample/demo_module.dart` | Contoh workspace tambahan dalam satu folder modul |
 | `lib/shared/widgets/module_dashboard_slots.dart` | Widget untuk menampilkan dashboard widgets dari modul aktif |
-| `lib/core/constants/app_info.dart` | Konfigurasi app info, branding, colors, social links (terintegrasi) |
-| `tool/generate_module.dart` | CLI tool untuk generate modul baru |
+| `tool/generate_module.dart` | CLI tool untuk generate modul baru (otomatis update manifest) |
+| `tool/sync_modules.dart` | Script untuk sinkronisasi pendaftaran modul secara manual |
 
 ---
 
@@ -581,7 +581,7 @@ CLI tool akan otomatis membuat:
 - Dashboard card widget (`widgets/<nama>_dashboard_card.dart`)
 
 Setelah di-generate, Anda hanya perlu:
-1. **Register modul** di `lib/main.dart`
+1. **Cek Pendaftaran**: Modul akan otomatis terdaftar di `lib/modules/all_modules.dart` oleh CLI tool.
 2. **Enable modul** di `.env`
 
 ### Opsi 2: Membuat Manual
@@ -667,19 +667,22 @@ class NewsModule extends BaseModule {
 
 ```dart
 // lib/main.dart
+import 'modules/all_modules.dart';
+
 void main() async {
   // ... existing initialization ...
   
-  // Daftarkan modul-modul
-  ModuleRegistry.register(NewsModule());
-  ModuleRegistry.register(EcommerceModule());
-  ModuleRegistry.register(ChatModule());
+  // Daftarkan semua modul via Manifest (Otomatis)
+  ModuleManifest.register();
   
   // Inisialisasi modul aktif
   await ModuleRegistry.initializeAll();
   
   runApp(...);
 }
+
+// Catatan: Jika pendaftaran tidak otomatis, jalankan:
+// dart run tool/sync_modules.dart
 ```
 
 ### Langkah 4: Aktifkan di .env
