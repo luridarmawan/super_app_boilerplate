@@ -37,23 +37,30 @@ void main(List<String> args) async {
   print('📦 Adding submodule: $moduleName');
   print('🔗 URL: $repoUrl');
 
-  // 1. Ask for template generation
-  stdout.write('❓ Ingin dibuatkan template file/folder sub module? (y/N): ');
-  final response = stdin.readLineSync()?.toLowerCase() ?? 'n';
-  final shouldGenerateTemplate = response == 'y' || response == 'yes';
+  // 1. Ask for Branch
+  stdout.write('❓ Nama branch (default: development): ');
+  final branchResponse = stdin.readLineSync()?.trim();
+  final branchName = (branchResponse == null || branchResponse.isEmpty) ? 'development' : branchResponse;
 
-  // 2. Create modules directory if not exists
+  // 2. Ask for template generation
+  stdout.write('❓ Ingin dibuatkan template file/folder sub module? (y/N): ');
+  final templateResponse = stdin.readLineSync()?.toLowerCase() ?? 'n';
+  final shouldGenerateTemplate = templateResponse == 'y' || templateResponse == 'yes';
+
+  // 3. Create modules directory if not exists
   final modulesDir = Directory('modules');
   if (!modulesDir.existsSync()) {
     modulesDir.createSync();
   }
 
-  // 3. Run git submodule add
-  print('🚀 Running git submodule add...');
+  // 4. Run git submodule add
+  print('🚀 Running git submodule add (branch: $branchName)...');
   final targetPath = 'modules/$moduleName';
   final gitResult = await Process.run('git', [
     'submodule',
     'add',
+    '-b',
+    branchName,
     repoUrl,
     targetPath,
   ]);
@@ -67,12 +74,12 @@ void main(List<String> args) async {
     }
   }
 
-  // 4. Generate Template if requested
+  // 5. Generate Template if requested
   if (shouldGenerateTemplate) {
     _generateModuleTemplate(targetPath, moduleName);
   }
 
-  // 5. Add to pubspec.yaml
+  // 6. Add to pubspec.yaml
   print('📝 Updating pubspec.yaml...');
   final pubspecFile = File('pubspec.yaml');
   String pubspecContent = pubspecFile.readAsStringSync();
@@ -103,7 +110,7 @@ void main(List<String> args) async {
     print('   ⚠ Already exists in pubspec.yaml');
   }
 
-  // 6. Update all_modules.dart
+  // 7. Update all_modules.dart
   print('🔄 Updating module registration...');
   final manifestFile = File('lib/modules/all_modules.dart');
   String manifestContent = manifestFile.readAsStringSync();
@@ -133,7 +140,7 @@ void main(List<String> args) async {
   await Process.run('flutter', ['pub', 'get']);
 
   print('');
-  print('✅ Submodule "$moduleName" added and registered successfully!');
+  print('✅ Submodule "$moduleName" (branch: $branchName) added and registered successfully!');
   print('   Path: $targetPath');
   print('');
   print('📋 Next steps:');
