@@ -153,8 +153,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     final colorScheme = Theme.of(context).colorScheme;
     final size = MediaQuery.of(context).size;
 
-    return Scaffold(
-      body: Container(
+    return GestureDetector(
+      onTap: () {
+        // Tutup splash screen ketika layar di-tap
+        widget.onComplete?.call();
+      },
+      child: Scaffold(
+        body: Container(
         width: size.width,
         height: size.height,
         decoration: BoxDecoration(
@@ -323,6 +328,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             ),
           ],
         ),
+      ),
       ),
     );
   }
