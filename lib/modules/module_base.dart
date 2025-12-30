@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'navigation_item.dart';
+import 'quick_action_item.dart';
 
 /// Base abstract class for all pluggable modules.
 /// 
@@ -64,6 +65,11 @@ abstract class BaseModule {
   /// Navigation menu items provided by this module
   /// These will appear in sidebar, bottom nav, etc.
   List<NavigationItem> get menuItems => [];
+
+  /// Quick action items provided by this module
+  /// These will appear in the dashboard menu grid
+  /// Each module can provide multiple quick actions
+  List<QuickActionItem> get quickActions => [];
 
   /// List of module names this module depends on
   /// Registry will ensure dependencies are initialized first

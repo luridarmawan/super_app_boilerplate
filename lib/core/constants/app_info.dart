@@ -1,8 +1,11 @@
+import 'dart:ui';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-/// Application information from pubspec.yaml
-/// This file stores constants that correspond to data in pubspec.yaml
+/// Application information and branding configuration.
+/// This file stores constants from pubspec.yaml and .env file.
+/// All branding, social links, and assets are centralized here.
 class AppInfo {
   AppInfo._();
   static const bool enableDemo = true;
@@ -80,13 +83,62 @@ class AppInfo {
   static bool get enableSplashScreen => dotenv.env['ENABLE_SPLASH_SCREEN']?.toLowerCase() == 'true';
 
   /// Duration of splash screen display (only applies if enableSplashScreen is true)
-  static const Duration splashScreenDuration = Duration(seconds: 3);
+  static Duration get splashScreenDuration => Duration(seconds:int.tryParse(dotenv.env['SPLASH_DURATION'] ?? '5') ?? 5);
 
   /// Number of initial app launches to show splash screen (default: 5)
   static int get splashShowCount => int.tryParse(dotenv.env['SPLASH_SHOW_COUNT'] ?? '5') ?? 5;
 
   /// Hours of inactivity after which splash screen will show again (default: 24)
   static int get splashDelayHours => int.tryParse(dotenv.env['SPLASH_DELAY'] ?? '24') ?? 24;
+
+  /// Splash screen background image URL
+  static String get splashBackground => dotenv.env['SPLASH_BACKGROUND'] ?? 'https://picsum.photos/800/1600';
+
+  /// Splash gradient start color (top) - hex format e.g. #1E88E5
+  static String? get splashGradientStart => dotenv.env['SPLASH_GRADIENT_START'];
+
+  /// Splash gradient middle color - hex format e.g. #42A5F5
+  static String? get splashGradientMiddle => dotenv.env['SPLASH_GRADIENT_MIDDLE'];
+
+  /// Splash gradient end color (bottom) - hex format e.g. #90CAF9
+  static String? get splashGradientEnd => dotenv.env['SPLASH_GRADIENT_END'];
+
+  /// Parse hex color string to Color, returns null if invalid
+  static Color? parseHexColor(String? hexString) {
+    if (hexString == null || hexString.isEmpty) return null;
+
+    // Remove # if present
+    String hex = hexString.replaceFirst('#', '');
+
+    // Handle 6-digit hex (add FF for full opacity)
+    if (hex.length == 6) {
+      hex = 'FF$hex';
+    }
+
+    // Parse and return color
+    final intValue = int.tryParse(hex, radix: 16);
+    if (intValue == null) return null;
+
+    return Color(intValue);
+  }
+
+  /// Get splash gradient colors, falls back to theme colors if not set
+  static List<Color>? get splashGradientColors {
+    final start = parseHexColor(splashGradientStart);
+    final end = parseHexColor(splashGradientEnd);
+
+    // If both start and end are set, use them
+    if (start != null && end != null) {
+      final middle = parseHexColor(splashGradientMiddle);
+      if (middle != null) {
+        return [start, middle, end];
+      }
+      return [start, end];
+    }
+
+    // Return null to indicate use theme colors
+    return null;
+  }
 
   // ============================================
   // FEATURE FLAGS
@@ -192,4 +244,76 @@ class AppInfo {
     }
     return value;
   }
+
+  // ============================================
+  // BRANDING - COMPANY INFO
+  // ============================================
+
+  /// Company/Organization name
+  static String get companyName =>
+      dotenv.env['COMPANY_NAME'] ?? 'PT. Super Tech';
+
+  /// Company website URL
+  static String get websiteUrl =>
+      dotenv.env['WEBSITE_URL'] ?? 'https://example.com';
+
+  // ============================================
+  // BRANDING - SOCIAL LINKS
+  // ============================================
+
+  /// Play Store URL
+  static String? get playStoreUrl => dotenv.env['PLAY_STORE_URL'];
+
+  /// App Store URL
+  static String? get appStoreUrl => dotenv.env['APP_STORE_URL'];
+
+  /// Facebook page URL
+  static String? get facebookUrl => dotenv.env['FACEBOOK_URL'];
+
+  /// Instagram page URL
+  static String? get instagramUrl => dotenv.env['INSTAGRAM_URL'];
+
+  /// Twitter/X page URL
+  static String? get twitterUrl => dotenv.env['TWITTER_URL'];
+
+  /// LinkedIn page URL
+  static String? get linkedInUrl => dotenv.env['LINKEDIN_URL'];
+
+  /// Check if social links are configured
+  static bool get hasSocialLinks =>
+      facebookUrl != null ||
+      instagramUrl != null ||
+      twitterUrl != null ||
+      linkedInUrl != null;
+
+  /// Check if app store links are configured
+  static bool get hasAppStoreLinks =>
+      playStoreUrl != null || appStoreUrl != null;
+
+  // ============================================
+  // BRANDING - LEGAL
+  // ============================================
+
+  /// Terms of Service URL
+  static String get termsUrl =>
+      dotenv.env['TERMS_URL'] ?? 'https://example.com/terms';
+
+  /// Privacy Policy URL
+  static String get privacyUrl =>
+      dotenv.env['PRIVACY_URL'] ?? 'https://example.com/privacy';
+
+  /// Copyright text
+  static String get copyrightText {
+    final year = DateTime.now().year;
+    return dotenv.env['COPYRIGHT_TEXT'] ??
+        '© $year $companyName. All rights reserved.';
+  }
+
+  // ============================================
+  // BRANDING - ASSETS
+  // ============================================
+
+  /// Default avatar/placeholder image
+  static String get defaultAvatarPath =>
+      dotenv.env['DEFAULT_AVATAR'] ?? 'assets/images/default_avatar.png';
 }

@@ -13,7 +13,7 @@ Super App adalah aplikasi mobile (Android & iOS) yang dibangun dengan arsitektur
 
 ```
 lib/
-├── core/                           # Inti aplikasi
+├── core/                           # Inti aplikasi (TIDAK DIUBAH)
 │   ├── auth/
 │   │   ├── auth_interface.dart     # BaseAuthService (Abstract Class)
 │   │   ├── firebase_provider.dart  # Implementasi Firebase Auth
@@ -26,7 +26,18 @@ lib/
 │   │   └── app_router.dart         # GoRouter navigation
 │   └── theme/
 │       └── app_theme.dart          # Material 3 themes & templates
-├── features/                       # Modul fitur
+│
+├── modules/                        # Pluggable modules (NEW)
+│   ├── module_base.dart            # Abstract module class
+│   ├── module_registry.dart        # Module registration & management
+│   ├── navigation_item.dart        # Navigation item model
+│   ├── quick_action_item.dart      # Quick action item model
+│   └── [module_name]/              # Setiap modul self-contained
+│       ├── [name]_module.dart      # Module entry point
+│       ├── screens/                # UI screens
+│       └── widgets/                # Module-specific widgets
+│
+├── features/                       # Built-in core features
 │   ├── auth/
 │   │   ├── login_screen.dart       # Login dengan Email/Google
 │   │   └── register_screen.dart    # Registrasi
@@ -42,6 +53,7 @@ lib/
 │   │   └── setting_screen.dart     # Pengaturan bahasa & template
 │   └── splash/
 │       └── splash_screen.dart      # Splash screen full screen
+│
 ├── shared/                         # Komponen global
 │   ├── info/
 │   │   ├── help_screen.dart        # Help & Report
@@ -50,9 +62,13 @@ lib/
 │   └── widgets/
 │       ├── custom_header.dart      # Header dinamis (AppBar/SliverAppBar)
 │       ├── custom_footer.dart      # Footer NavigationBar + center FAB
-│       └── custom_sidebar.dart     # NavigationDrawer Material 3
+│       ├── custom_sidebar.dart     # NavigationDrawer Material 3
+│       └── module_dashboard_slots.dart # Dashboard widget slots
+│
 └── main.dart                       # Entry point dengan Riverpod
 ```
+
+> **Note:** Konfigurasi branding (colors, company info, social links, legal URLs) sudah terintegrasi di `lib/core/constants/app_info.dart`
 
 ---
 
@@ -73,6 +89,7 @@ lib/
 | **Edge-to-Edge** | ✅ | SystemUiMode.edgeToEdge |
 | **Network Layer** | ✅ | Dio + Retrofit dengan Repository Pattern (lihat [docs/API.md](docs/API.md)) |
 | **Push Notification** | ✅ | Multi-provider (FCM, OneSignal, Mock) dengan abstraction layer (lihat [docs/Notification.md](docs/Notification.md)) |
+| **Modular Architecture** | ✅ | Plugin-based module system dengan dynamic routes & dashboard slots (lihat [docs/Modular.md](docs/Modular.md)) |
 
 ---
 
@@ -360,6 +377,10 @@ flutter run -d emulator-5554
 - `lib/core/network/api_client.dart` - Dio client dengan interceptors
 - `lib/core/network/repository/base_repository.dart` - Base repository pattern
 - `lib/features/dashboard/main_dashboard.dart` - Halaman utama
+- `lib/modules/module_base.dart` - Abstract class untuk modular system
+- `lib/modules/module_registry.dart` - Registry untuk manajemen modul
+- `lib/core/constants/app_info.dart` - App info & branding configuration
+- `tool/generate_module.dart` - CLI tool untuk generate modul baru
 
 ---
 
@@ -372,7 +393,6 @@ flutter run -d emulator-5554
 - [ ] Tambahkan unit tests dan widget tests
 - [x] Implementasi push notifications (lihat `docs/Notification.md`)
 - [ ] Implementai remote config
-- [ ] Implementasi Firebase Auth (tambah firebase_core, firebase_auth)
 - [ ] Tambahkan analytics
 
 ---

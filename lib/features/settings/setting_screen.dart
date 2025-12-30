@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/config/app_config.dart';
 import '../../core/constants/app_info.dart';
 import '../../core/theme/app_theme.dart';
@@ -117,25 +118,72 @@ class SettingScreen extends ConsumerWidget {
           const SizedBox(height: 8),
           
           Card(
-            child: ListTile(
-              leading: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(8),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.view_sidebar_outlined,
+                      color: colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  title: Text(l10n.sidebarPosition),
+                  subtitle: Text(
+                    config.sidebarPosition == SidebarPosition.left ? l10n.left : l10n.right,
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _showSidebarPositionDialog(context, ref, l10n),
                 ),
-                child: Icon(
-                  Icons.view_sidebar_outlined,
-                  color: colorScheme.onPrimaryContainer,
+                const Divider(height: 1),
+                SwitchListTile(
+                  secondary: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.flash_on_outlined,
+                      color: colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  title: Text(l10n.showQuickActionsLabel),
+                  subtitle: Text(l10n.showQuickActionsDesc),
+                  value: config.showQuickActions,
+                  onChanged: (value) {
+                    ref.read(appConfigProvider.notifier).setShowQuickActions(value);
+                  },
                 ),
-              ),
-              title: Text(l10n.sidebarPosition),
-              subtitle: Text(
-                config.sidebarPosition == SidebarPosition.left ? l10n.left : l10n.right,
-              ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _showSidebarPositionDialog(context, ref, l10n),
+                // Show Quick Action Manager when enabled
+                if (config.showQuickActions) ...[
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.tune_outlined,
+                        color: colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                    title: Text(l10n.quickActionsManager),
+                    subtitle: Text(l10n.quickActionsManagerDesc),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push('/quick-actions'),
+                  ),
+                ],
+              ],
             ),
           ),
 

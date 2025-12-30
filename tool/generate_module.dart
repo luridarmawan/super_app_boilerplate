@@ -133,6 +133,7 @@ import 'package:go_router/go_router.dart';
 
 import '../module_base.dart';
 import '../navigation_item.dart';
+import '../quick_action_item.dart';
 import 'screens/${moduleName}_screen.dart';
 import 'widgets/${moduleName}_dashboard_card.dart';
 
@@ -188,6 +189,36 @@ class ${moduleNamePascal}Module extends BaseModule {
       order: 100,
       requiresAuth: true,
     ),
+  ];
+
+  @override
+  List<QuickActionItem> get quickActions => [
+    // Example: Route-based quick action
+    QuickActionItem(
+      id: '${moduleName}_main',
+      moduleId: name,
+      icon: Icons.widgets_outlined,
+      label: '$moduleNamePascal',
+      color: const Color(0xFF1565C0),
+      route: '/$moduleName',
+      order: 100,
+      description: 'Open $moduleNamePascal module',
+    ),
+    // Example: Custom callback quick action (uncomment if needed)
+    // QuickActionItem(
+    //   id: '${moduleName}_action',
+    //   moduleId: name,
+    //   icon: Icons.flash_on_outlined,
+    //   label: 'Quick Action',
+    //   color: const Color(0xFFFF6D00),
+    //   onTap: (context) {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       const SnackBar(content: Text('Quick action!')),
+    //     );
+    //   },
+    //   order: 101,
+    //   description: 'Execute quick action',
+    // ),
   ];
 
   @override

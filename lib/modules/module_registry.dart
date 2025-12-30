@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'module_base.dart';
 import 'navigation_item.dart';
+import 'quick_action_item.dart';
 
 /// Registry for managing pluggable modules.
 /// 
@@ -270,6 +271,53 @@ class ModuleRegistry {
   }
 
   // ============================================
+  // QUICK ACTIONS
+  // ============================================
+
+  /// Get all quick actions from active modules
+  /// Sorted by order (lower order = appears first)
+  static List<QuickActionItem> get allQuickActions {
+    final actions = <QuickActionItem>[];
+    
+    // Add static quick actions first
+    actions.addAll(StaticQuickActions.items);
+    
+    // Add quick actions from active modules
+    for (final module in activeModules) {
+      actions.addAll(module.quickActions);
+    }
+    
+    // Sort by order
+    actions.sort((a, b) => a.order.compareTo(b.order));
+    
+    return actions;
+  }
+
+  /// Get quick actions from modules only (without static actions)
+  static List<QuickActionItem> get moduleQuickActions {
+    final actions = <QuickActionItem>[];
+    
+    for (final module in activeModules) {
+      actions.addAll(module.quickActions);
+    }
+    
+    // Sort by order
+    actions.sort((a, b) => a.order.compareTo(b.order));
+    
+    return actions;
+  }
+
+  /// Get quick actions by module ID
+  static List<QuickActionItem> getQuickActionsByModule(String moduleId) {
+    if (moduleId == StaticQuickActions.moduleId) {
+      return StaticQuickActions.items;
+    }
+    
+    final module = getModule(moduleId);
+    return module?.quickActions ?? [];
+  }
+
+  // ============================================
   // HELPER METHODS
   // ============================================
 
@@ -363,4 +411,14 @@ final moduleDashboardWidgetsProvider = Provider<List<Widget>>((ref) {
 /// Provider for getting menu items from modules
 final moduleMenuItemsProvider = Provider<List<NavigationItem>>((ref) {
   return ModuleRegistry.menuItems;
+});
+
+/// Provider for getting all quick actions (static + modules)
+final allQuickActionsProvider = Provider<List<QuickActionItem>>((ref) {
+  return ModuleRegistry.allQuickActions;
+});
+
+/// Provider for getting quick actions from modules only
+final moduleQuickActionsProvider = Provider<List<QuickActionItem>>((ref) {
+  return ModuleRegistry.moduleQuickActions;
 });

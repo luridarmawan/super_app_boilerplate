@@ -15,6 +15,7 @@ class _PrefsKeys {
   static const String template = 'app_template';
   static const String isDarkMode = 'app_is_dark_mode';
   static const String sidebarPosition = 'app_sidebar_position';
+  static const String showQuickActions = 'app_show_quick_actions';
 }
 
 /// Enum untuk menentukan strategi autentikasi
@@ -42,6 +43,7 @@ class AppConfigState {
   final Locale selectedLocale;
   final AppTemplate currentTemplate;
   final bool isDarkMode;
+  final bool showQuickActions;
 
   AppConfigState({
     AuthStrategy? authStrategy,
@@ -49,6 +51,7 @@ class AppConfigState {
     this.selectedLocale = const Locale('en', 'US'),
     this.currentTemplate = AppTemplate.defaultBlue,
     this.isDarkMode = false,
+    this.showQuickActions = true,
   }) : authStrategy = authStrategy ?? _getDefaultAuthStrategy();
 
   AppConfigState copyWith({
@@ -57,6 +60,7 @@ class AppConfigState {
     Locale? selectedLocale,
     AppTemplate? currentTemplate,
     bool? isDarkMode,
+    bool? showQuickActions,
   }) {
     return AppConfigState(
       authStrategy: authStrategy ?? this.authStrategy,
@@ -64,6 +68,7 @@ class AppConfigState {
       selectedLocale: selectedLocale ?? this.selectedLocale,
       currentTemplate: currentTemplate ?? this.currentTemplate,
       isDarkMode: isDarkMode ?? this.isDarkMode,
+      showQuickActions: showQuickActions ?? this.showQuickActions,
     );
   }
 
@@ -114,12 +119,16 @@ class AppConfigNotifier extends StateNotifier<AppConfigState> {
       savedSidebarPosition = SidebarPosition.values[sidebarIndex];
     }
 
+    // Load showQuickActions
+    final savedShowQuickActions = _prefs.getBool(_PrefsKeys.showQuickActions);
+
     // Update state dengan pengaturan tersimpan
     state = state.copyWith(
       selectedLocale: savedLocale,
       currentTemplate: savedTemplate,
       isDarkMode: savedDarkMode,
       sidebarPosition: savedSidebarPosition,
+      showQuickActions: savedShowQuickActions,
     );
   }
 
@@ -130,6 +139,7 @@ class AppConfigNotifier extends StateNotifier<AppConfigState> {
     await _prefs.setInt(_PrefsKeys.template, state.currentTemplate.index);
     await _prefs.setBool(_PrefsKeys.isDarkMode, state.isDarkMode);
     await _prefs.setInt(_PrefsKeys.sidebarPosition, state.sidebarPosition.index);
+    await _prefs.setBool(_PrefsKeys.showQuickActions, state.showQuickActions);
   }
 
   void setSidebarPosition(SidebarPosition position) {
@@ -154,6 +164,11 @@ class AppConfigNotifier extends StateNotifier<AppConfigState> {
 
   void setDarkMode(bool isDark) {
     state = state.copyWith(isDarkMode: isDark);
+    _saveToPrefs();
+  }
+
+  void setShowQuickActions(bool show) {
+    state = state.copyWith(showQuickActions: show);
     _saveToPrefs();
   }
 }

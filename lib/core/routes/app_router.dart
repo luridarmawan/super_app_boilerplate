@@ -13,6 +13,7 @@ import '../../features/profile/profile_screen.dart';
 import '../../shared/info/help_screen.dart';
 import '../../shared/info/tos_screen.dart';
 import '../../shared/info/privacy_screen.dart';
+import '../../features/dashboard/screens/quick_actions_manager_screen.dart';
 
 // Modular Architecture
 import '../../modules/module_registry.dart';
@@ -29,6 +30,7 @@ class AppRoutes {
   static const String help = '/help';
   static const String tos = '/tos';
   static const String privacy = '/privacy';
+  static const String quickActions = '/quick-actions';
 }
 
 /// Router provider untuk navigasi
@@ -178,6 +180,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => PrivacyScreen(
           onBackTap: () => context.pop(),
         ),
+      ),
+
+      // Quick Actions Manager
+      GoRoute(
+        path: AppRoutes.quickActions,
+        builder: (context, state) => const QuickActionsManagerScreen(),
       ),
 
       // ============================================

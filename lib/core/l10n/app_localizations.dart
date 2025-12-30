@@ -175,6 +175,10 @@ class AppLocalizations {
   String get language => translate('language');
   String get layout => translate('layout');
   String get sidebarPosition => translate('sidebarPosition');
+  String get showQuickActionsLabel => translate('showQuickActionsLabel');
+  String get showQuickActionsDesc => translate('showQuickActionsDesc');
+  String get quickActionsManager => translate('quickActionsManager');
+  String get quickActionsManagerDesc => translate('quickActionsManagerDesc');
   String get authentication => translate('authentication');
   String get authProvider => translate('authProvider');
   String get about => translate('about');
@@ -431,6 +435,10 @@ const Map<String, String> _idStrings = {
   'language': 'Bahasa',
   'layout': 'Tata Letak',
   'sidebarPosition': 'Posisi Sidebar',
+  'showQuickActionsLabel': 'Tampilkan Aksi Cepat',
+  'showQuickActionsDesc': 'Tampilkan menu aksi cepat di dashboard',
+  'quickActionsManager': 'Kelola Aksi Cepat',
+  'quickActionsManagerDesc': 'Atur icon yang ditampilkan atau disembunyikan',
   'authentication': 'Autentikasi',
   'authProvider': 'Penyedia Auth',
   'about': 'Tentang',
@@ -671,6 +679,10 @@ const Map<String, String> _enStrings = {
   'language': 'Language',
   'layout': 'Layout',
   'sidebarPosition': 'Sidebar Position',
+  'showQuickActionsLabel': 'Show Quick Actions',
+  'showQuickActionsDesc': 'Display quick action menu on dashboard',
+  'quickActionsManager': 'Manage Quick Actions',
+  'quickActionsManagerDesc': 'Configure which icons to show or hide',
   'authentication': 'Authentication',
   'authProvider': 'Auth Provider',
   'about': 'About',

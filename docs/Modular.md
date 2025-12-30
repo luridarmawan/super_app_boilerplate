@@ -523,13 +523,10 @@ lib/
 │   ├── widgets/                  # Reusable widgets
 │   └── info/                     # Info screens (Help, ToS, Privacy)
 │
-├── branding/                     # NEW: Client-specific branding
-│   ├── branding_config.dart      # Branding configuration
-│   ├── assets_config.dart        # Asset paths
-│   └── themes/                   # Custom themes
-│
 └── main.dart                     # App entry point
 ```
+
+> **Note:** Konfigurasi branding (colors, company info, social links, legal URLs) sudah terintegrasi di `lib/core/constants/app_info.dart`
 
 ---
 
@@ -541,7 +538,7 @@ lib/
 | 2️⃣ | **Module Registry** | Sistem untuk mendaftarkan dan mengelola modul aktif | ✅ Selesai |
 | 3️⃣ | **Dynamic Routes** | Modifikasi router untuk menerima routes dari modul | ✅ Selesai |
 | 4️⃣ | **Dashboard Slots** | Sistem slot widget di dashboard | ✅ Selesai |
-| 5️⃣ | **Branding Config** | Pisahkan konfigurasi branding | ✅ Selesai |
+| 5️⃣ | **Branding Config** | Konfigurasi branding terintegrasi di `AppInfo` | ✅ Selesai |
 | 6️⃣ | **Sample Module** | Buat contoh modul (misal: "News Module") | ✅ Selesai |
 | 7️⃣ | **CLI Tool** | Script untuk generate modul baru | ✅ Selesai |
 
@@ -556,9 +553,7 @@ lib/
 | `lib/modules/sample/sample_module.dart` | Contoh implementasi modul |
 | `lib/modules/sample/screens/sample_screen.dart` | Screen contoh untuk Sample module |
 | `lib/shared/widgets/module_dashboard_slots.dart` | Widget untuk menampilkan dashboard widgets dari modul aktif |
-| `lib/branding/branding_config.dart` | Konfigurasi branding (identity, colors, assets, social links) |
-| `lib/branding/assets_config.dart` | Konfigurasi path aset (logo, placeholder, illustrations) |
-| `lib/branding/branding.dart` | Barrel file untuk export branding classes |
+| `lib/core/constants/app_info.dart` | Konfigurasi app info, branding, colors, social links (terintegrasi) |
 | `tool/generate_module.dart` | CLI tool untuk generate modul baru |
 
 ---

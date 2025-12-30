@@ -363,8 +363,8 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
               ),
             ),
             const SizedBox(height: 12),
-            MenuGrid(
-              items: MenuGrid.sampleItems,
+            const QuickActionGrid(
+              maxItems: 7,
             ),
 
             const SizedBox(height: 24),

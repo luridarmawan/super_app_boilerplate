@@ -19,7 +19,7 @@ class Assets {
   // static const String userPlaceholder = 'assets/images/user_placeholder.png';
   
   // Remote URLs (default fallback)
-  static const String remoteSplashUrl = 'https://picsum.photos/800/1600';
+  // static const String remoteSplashUrl = 'https://picsum.photos/800/1600';
   // static const String remoteLogoUrl = 'https://picsum.photos/200';
   // static const String remoteBannerUrl = 'https://picsum.photos/800/400';
 }
