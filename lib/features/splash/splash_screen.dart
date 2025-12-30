@@ -156,7 +156,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         height: size.height,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
+            colors: AppInfo.splashGradientColors ?? [
               colorScheme.primary,
               colorScheme.primaryContainer,
               colorScheme.secondaryContainer,
@@ -188,7 +188,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   errorWidget: (context, url, error) => Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
+                        colors: AppInfo.splashGradientColors ?? [
                           colorScheme.primary,
                           colorScheme.primaryContainer,
                         ],

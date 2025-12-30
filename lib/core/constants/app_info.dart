@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -91,6 +93,52 @@ class AppInfo {
 
   /// Splash screen background image URL
   static String get splashBackground => dotenv.env['SPLASH_BACKGROUND'] ?? 'https://picsum.photos/800/1600';
+
+  /// Splash gradient start color (top) - hex format e.g. #1E88E5
+  static String? get splashGradientStart => dotenv.env['SPLASH_GRADIENT_START'];
+
+  /// Splash gradient middle color - hex format e.g. #42A5F5
+  static String? get splashGradientMiddle => dotenv.env['SPLASH_GRADIENT_MIDDLE'];
+
+  /// Splash gradient end color (bottom) - hex format e.g. #90CAF9
+  static String? get splashGradientEnd => dotenv.env['SPLASH_GRADIENT_END'];
+
+  /// Parse hex color string to Color, returns null if invalid
+  static Color? parseHexColor(String? hexString) {
+    if (hexString == null || hexString.isEmpty) return null;
+
+    // Remove # if present
+    String hex = hexString.replaceFirst('#', '');
+
+    // Handle 6-digit hex (add FF for full opacity)
+    if (hex.length == 6) {
+      hex = 'FF$hex';
+    }
+
+    // Parse and return color
+    final intValue = int.tryParse(hex, radix: 16);
+    if (intValue == null) return null;
+
+    return Color(intValue);
+  }
+
+  /// Get splash gradient colors, falls back to theme colors if not set
+  static List<Color>? get splashGradientColors {
+    final start = parseHexColor(splashGradientStart);
+    final end = parseHexColor(splashGradientEnd);
+
+    // If both start and end are set, use them
+    if (start != null && end != null) {
+      final middle = parseHexColor(splashGradientMiddle);
+      if (middle != null) {
+        return [start, middle, end];
+      }
+      return [start, end];
+    }
+
+    // Return null to indicate use theme colors
+    return null;
+  }
 
   // ============================================
   // FEATURE FLAGS
