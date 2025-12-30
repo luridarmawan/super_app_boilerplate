@@ -1,4 +1,0 @@
-[submodule "modules/archery_intelligence"]
-	path = modules/archery_intelligence
-	url = git@github.com:ihasa-id/archery_intelligence.git
-	branch = development
