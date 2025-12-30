@@ -497,31 +497,23 @@ lib/
 │   ├── theme/                    # Theme configuration
 │   └── utils/                    # Utility functions
 │
-├── modules/                      # NEW: Pluggable modules
-│   ├── module_base.dart          # Abstract module class
-│   ├── module_registry.dart      # Module registration & management
+├── packages/                     # NEW: Shared contracts
+│   └── module_interface/         # Package dasar untuk semua modul
+│
+├── modules/                      # NEW: External Submodules
+│   └── [submodule_name]/         # Repository terpisah (Git Submodule)
+│
+├── lib/
+│   ├── core/                     # TIDAK DIUBAH - Base infrastructure
+│   │   └── ...
 │   │
-│   └── [module_name]/            # Setiap modul self-contained
-│       ├── module.dart           # Module entry point (extends BaseModule)
-│       ├── routes/               # Route definitions
-│       ├── providers/            # Riverpod providers
-│       ├── screens/              # UI screens
-│       ├── widgets/              # Module-specific widgets
-│       ├── services/             # Module services
-│       ├── models/               # Data models
-│       ├── repositories/         # Data repositories
-│       └── l10n/                 # Module localization
-│
-├── features/                     # TETAP - Built-in core features
-│   ├── auth/                     # Login, Register (core)
-│   ├── dashboard/                # Main dashboard (core)
-│   ├── profile/                  # User profile (core)
-│   ├── settings/                 # App settings (core)
-│   └── splash/                   # Splash screen (core)
-│
-├── shared/                       # TETAP - Shared components
-│   ├── widgets/                  # Reusable widgets
-│   └── info/                     # Info screens (Help, ToS, Privacy)
+│   ├── modules/                  # Internal Modules
+│   │   ├── module_registry.dart
+│   │   ├── all_modules.dart
+│   │   └── [internal_module]/    # Modul yang ada di repo utama
+│   │
+│   ├── features/                 # TETAP - Built-in core features
+│   └── shared/                   # TETAP - Shared components
 │
 └── main.dart                     # App entry point
 ```
@@ -547,25 +539,35 @@ lib/
 
 | File | Deskripsi |
 |------|-----------|
-| `lib/modules/module_base.dart` | Abstract class `BaseModule` dengan lifecycle methods |
+| `packages/module_interface/` | **Kontrak Utama**: Shared package berisi `BaseModule` |
 | `lib/modules/module_registry.dart` | Registry untuk registrasi dan manajemen modul |
 | `lib/modules/all_modules.dart` | Manifest pendaftaran modul (Auto-generated) |
-| `lib/modules/sample/sample_module.dart` | Contoh implementasi modul |
-| `lib/modules/sample/demo_module.dart` | Contoh workspace tambahan dalam satu folder modul |
-| `lib/shared/widgets/module_dashboard_slots.dart` | Widget untuk menampilkan dashboard widgets dari modul aktif |
-| `tool/generate_module.dart` | CLI tool untuk generate modul baru (otomatis update manifest) |
-| `tool/sync_modules.dart` | Script untuk sinkronisasi pendaftaran modul secara manual |
+| `lib/modules/sample/sample_module.dart` | Contoh implementasi modul internal |
+| `tool/generate_module.dart` | CLI tool untuk module internal (local folder) |
+| `tool/add_submodule.dart` | CLI tool untuk module eksternal (Git Submodule) |
+| `tool/sync_modules.dart` | Script sinkronisasi pendaftaran modul internal |
 
 ---
 
 ## Cara Membuat Modul Baru
 
-### Opsi 1: Menggunakan CLI Tool (Rekomendasi)
+Terdapat dua cara untuk membuat modul tergantung pada kebutuhan skalabilitas:
 
-Cara tercepat untuk membuat modul baru adalah menggunakan CLI tool:
+### Opsi 1: Modul Internal (Satu Repository)
+
+Cocok untuk fitur yang spesifik hanya untuk aplikasi ini. Menggunakan CLI tool:
 
 ```bash
 dart run tool/generate_module.dart <nama_modul>
+```
+
+### Opsi 2: Modul Eksternal (Git Submodule)
+
+Cocok jika modul ingin dipisah repository-nya (misal: dikerjakan tim berbeda).
+Lihat panduan lengkapnya di [SubModule.md](./SubModule.md).
+
+```bash
+dart run tool/add_submodule.dart <repo_url>
 ```
 
 Contoh:
