@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../core/constants/assets.dart';
 import '../../core/constants/app_info.dart';
+import '../../core/constants/assets.dart';
 
 /// Splash Screen full screen dengan gambar utama
 class SplashScreen extends ConsumerStatefulWidget {
@@ -103,7 +103,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             // Background image (optional)
             Positioned.fill(
               child: CachedNetworkImage(
-                imageUrl: Assets.remoteSplashUrl,
+                imageUrl: AppInfo.splashBackground,
                 fit: BoxFit.cover,
                 color: Colors.black.withValues(alpha: 0.3),
                 colorBlendMode: BlendMode.darken,

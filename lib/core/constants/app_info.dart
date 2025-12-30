@@ -89,6 +89,9 @@ class AppInfo {
   /// Hours of inactivity after which splash screen will show again (default: 24)
   static int get splashDelayHours => int.tryParse(dotenv.env['SPLASH_DELAY'] ?? '24') ?? 24;
 
+  /// Splash screen background image URL
+  static String get splashBackground => dotenv.env['SPLASH_BACKGROUND'] ?? 'https://picsum.photos/800/1600';
+
   // ============================================
   // FEATURE FLAGS
   // ============================================
