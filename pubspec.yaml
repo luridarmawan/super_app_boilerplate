@@ -89,6 +89,10 @@ dependencies:
   # Package Info (version from pubspec)
   package_info_plus: ^8.0.0
 
+  # Module Interface (shared with submodules)
+  module_interface:
+    path: packages/module_interface
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

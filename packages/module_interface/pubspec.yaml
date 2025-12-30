@@ -1,0 +1,12 @@
+name: module_interface
+description: Contracts and base classes for Super App pluggable modules.
+version: 1.0.0
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+  go_router: ^17.0.1

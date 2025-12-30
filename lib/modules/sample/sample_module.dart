@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../shared/widgets/workspace_icon.dart';
-import '../module_base.dart';
-import '../navigation_item.dart';
-import '../quick_action_item.dart';
+import 'package:module_interface/module_interface.dart';
 import 'screens/sample_screen.dart';
 
 /// Sample module demonstrating how to create a pluggable module.
