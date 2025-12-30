@@ -33,6 +33,13 @@ class DemoModule extends BaseModule {
       name: 'demo',
       builder: (context, state) => const DemoScreen(),
     ),
+    GoRoute(
+      path: '/demo/detail/:id',
+      name: 'demo_detail',
+      builder: (context, state) => DemoDetailScreen(
+        id: state.pathParameters['id'] ?? '',
+      ),
+    ),
   ];
 
   @override
