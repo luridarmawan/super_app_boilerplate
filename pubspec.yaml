@@ -162,8 +162,14 @@ flutter:
 
 # Flutter Native Splash Configuration
 # Jalankan: dart run flutter_native_splash:create
+# 
+# SMOOTH TRANSITION STRATEGY:
+# 1. Native splash tampil instan dengan warna solid
+# 2. Flutter splash muncul dengan fade-in dari warna yang sama
+# 3. Background dinamis (dari AppInfo.splashBackground) dimuat
+# 4. Transisi smooth ke main app
 flutter_native_splash:
-  # Warna background splash screen
+  # Warna background - sama dengan colorScheme.primary untuk seamless transition
   color: "#1565C0"
   
   # Gambar logo di tengah splash screen
@@ -174,9 +180,10 @@ flutter_native_splash:
   # branding_mode: bottom
   
   # Background image full screen (opsional, jika ingin pakai gambar penuh)
+  # Tidak digunakan karena kita pakai dynamic image dari Flutter splash
   # background_image: assets/images/splash_background.png
   
-  # Dark mode settings
+  # Dark mode settings - matching dark theme primary color
   color_dark: "#0D47A1"
   image_dark: assets/images/logo/carik_blue_logo.png
   
