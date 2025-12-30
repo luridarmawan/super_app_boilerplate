@@ -15,13 +15,16 @@ import '../../core/constants/assets.dart';
 /// 5. Animasi logo dan content masuk
 class SplashScreen extends ConsumerStatefulWidget {
   final VoidCallback? onComplete;
-  final Duration splashDuration;
+  final Duration? splashDuration;
 
   const SplashScreen({
     super.key,
     this.onComplete,
-    this.splashDuration = AppInfo.splashScreenDuration,
+    this.splashDuration,
   });
+
+  /// Get the effective splash duration (uses AppInfo default if not provided)
+  Duration get effectiveSplashDuration => splashDuration ?? AppInfo.splashScreenDuration;
 
   @override
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
@@ -82,7 +85,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     _preloadBackgroundImage();
 
     // Navigate setelah durasi splash
-    Future.delayed(widget.splashDuration, () {
+    Future.delayed(widget.effectiveSplashDuration, () {
       if (mounted) {
         widget.onComplete?.call();
       }

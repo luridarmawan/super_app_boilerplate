@@ -83,7 +83,7 @@ class AppInfo {
   static bool get enableSplashScreen => dotenv.env['ENABLE_SPLASH_SCREEN']?.toLowerCase() == 'true';
 
   /// Duration of splash screen display (only applies if enableSplashScreen is true)
-  static const Duration splashScreenDuration = Duration(seconds: 3);
+  static Duration get splashScreenDuration => Duration(seconds:int.tryParse(dotenv.env['SPLASH_DURATION'] ?? '5') ?? 5);
 
   /// Number of initial app launches to show splash screen (default: 5)
   static int get splashShowCount => int.tryParse(dotenv.env['SPLASH_SHOW_COUNT'] ?? '5') ?? 5;
