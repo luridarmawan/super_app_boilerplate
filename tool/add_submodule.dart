@@ -4,7 +4,7 @@ import 'dart:io';
 /// Add Submodule CLI Tool
 ///
 /// Usage:
-///   dart run tool/add_submodule.dart [repository_url] [module_name]
+///   dart run tool/add_submodule.dart <repository_url> [module_name]
 ///
 /// Example:
 ///   dart run tool/add_submodule.dart https://github.com/ihasa-id/repo_name
@@ -56,19 +56,32 @@ void main(List<String> args) async {
   // 4. Run git submodule add
   print('🚀 Running git submodule add (branch: $branchName)...');
   final targetPath = 'modules/$moduleName';
-  final gitResult = await Process.run('git', [
-    'submodule',
-    'add',
-    '-b',
-    branchName,
-    repoUrl,
-    targetPath,
-  ], runInShell: true);
+
+  List<String> gitArgs = ['submodule', 'add', '-b', branchName, repoUrl, targetPath];
+
+  var gitResult = await Process.run('git', gitArgs, runInShell: true);
+
+  if (gitResult.exitCode != 0) {
+    final stderr = gitResult.stderr.toString();
+
+    // Check for "already exists" in .git/modules
+    if (stderr.contains('found locally') || stderr.contains('use the \'--force\' option')) {
+      print('⚠ Git detected leftover metadata for this module.');
+      stdout.write('❓ Apakah ingin memaksa reinstall dengan flag --force? (y/N): ');
+      final forcePrompt = stdin.readLineSync()?.toLowerCase() ?? 'n';
+
+      if (forcePrompt == 'y' || forcePrompt == 'yes') {
+        print('🚀 Re-running with --force...');
+        gitArgs.insert(2, '--force');
+        gitResult = await Process.run('git', gitArgs, runInShell: true);
+      }
+    }
+  }
 
   if (gitResult.exitCode != 0) {
     final stderr = gitResult.stderr.toString();
     print('❌ Git Error: $stderr');
-    // If it already exists, we continue to registration
+    // If it already exists in the workspace, we continue to registration
     if (!stderr.contains('already exists')) {
        exit(1);
     }
