@@ -1,5 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api_client.dart';
+import '../api_config.dart';
 import '../repository/base_repository.dart';
 import '../models/base_response.dart';
 import '../../constants/app_info.dart';
@@ -74,9 +76,20 @@ class ArticleRepository extends BaseRepository {
   /// ```
   Future<BaseResponse<List<ArticleModel>>> getArticles() async {
     try {
-      // Fetch langsung dari URL eksternal
-      // Menggunakan dio.get dengan URL lengkap
-      final response = await dio.get(_articleApiUrl);
+      // Fetch with bot protection retry and browser-like headers
+      final response = await fetchWithCloudflareRetry(
+        () => dio.get(
+          _articleApiUrl,
+          options: Options(
+            headers: {
+              'User-Agent': ApiConfig.browserUserAgent,
+              'Accept': 'application/json, text/plain, */*',
+              'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
+            },
+          ),
+        ),
+        apiName: 'Article',
+      );
 
       if (response.statusCode == 200 && response.data != null) {
         final List<ArticleModel> articles = [];

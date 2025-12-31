@@ -10,6 +10,7 @@
 .env.*
 !.env.example
 build.bat
+emu.bat
 
 # Flutter repo-specific
 /bin/cache/

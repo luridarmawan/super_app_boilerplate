@@ -4,7 +4,7 @@ import 'dart:io';
 /// Add Submodule CLI Tool
 ///
 /// Usage:
-///   dart run tool/add_submodule.dart <repository_url> [module_name]
+///   dart run tool/add_submodule.dart `<repository_url>` [module_name]
 ///
 /// Example:
 ///   dart run tool/add_submodule.dart https://github.com/ihasa-id/repo_name
