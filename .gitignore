@@ -123,3 +123,8 @@ app.*.symbols
 
 # Firebase
 **/google-services.json
+
+# External Modules (managed by tool/manage_external_modules.dart)
+modules/
+!modules/.gitkeep
+modules.yaml

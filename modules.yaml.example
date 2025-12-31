@@ -1,0 +1,33 @@
+# External Modules Manifest
+# ========================
+# File ini adalah contoh konfigurasi untuk modul eksternal.
+# 
+# Cara penggunaan:
+#   1. Copy file ini menjadi "modules.yaml"
+#   2. Edit sesuai kebutuhan
+#   3. Jalankan: dart run tool/sync_modules.dart
+#
+# PENTING: modules.yaml TIDAK di-track oleh git (ada di .gitignore)
+# Setiap developer bisa punya konfigurasi modul yang berbeda.
+
+modules:
+  # Contoh modul dengan SSH URL
+  # - name: sales_module
+  #   url: git@github.com:company/sales-module.git
+  #   branch: development
+  #   enabled: true
+
+  # Contoh modul dengan HTTPS URL
+  # - name: inventory_module
+  #   url: https://github.com/company/inventory-module.git
+  #   branch: main
+  #   enabled: true
+
+  # Contoh modul yang dinonaktifkan (tidak akan di-clone)
+  # - name: reporting_module
+  #   url: git@github.com:company/reporting-module.git
+  #   branch: main
+  #   enabled: false
+
+  # === Tambahkan modul Anda di bawah ini ===
+  
