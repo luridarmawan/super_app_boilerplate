@@ -500,8 +500,8 @@ lib/
 ├── packages/                     # NEW: Shared contracts
 │   └── module_interface/         # Package dasar untuk semua modul
 │
-├── modules/                      # NEW: External Submodules
-│   └── [submodule_name]/         # Repository terpisah (Git Submodule)
+├── modules/                      # NEW: External Modules (gitignored)
+│   └── [external_module]/        # Repository terpisah (via modules.yaml)
 │
 ├── lib/
 │   ├── core/                     # TIDAK DIUBAH - Base infrastructure
@@ -544,8 +544,9 @@ lib/
 | `lib/modules/all_modules.dart` | Manifest pendaftaran modul (Auto-generated) |
 | `lib/modules/sample/sample_module.dart` | Contoh implementasi modul internal |
 | `tool/generate_module.dart` | CLI tool untuk module internal (local folder) |
-| `tool/add_submodule.dart` | CLI tool untuk module eksternal (Git Submodule) |
+| `tool/manage_external_modules.dart` | CLI tool untuk module eksternal (tanpa git submodule) |
 | `tool/sync_modules.dart` | Script sinkronisasi pendaftaran modul internal |
+| `modules.yaml.example` | Template manifest untuk modul eksternal |
 
 ---
 
@@ -561,13 +562,20 @@ Cocok untuk fitur yang spesifik hanya untuk aplikasi ini. Menggunakan CLI tool:
 dart run tool/generate_module.dart <nama_modul>
 ```
 
-### Opsi 2: Modul Eksternal (Git Submodule)
+### Opsi 2: Modul Eksternal (Repository Terpisah)
 
 Cocok jika modul ingin dipisah repository-nya (misal: dikerjakan tim berbeda).
+Strategi ini **tidak menggunakan git submodule** sehingga tidak ada perubahan di `.gitmodules`.
 Lihat panduan lengkapnya di [SubModule.md](./SubModule.md).
 
 ```bash
-dart run tool/add_submodule.dart <repo_url>
+# 1. Copy template manifest
+copy modules.yaml.example modules.yaml
+
+# 2. Edit modules.yaml - tambahkan modul eksternal
+
+# 3. Clone semua modul
+dart run tool/manage_external_modules.dart
 ```
 
 Contoh:
