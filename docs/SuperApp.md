@@ -11,7 +11,7 @@ Bangun struktur proyek Flutter untuk aplikasi mobile "Super App" yang mendukung 
 
 ## 1. Technical Stack & Architecture
 * **Framework:** Flutter (Android & iOS) dengan dukungan layar full screen (edge-to-edge).
-* **Org:** id.carik.superapp
+* **Org:** id.carik.superapp_demo
 * **UI Style:** Gunakan **Material 3** secara konsisten di seluruh aplikasi (useMaterial3: true).
 * **State Management:** Riverpod atau Provider untuk menangani perubahan tema, bahasa, dan auth state secara global.
 * **Auth Abstraction (Core):**

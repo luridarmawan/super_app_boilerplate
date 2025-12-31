@@ -228,7 +228,7 @@ if (state.hasPermission && state.deviceToken != null) {
 
 #### Android
 1. Klik ikon Android di Firebase Console
-2. Masukkan package name: `id.carik.superapp` (sesuaikan dengan aplikasi Anda)
+2. Masukkan package name: `id.carik.superapp_demo` (sesuaikan dengan aplikasi Anda)
 3. Download `google-services.json`
 4. Letakkan di: `android/app/google-services.json`
 
