@@ -2,6 +2,10 @@
 
 Dokumentasi ini menjelaskan strategi arsitektur modular untuk membuat base code yang dapat digunakan sebagai template aplikasi untuk berbagai client tanpa melakukan perubahan besar pada core code.
 
+> **📚 Dokumen Terkait:**
+> - **[SubModule.md](./SubModule.md)** - Panduan khusus untuk modul eksternal (repository terpisah)
+> - **[API.md](./API.md)** - Network layer documentation
+
 ---
 
 ## Daftar Isi
@@ -483,42 +487,58 @@ class NewsStrings {
 ## Struktur Folder yang Direkomendasikan
 
 ```
-lib/
-├── core/                         # TIDAK DIUBAH - Base infrastructure
-│   ├── auth/                     # Authentication services
-│   ├── config/                   # App configuration
-│   ├── constants/                # Constants & app info
-│   ├── gps/                      # GPS services
-│   ├── l10n/                     # Core localization
-│   ├── network/                  # Network layer (Dio, Retrofit)
-│   ├── notification/             # Push notification
-│   ├── routes/                   # Routing (GoRouter)
-│   ├── services/                 # Core services
-│   ├── theme/                    # Theme configuration
-│   └── utils/                    # Utility functions
+super_app_boilerplate/
+├── packages/                     # Shared contracts
+│   └── module_interface/         # Package dasar untuk semua modul (BaseModule, NavItem, dll)
 │
-├── packages/                     # NEW: Shared contracts
-│   └── module_interface/         # Package dasar untuk semua modul
-│
-├── modules/                      # NEW: External Modules (gitignored)
-│   └── [external_module]/        # Repository terpisah (via modules.yaml)
+├── modules/                      # External Modules (GITIGNORED)
+│   ├── .gitkeep                  # Placeholder agar folder tetap ada
+│   └── [external_module]/        # Clone dari repository terpisah via modules.yaml
 │
 ├── lib/
 │   ├── core/                     # TIDAK DIUBAH - Base infrastructure
-│   │   └── ...
+│   │   ├── auth/                 # Authentication services
+│   │   ├── config/               # App configuration
+│   │   ├── constants/            # Constants & app info
+│   │   ├── gps/                  # GPS services
+│   │   ├── l10n/                 # Core localization
+│   │   ├── network/              # Network layer (Dio, Retrofit)
+│   │   ├── notification/         # Push notification
+│   │   ├── routes/               # Routing (GoRouter)
+│   │   ├── services/             # Core services
+│   │   ├── theme/                # Theme configuration
+│   │   └── utils/                # Utility functions
 │   │
-│   ├── modules/                  # Internal Modules
-│   │   ├── module_registry.dart
-│   │   ├── all_modules.dart
-│   │   └── [internal_module]/    # Modul yang ada di repo utama
+│   ├── modules/                  # Internal Modules (tracked by git)
+│   │   ├── all_modules.dart      # Module manifest (auto-generated)
+│   │   ├── module_base.dart      # Re-export dari module_interface
+│   │   ├── module_registry.dart  # Registry untuk registrasi modul
+│   │   ├── modules.dart          # Module exports
+│   │   └── sample/               # Contoh modul internal
 │   │
-│   ├── features/                 # TETAP - Built-in core features
-│   └── shared/                   # TETAP - Shared components
+│   ├── features/                 # Built-in core features (auth, dashboard, dll)
+│   ├── shared/                   # Shared components (widgets, info screens)
+│   └── main.dart                 # App entry point
 │
-└── main.dart                     # App entry point
+├── tool/                         # CLI tools
+│   ├── generate_module.dart      # Generate modul internal
+│   ├── manage_external_modules.dart  # Kelola modul eksternal
+│   └── sync_modules.dart         # Sync pendaftaran modul
+│
+├── modules.yaml.example          # Template manifest modul eksternal
+└── modules.yaml                  # Manifest lokal (GITIGNORED)
 ```
 
-> **Note:** Konfigurasi branding (colors, company info, social links, legal URLs) sudah terintegrasi di `lib/core/constants/app_info.dart`
+### Perbedaan Internal vs External Modules
+
+| Aspek | Internal Module | External Module |
+|-------|-----------------|------------------|
+| **Lokasi** | `lib/modules/` | `modules/` (root) |
+| **Git tracking** | ✅ Di-track | ❌ Gitignored |
+| **Repository** | Sama dengan app | Terpisah |
+| **Cocok untuk** | Fitur spesifik app ini | Fitur yang di-reuse antar project |
+| **CLI Tool** | `generate_module.dart` | `manage_external_modules.dart` |
+| **Dokumentasi** | Dokumen ini | [SubModule.md](./SubModule.md) |
 
 ---
 
@@ -819,5 +839,6 @@ ProviderScope(
 
 ---
 
-*Dokumentasi ini dibuat: 20 Desember 2025*
-*Versi: 1.0.0*
+*Dibuat: 20 Desember 2025*
+*Diperbarui: 1 Januari 2026*
+*Versi: 1.2.0*
