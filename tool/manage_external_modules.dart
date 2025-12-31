@@ -4,15 +4,15 @@ import 'package:yaml/yaml.dart';
 
 /// External Module Manager CLI Tool
 ///
-/// Mengelola modul eksternal berdasarkan konfigurasi di modules.yaml
-/// Strategi ini menghindari penggunaan git submodule agar tidak mengubah
-/// file .gitmodules di repository utama.
+/// Manages external modules based on configuration in modules.yaml
+/// This strategy avoids using git submodule to prevent changes
+/// to the .gitmodules file in the main repository.
 ///
 /// Usage:
-///   dart run tool/manage_external_modules.dart           # Clone modul yang belum ada
-///   dart run tool/manage_external_modules.dart --pull    # Update semua modul
-///   dart run tool/manage_external_modules.dart --status  # Cek status semua modul
-///   dart run tool/manage_external_modules.dart --clean   # Hapus semua modul
+///   dart run tool/manage_external_modules.dart           # Clone modules that don't exist
+///   dart run tool/manage_external_modules.dart --pull    # Update all modules
+///   dart run tool/manage_external_modules.dart --status  # Check status of all modules
+///   dart run tool/manage_external_modules.dart --clean   # Delete all modules
 void main(List<String> args) async {
   print('╔══════════════════════════════════════════╗');
   print('║     EXTERNAL MODULE MANAGER              ║');
@@ -29,12 +29,12 @@ void main(List<String> args) async {
   
   if (!manifestFile.existsSync()) {
     print('');
-    print('⚠️  File modules.yaml tidak ditemukan!');
+    print('⚠️  File modules.yaml not found!');
     print('');
-    print('📋 Cara setup:');
-    print('   1. Copy modules.yaml.example menjadi modules.yaml');
-    print('   2. Edit modules.yaml sesuai kebutuhan');
-    print('   3. Jalankan ulang: dart run tool/manage_external_modules.dart');
+    print('📋 Setup instructions:');
+    print('   1. Copy modules.yaml.example to modules.yaml');
+    print('   2. Edit modules.yaml according to your needs');
+    print('   3. Run again: dart run tool/manage_external_modules.dart');
     print('');
     exit(1);
   }
@@ -43,14 +43,14 @@ void main(List<String> args) async {
   final yaml = loadYaml(manifestContent);
   
   if (yaml == null || yaml['modules'] == null) {
-    print('⚠️  Tidak ada modul yang dikonfigurasi di modules.yaml');
+    print('⚠️  No modules configured in modules.yaml');
     exit(0);
   }
 
   final modules = yaml['modules'] as YamlList;
   
   if (modules.isEmpty) {
-    print('⚠️  Daftar modul kosong di modules.yaml');
+    print('⚠️  Module list is empty in modules.yaml');
     exit(0);
   }
 
@@ -66,7 +66,7 @@ void main(List<String> args) async {
   }
 
   print('');
-  print('📦 Ditemukan ${modules.length} modul di manifest');
+  print('📦 Found ${modules.length} modules in manifest');
   print('');
 
   if (isStatus) {
@@ -101,7 +101,7 @@ Future<void> _syncModules(YamlList modules, {bool pullUpdates = false}) async {
     final enabled = module['enabled'] as bool? ?? true;
 
     if (!enabled) {
-      print('⏭️  $name: Dilewati (enabled: false)');
+      print('⏭️  $name: Skipped (enabled: false)');
       continue;
     }
 
@@ -110,7 +110,7 @@ Future<void> _syncModules(YamlList modules, {bool pullUpdates = false}) async {
 
     if (targetDir.existsSync()) {
       if (pullUpdates) {
-        print('🔄 $name: Mengupdate dari $branch...');
+        print('🔄 $name: Updating from $branch...');
         
         // Fetch and pull
         final fetchResult = await Process.run(
@@ -136,10 +136,10 @@ Future<void> _syncModules(YamlList modules, {bool pullUpdates = false}) async {
           print('   ❌ Pull failed: ${pullResult.stderr}');
         }
       } else {
-        print('✓ $name: Sudah ada');
+        print('✓ $name: Already exists');
       }
     } else {
-      print('📥 $name: Cloning dari $url (branch: $branch)...');
+      print('📥 $name: Cloning from $url (branch: $branch)...');
       
       final cloneResult = await Process.run(
         'git', ['clone', '-b', branch, url, targetPath],
@@ -162,7 +162,7 @@ Future<void> _syncModules(YamlList modules, {bool pullUpdates = false}) async {
 }
 
 Future<void> _checkStatus(YamlList modules) async {
-  print('📊 Status Modul:');
+  print('📊 Module Status:');
   print('─' * 60);
   
   for (final module in modules) {
@@ -216,7 +216,7 @@ Future<void> _checkStatus(YamlList modules) async {
 }
 
 Future<void> _cleanModules(YamlList modules) async {
-  print('🗑️  Menghapus modul...');
+  print('🗑️  Deleting modules...');
   
   for (final module in modules) {
     final name = module['name'] as String;
@@ -224,18 +224,18 @@ Future<void> _cleanModules(YamlList modules) async {
     final targetDir = Directory(targetPath);
 
     if (targetDir.existsSync()) {
-      stdout.write('❓ Hapus $name? (y/N): ');
+      stdout.write('❓ Delete $name? (y/N): ');
       final response = stdin.readLineSync()?.toLowerCase() ?? 'n';
       
       if (response == 'y' || response == 'yes') {
         try {
           targetDir.deleteSync(recursive: true);
-          print('   ✓ $name dihapus');
+          print('   ✓ $name deleted');
         } catch (e) {
-          print('   ❌ Gagal menghapus: $e');
+          print('   ❌ Failed to delete: $e');
         }
       } else {
-        print('   ⏭️  Dilewati');
+        print('   ⏭️  Skipped');
       }
     }
   }
@@ -314,30 +314,30 @@ Future<void> _registerModuleManifest(String moduleName) async {
 
 void _printHelp() {
   print('''
-External Module Manager - Mengelola modul eksternal tanpa git submodule
+External Module Manager - Manage external modules without git submodule
 
 Usage:
   dart run tool/manage_external_modules.dart [options]
 
 Options:
-  (tanpa opsi)  Clone modul yang belum ada
-  --pull, -p    Update semua modul dari remote
-  --status, -s  Tampilkan status semua modul
-  --clean, -c   Hapus modul (dengan konfirmasi)
-  --help, -h    Tampilkan bantuan ini
+  (no options)  Clone modules that don't exist
+  --pull, -p    Update all modules from remote
+  --status, -s  Show status of all modules
+  --clean, -c   Delete modules (with confirmation)
+  --help, -h    Show this help
 
-Konfigurasi:
-  Edit file modules.yaml untuk menambah/mengubah modul.
-  Gunakan modules.yaml.example sebagai template.
+Configuration:
+  Edit modules.yaml file to add/modify modules.
+  Use modules.yaml.example as a template.
 
-Strategi:
-  Tool ini menggunakan git clone biasa (bukan submodule) sehingga
-  tidak ada perubahan di .gitmodules pada repository utama.
-  Folder modules/ di-gitignore agar tidak ter-track.
+Strategy:
+  This tool uses regular git clone (not submodule) so there are
+  no changes to .gitmodules in the main repository.
+  The modules/ folder is gitignored so it won't be tracked.
 
-Contoh:
-  dart run tool/manage_external_modules.dart           # Setup awal
-  dart run tool/manage_external_modules.dart --pull    # Update semua
-  dart run tool/manage_external_modules.dart --status  # Cek status
+Examples:
+  dart run tool/manage_external_modules.dart           # Initial setup
+  dart run tool/manage_external_modules.dart --pull    # Update all
+  dart run tool/manage_external_modules.dart --status  # Check status
 ''');
 }
