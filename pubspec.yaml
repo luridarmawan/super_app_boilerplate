@@ -17,14 +17,16 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 3.6.0+31
+version: 3.7.1+33
 
 # 3.5.0
 # - custom quick action from module
-# 3.5.0
+# 3.6.0
 # - splash screen duration & gradient
 # - splash screen smooth transition
 # - custom splash screen background
+# 3.7.0
+# - Implement submodule
 
 environment:
   sdk: ^3.9.0
@@ -89,11 +91,16 @@ dependencies:
   # Package Info (version from pubspec)
   package_info_plus: ^8.0.0
 
+  # Module Interface (shared with submodules)
+  module_interface:
+    path: packages/module_interface
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   flutter_lints: ^6.0.0
+  yaml: ^3.1.2  # Required for tool/manage_external_modules.dart
   flutter_launcher_icons: ^0.14.2
   flutter_native_splash: ^2.4.4
 

@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../shared/widgets/workspace_icon.dart';
-import '../module_base.dart';
-import '../navigation_item.dart';
-import '../quick_action_item.dart';
+import 'package:module_interface/module_interface.dart';
 import 'screens/sample_screen.dart';
 
 /// Sample module demonstrating how to create a pluggable module.
@@ -72,17 +70,6 @@ class SampleModule extends BaseModule {
 
   @override
   List<QuickActionItem> get quickActions => [
-    // Example: Route-based quick action
-    QuickActionItem(
-      id: 'sample_explore',
-      moduleId: name,
-      icon: Icons.explore_outlined,
-      label: 'Explore',
-      color: const Color(0xFF7C4DFF),
-      route: '/sample',
-      order: 100,
-      description: 'Explore sample features',
-    ),
     // Example: Custom callback quick action
     QuickActionItem(
       id: 'sample_action',
@@ -99,8 +86,19 @@ class SampleModule extends BaseModule {
           ),
         );
       },
-      order: 101,
+      order: 100,
       description: 'Execute a quick action',
+    ),
+    // Example: Route-based quick action
+    QuickActionItem(
+      id: 'sample_explore',
+      moduleId: name,
+      icon: Icons.explore_outlined,
+      label: 'Explore',
+      color: const Color(0xFF7C4DFF),
+      route: '/sample',
+      order: 101,
+      description: 'Explore sample features',
     ),
     // Example: Another route-based action
     QuickActionItem(

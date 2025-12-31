@@ -10,6 +10,7 @@
 .env.*
 !.env.example
 build.bat
+emu.bat
 
 # Flutter repo-specific
 /bin/cache/
@@ -122,3 +123,8 @@ app.*.symbols
 
 # Firebase
 **/google-services.json
+
+# External Modules (managed by tool/manage_external_modules.dart)
+modules/
+!modules/.gitkeep
+modules.yaml

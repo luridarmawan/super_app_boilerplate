@@ -45,11 +45,17 @@ class ApiConfig {
   /// Default headers for all requests
   static Map<String, String> get defaultHeaders => {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
         'X-Platform': 'mobile',
         'X-App-Version': AppInfo.version,
-        'User-Agent': '${AppInfo.name.replaceAll(' ', '')}/${AppInfo.version}',
       };
+
+  /// Browser-like User-Agent to avoid bot detection
+  /// Used for external API calls that may have bot protection
+  static const String browserUserAgent = 
+      'Mozilla/5.0 (Linux; Android 13; SM-G998B) AppleWebKit/537.36 '
+      '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36';
 
   /// Environment configuration (automatically set based on AppInfo.environment)
   static bool get enableLogging => EnvironmentConfig.current.enableLogging;

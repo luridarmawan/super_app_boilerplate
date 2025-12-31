@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-import 'module_base.dart';
-import 'navigation_item.dart';
 import 'quick_action_item.dart';
 
 /// Registry for managing pluggable modules.

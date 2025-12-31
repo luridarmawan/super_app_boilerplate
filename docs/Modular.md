@@ -497,31 +497,23 @@ lib/
 │   ├── theme/                    # Theme configuration
 │   └── utils/                    # Utility functions
 │
-├── modules/                      # NEW: Pluggable modules
-│   ├── module_base.dart          # Abstract module class
-│   ├── module_registry.dart      # Module registration & management
+├── packages/                     # NEW: Shared contracts
+│   └── module_interface/         # Package dasar untuk semua modul
+│
+├── modules/                      # NEW: External Modules (gitignored)
+│   └── [external_module]/        # Repository terpisah (via modules.yaml)
+│
+├── lib/
+│   ├── core/                     # TIDAK DIUBAH - Base infrastructure
+│   │   └── ...
 │   │
-│   └── [module_name]/            # Setiap modul self-contained
-│       ├── module.dart           # Module entry point (extends BaseModule)
-│       ├── routes/               # Route definitions
-│       ├── providers/            # Riverpod providers
-│       ├── screens/              # UI screens
-│       ├── widgets/              # Module-specific widgets
-│       ├── services/             # Module services
-│       ├── models/               # Data models
-│       ├── repositories/         # Data repositories
-│       └── l10n/                 # Module localization
-│
-├── features/                     # TETAP - Built-in core features
-│   ├── auth/                     # Login, Register (core)
-│   ├── dashboard/                # Main dashboard (core)
-│   ├── profile/                  # User profile (core)
-│   ├── settings/                 # App settings (core)
-│   └── splash/                   # Splash screen (core)
-│
-├── shared/                       # TETAP - Shared components
-│   ├── widgets/                  # Reusable widgets
-│   └── info/                     # Info screens (Help, ToS, Privacy)
+│   ├── modules/                  # Internal Modules
+│   │   ├── module_registry.dart
+│   │   ├── all_modules.dart
+│   │   └── [internal_module]/    # Modul yang ada di repo utama
+│   │
+│   ├── features/                 # TETAP - Built-in core features
+│   └── shared/                   # TETAP - Shared components
 │
 └── main.dart                     # App entry point
 ```
@@ -541,31 +533,49 @@ lib/
 | 5️⃣ | **Branding Config** | Konfigurasi branding terintegrasi di `AppInfo` | ✅ Selesai |
 | 6️⃣ | **Sample Module** | Buat contoh modul (misal: "News Module") | ✅ Selesai |
 | 7️⃣ | **CLI Tool** | Script untuk generate modul baru | ✅ Selesai |
+| 8️⃣ | **Module Manifest** | Registrasi otomatis via `ModuleManifest` & `sync_modules.dart` | ✅ Selesai |
 
 ### File yang Sudah Dibuat
 
 | File | Deskripsi |
 |------|-----------|
-| `lib/modules/module_base.dart` | Abstract class `BaseModule` dengan lifecycle methods |
+| `packages/module_interface/` | **Kontrak Utama**: Shared package berisi `BaseModule` |
 | `lib/modules/module_registry.dart` | Registry untuk registrasi dan manajemen modul |
-| `lib/modules/navigation_item.dart` | Model `NavigationItem` untuk menu item |
-| `lib/modules/modules.dart` | Barrel file untuk export |
-| `lib/modules/sample/sample_module.dart` | Contoh implementasi modul |
-| `lib/modules/sample/screens/sample_screen.dart` | Screen contoh untuk Sample module |
-| `lib/shared/widgets/module_dashboard_slots.dart` | Widget untuk menampilkan dashboard widgets dari modul aktif |
-| `lib/core/constants/app_info.dart` | Konfigurasi app info, branding, colors, social links (terintegrasi) |
-| `tool/generate_module.dart` | CLI tool untuk generate modul baru |
+| `lib/modules/all_modules.dart` | Manifest pendaftaran modul (Auto-generated) |
+| `lib/modules/sample/sample_module.dart` | Contoh implementasi modul internal |
+| `tool/generate_module.dart` | CLI tool untuk module internal (local folder) |
+| `tool/manage_external_modules.dart` | CLI tool untuk module eksternal (tanpa git submodule) |
+| `tool/sync_modules.dart` | Script sinkronisasi pendaftaran modul internal |
+| `modules.yaml.example` | Template manifest untuk modul eksternal |
 
 ---
 
 ## Cara Membuat Modul Baru
 
-### Opsi 1: Menggunakan CLI Tool (Rekomendasi)
+Terdapat dua cara untuk membuat modul tergantung pada kebutuhan skalabilitas:
 
-Cara tercepat untuk membuat modul baru adalah menggunakan CLI tool:
+### Opsi 1: Modul Internal (Satu Repository)
+
+Cocok untuk fitur yang spesifik hanya untuk aplikasi ini. Menggunakan CLI tool:
 
 ```bash
 dart run tool/generate_module.dart <nama_modul>
+```
+
+### Opsi 2: Modul Eksternal (Repository Terpisah)
+
+Cocok jika modul ingin dipisah repository-nya (misal: dikerjakan tim berbeda).
+Strategi ini **tidak menggunakan git submodule** sehingga tidak ada perubahan di `.gitmodules`.
+Lihat panduan lengkapnya di [SubModule.md](./SubModule.md).
+
+```bash
+# 1. Copy template manifest
+copy modules.yaml.example modules.yaml
+
+# 2. Edit modules.yaml - tambahkan modul eksternal
+
+# 3. Clone semua modul
+dart run tool/manage_external_modules.dart
 ```
 
 Contoh:
@@ -581,7 +591,7 @@ CLI tool akan otomatis membuat:
 - Dashboard card widget (`widgets/<nama>_dashboard_card.dart`)
 
 Setelah di-generate, Anda hanya perlu:
-1. **Register modul** di `lib/main.dart`
+1. **Cek Pendaftaran**: Modul akan otomatis terdaftar di `lib/modules/all_modules.dart` oleh CLI tool.
 2. **Enable modul** di `.env`
 
 ### Opsi 2: Membuat Manual
@@ -667,19 +677,22 @@ class NewsModule extends BaseModule {
 
 ```dart
 // lib/main.dart
+import 'modules/all_modules.dart';
+
 void main() async {
   // ... existing initialization ...
   
-  // Daftarkan modul-modul
-  ModuleRegistry.register(NewsModule());
-  ModuleRegistry.register(EcommerceModule());
-  ModuleRegistry.register(ChatModule());
+  // Daftarkan semua modul via Manifest (Otomatis)
+  ModuleManifest.register();
   
   // Inisialisasi modul aktif
   await ModuleRegistry.initializeAll();
   
   runApp(...);
 }
+
+// Catatan: Jika pendaftaran tidak otomatis, jalankan:
+// dart run tool/sync_modules.dart
 ```
 
 ### Langkah 4: Aktifkan di .env

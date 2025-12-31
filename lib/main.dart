@@ -12,8 +12,8 @@ import 'core/constants/app_info.dart';
 import 'core/services/prefs_service.dart';
 
 // Modular Architecture
+import 'modules/all_modules.dart';
 import 'modules/module_registry.dart';
-import 'modules/sample/sample_module.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,11 +43,8 @@ void main() async {
   // ============================================
   // REGISTER MODULES
   // ============================================
-  // Add your modules here. They will only be active if enabled in .env
-  // Example: ENABLE_MODULE_SAMPLE=true
-  ModuleRegistry.register(SampleModule());
-  // ModuleRegistry.register(NewsModule());
-  // ModuleRegistry.register(EcommerceModule());
+  // Modules will only be active if enabled in .env
+  ModuleManifest.register();
   
   // Print module status for debugging
   ModuleRegistry.printDebugInfo();

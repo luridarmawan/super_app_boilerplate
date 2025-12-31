@@ -1,5 +1,8 @@
+import 'package:dio/dio.dart';
+// import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api_client.dart';
+import '../api_config.dart';
 import '../repository/base_repository.dart';
 import '../models/base_response.dart';
 import '../../constants/app_info.dart';
@@ -56,8 +59,20 @@ class BannerRepository extends BaseRepository {
   /// ```
   Future<BaseResponse<List<BannerModel>>> getBanners() async {
     try {
-      // Fetch directly from external URL
-      final response = await dio.get(_bannerApiUrl);
+      // Fetch with bot protection retry and browser-like headers
+      final response = await fetchWithCloudflareRetry(
+        () => dio.get(
+          _bannerApiUrl,
+          options: Options(
+            headers: {
+              'User-Agent': ApiConfig.browserUserAgent,
+              'Accept': 'application/json, text/plain, */*',
+              'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
+            },
+          ),
+        ),
+        apiName: 'Banner',
+      );
 
       if (response.statusCode == 200 && response.data != null) {
         final List<BannerModel> banners = [];

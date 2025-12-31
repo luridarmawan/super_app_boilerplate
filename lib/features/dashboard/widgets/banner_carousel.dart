@@ -86,6 +86,18 @@ class BannerCarouselFromApi extends ConsumerWidget {
 
       // Success state
       data: (banners) {
+        // If no banners from API, use default banners
+        if (banners.isEmpty) {
+          return BannerCarousel(
+            items: BannerItem.defaultItems,
+            height: height,
+            autoPlay: autoPlay,
+            autoPlayInterval: autoPlayInterval,
+            enlargeCenterPage: enlargeCenterPage,
+            viewportFraction: viewportFraction,
+          );
+        }
+
         // Convert BannerModel to BannerItem
         final bannerItems = banners.map((model) {
           final item = BannerItem.fromModel(model);
