@@ -1,59 +1,59 @@
 # Quick Action
 
-Quick Actions adalah fitur yang memungkinkan setiap modul menyediakan aksi cepat yang ditampilkan dalam grid menu di dashboard.
+Quick Actions is a feature that allows each module to provide quick actions displayed in a menu grid on the dashboard.
 
-> **📚 Dokumen Terkait:**
-> - **[Modular.md](./Modular.md)** - Arsitektur modular (BaseModule, registry)
-> - **[SubModule.md](./SubModule.md)** - Panduan external modules
+> **📚 Related Documents:**
+> - **[Modular.md](./Modular.md)** - Modular architecture (BaseModule, registry)
+> - **[SubModule.md](./SubModule.md)** - External modules guide
 
 ---
 
-## Daftar Isi
+## Table of Contents
 
-1. [Pendahuluan](#pendahuluan)
-2. [Fitur Utama](#fitur-utama)
-3. [Cara Menggunakan](#cara-menggunakan)
-   - [Menambahkan Quick Actions ke Modul](#menambahkan-quick-actions-ke-modul)
-   - [Menampilkan Quick Actions di Dashboard](#menampilkan-quick-actions-di-dashboard)
-4. [Model QuickActionItem](#model-quickactionitem)
-5. [Konfigurasi Visibility](#konfigurasi-visibility)
+1. [Introduction](#introduction)
+2. [Main Features](#main-features)
+3. [How to Use](#how-to-use)
+   - [Adding Quick Actions to a Module](#adding-quick-actions-to-a-module)
+   - [Displaying Quick Actions on Dashboard](#displaying-quick-actions-on-dashboard)
+4. [QuickActionItem Model](#quickactionitem-model)
+5. [Visibility Configuration](#visibility-configuration)
 6. [Static Quick Actions](#static-quick-actions)
 7. [Quick Actions Manager](#quick-actions-manager)
-8. [Contoh Implementasi](#contoh-implementasi)
-9. [**Quick Actions di External Module (SubModule)**](#quick-actions-di-external-module-submodule) ⭐ NEW
+8. [Implementation Examples](#implementation-examples)
+9. [**Quick Actions in External Module (SubModule)**](#quick-actions-in-external-module-submodule) ⭐ NEW
 
 ---
 
-## Pendahuluan
+## Introduction
 
-Quick Actions adalah ikon/tombol yang ditampilkan di dashboard dalam format grid. Fitur ini memungkinkan:
+Quick Actions are icons/buttons displayed on the dashboard in a grid format. This feature allows:
 
-- **Setiap modul** dapat menyediakan **lebih dari satu quick action**
-- User dapat **mengaktifkan/menonaktifkan** quick action individual
-- Mendukung **navigasi route** atau **custom callback**
-- Otomatis menampilkan tombol **"More"** jika jumlah quick action melebihi batas
-
----
-
-## Fitur Utama
-
-| Fitur | Deskripsi |
-|-------|-----------|
-| **Multi-action per module** | Setiap modul bisa memiliki lebih dari satu quick action |
-| **Route Navigation** | Quick action dapat navigasi ke halaman tertentu |
-| **Custom Callback** | Quick action dapat menjalankan fungsi custom (dialog, snackbar, dll) |
-| **Visibility Control** | User dapat show/hide individual quick action |
-| **Persistence** | Setting visibility tersimpan di SharedPreferences |
-| **Auto "More"** | Tombol "More" otomatis muncul jika jumlah action melebihi limit |
-| **Backward Compatible** | Legacy `MenuItem` tetap didukung |
+- **Each module** can provide **more than one quick action**
+- Users can **enable/disable** individual quick actions
+- Supports **route navigation** or **custom callbacks**
+- Automatically shows a **"More"** button if quick actions exceed the limit
 
 ---
 
-## Cara Menggunakan
+## Main Features
 
-### Menambahkan Quick Actions ke Modul
+| Feature | Description |
+|---------|-------------|
+| **Multi-action per module** | Each module can have more than one quick action |
+| **Route Navigation** | Quick action can navigate to a specific page |
+| **Custom Callback** | Quick action can execute custom functions (dialog, snackbar, etc.) |
+| **Visibility Control** | Users can show/hide individual quick actions |
+| **Persistence** | Visibility settings are saved in SharedPreferences |
+| **Auto "More"** | "More" button automatically appears when actions exceed the limit |
+| **Backward Compatible** | Legacy `MenuItem` is still supported |
 
-Override getter `quickActions` di modul Anda:
+---
+
+## How to Use
+
+### Adding Quick Actions to a Module
+
+Override the `quickActions` getter in your module:
 
 ```dart
 import '../quick_action_item.dart';
@@ -102,27 +102,27 @@ class MyModule extends BaseModule {
 }
 ```
 
-### Menampilkan Quick Actions di Dashboard
+### Displaying Quick Actions on Dashboard
 
-Gunakan widget `QuickActionGrid` atau `QuickActionSection`:
+Use the `QuickActionGrid` or `QuickActionSection` widget:
 
 ```dart
-// Di dashboard widget
+// In dashboard widget
 
-// Option 1: Hanya grid (More selalu tampil)
+// Option 1: Grid only (More always visible)
 QuickActionGrid(
-  maxItems: 8,           // Maksimal item sebelum otomatis dipotong
-  crossAxisCount: 4,     // Jumlah kolom
-  alwaysShowMore: true,  // Tombol "More" selalu tampil (default: true)
+  maxItems: 8,           // Maximum items before auto-truncation
+  crossAxisCount: 4,     // Number of columns
+  alwaysShowMore: true,  // "More" button always visible (default: true)
 )
 
-// Option 2: More hanya muncul jika items > maxItems
+// Option 2: More only appears if items > maxItems
 QuickActionGrid(
   maxItems: 8,
   alwaysShowMore: false,
 )
 
-// Option 3: Dengan section header
+// Option 3: With section header
 QuickActionSection(
   title: 'Quick Actions',
   seeAllText: 'See All',
@@ -151,39 +151,39 @@ class QuickActionItem {
 
 ### Field Details
 
-| Field | Type | Required | Default | Deskripsi |
-|-------|------|----------|---------|-----------|
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
 | `id` | String | ✅ | - | Unique identifier. Format: `{moduleId}_{actionName}` |
-| `moduleId` | String | ✅ | - | ID modul yang menyediakan action ini |
-| `icon` | IconData | ✅ | - | Icon untuk ditampilkan |
+| `moduleId` | String | ✅ | - | ID of the module providing this action |
+| `icon` | IconData | ✅ | - | Icon to display |
 | `label` | String | ✅ | - | Label text |
-| `color` | Color? | ❌ | Primary | Warna icon |
-| `route` | String? | ⚠️ | - | Route navigasi (wajib jika tidak ada onTap) |
-| `onTap` | Function? | ⚠️ | - | Custom callback (wajib jika tidak ada route) |
-| `order` | int | ❌ | 100 | Urutan sorting (rendah = tampil duluan) |
-| `enabledByDefault` | bool | ❌ | true | Visibility default |
-| `description` | String? | ❌ | - | Deskripsi di manager screen |
+| `color` | Color? | ❌ | Primary | Icon color |
+| `route` | String? | ⚠️ | - | Navigation route (required if no onTap) |
+| `onTap` | Function? | ⚠️ | - | Custom callback (required if no route) |
+| `order` | int | ❌ | 100 | Sorting order (lower = appears first) |
+| `enabledByDefault` | bool | ❌ | true | Default visibility |
+| `description` | String? | ❌ | - | Description for manager screen |
 
 ---
 
-## Konfigurasi Visibility
+## Visibility Configuration
 
 ### Providers
 
 ```dart
-// Mendapatkan semua quick actions (static + modules)
+// Get all quick actions (static + modules)
 final allActions = ref.watch(allQuickActionsProvider);
 
-// Mendapatkan visibility state
+// Get visibility state
 final visibility = ref.watch(quickActionVisibilityProvider);
 
-// Mendapatkan quick actions yang visible saja
+// Get only visible quick actions
 final visibleActions = ref.watch(visibleQuickActionsProvider);
 
-// Mendapatkan quick actions untuk grid (dengan limit)
+// Get quick actions for grid (with limit)
 final gridActions = ref.watch(menuGridQuickActionsProvider(8));
 
-// Cek apakah tombol "More" perlu ditampilkan
+// Check if "More" button needs to be displayed
 final showMore = ref.watch(showMoreButtonProvider(8));
 ```
 
@@ -210,7 +210,7 @@ ref.read(quickActionVisibilityProvider.notifier).resetToDefault();
 
 ## Static Quick Actions
 
-Quick actions default yang selalu tersedia, didefinisikan di `lib/modules/quick_action_item.dart`:
+Default quick actions that are always available, defined in `lib/modules/quick_action_item.dart`:
 
 ```dart
 class StaticQuickActions {
@@ -231,36 +231,36 @@ class StaticQuickActions {
 }
 ```
 
-Static actions dapat dikustomisasi dengan mengedit file tersebut.
+Static actions can be customized by editing that file.
 
 ---
 
 ## Quick Actions Manager
 
-Halaman untuk mengelola visibility quick actions tersedia di route `/quick-actions`.
+A page to manage quick action visibility is available at route `/quick-actions`.
 
-### Fitur Manager
+### Manager Features
 
-- Melihat semua quick actions (grouped by module)
-- Toggle visibility individual
+- View all quick actions (grouped by module)
+- Toggle individual visibility
 - Show/Hide all
 - Reset to default
 
-### Navigasi ke Manager
+### Navigate to Manager
 
 ```dart
 // Via route
 context.push('/quick-actions');
 
-// Atau via constant
+// Or via constant
 context.push(AppRoutes.quickActions);
 ```
 
 ---
 
-## Contoh Implementasi
+## Implementation Examples
 
-### Sample Module dengan Quick Actions
+### Sample Module with Quick Actions
 
 ```dart
 // lib/modules/sample/sample_module.dart
@@ -361,55 +361,55 @@ class MainDashboard extends ConsumerWidget {
 
 ---
 
-## File Terkait
+## Related Files
 
-| File | Deskripsi |
-|------|-----------|
-| `lib/modules/quick_action_item.dart` | Model QuickActionItem dan StaticQuickActions |
-| `lib/modules/module_base.dart` | BaseModule dengan getter quickActions |
-| `lib/modules/module_registry.dart` | Providers untuk mengumpulkan quick actions |
-| `lib/features/dashboard/widgets/menu_grid.dart` | QuickActionGrid dan QuickActionSection widgets |
-| `lib/features/dashboard/providers/quick_action_visibility_provider.dart` | State management untuk visibility |
-| `lib/features/dashboard/screens/quick_actions_manager_screen.dart` | Halaman manager |
-| `lib/core/routes/app_router.dart` | Route untuk quick-actions manager |
+| File | Description |
+|------|-------------|
+| `lib/modules/quick_action_item.dart` | QuickActionItem model and StaticQuickActions |
+| `lib/modules/module_base.dart` | BaseModule with quickActions getter |
+| `lib/modules/module_registry.dart` | Providers for collecting quick actions |
+| `lib/features/dashboard/widgets/menu_grid.dart` | QuickActionGrid and QuickActionSection widgets |
+| `lib/features/dashboard/providers/quick_action_visibility_provider.dart` | State management for visibility |
+| `lib/features/dashboard/screens/quick_actions_manager_screen.dart` | Manager page |
+| `lib/core/routes/app_router.dart` | Route for quick-actions manager |
 
 ---
 
 ## FAQ
 
-### Q: Bagaimana cara menambahkan quick action baru ke modul?
+### Q: How do I add a new quick action to a module?
 
-**A:** Override getter `quickActions` di class modul Anda dan tambahkan `QuickActionItem` baru ke list.
+**A:** Override the `quickActions` getter in your module class and add a new `QuickActionItem` to the list.
 
-### Q: Apakah bisa menggunakan custom callback dan route sekaligus?
+### Q: Can I use custom callback and route at the same time?
 
-**A:** Bisa, tapi `onTap` akan diprioritaskan. Jika `onTap` ada, route akan diabaikan.
+**A:** Yes, but `onTap` will be prioritized. If `onTap` exists, route will be ignored.
 
-### Q: Bagaimana urutan quick actions ditentukan?
+### Q: How is the order of quick actions determined?
 
-**A:** Berdasarkan field `order`. Nilai lebih kecil = muncul lebih dulu. Static actions memiliki order 1-7, jadi gunakan order >= 100 untuk module actions.
+**A:** Based on the `order` field. Lower value = appears first. Static actions have order 1-7, so use order >= 100 for module actions.
 
-### Q: Apakah visibility setting tersimpan secara persistent?
+### Q: Are visibility settings persistent?
 
-**A:** Ya, tersimpan di SharedPreferences dengan key `quick_action_visibility`.
+**A:** Yes, saved in SharedPreferences with key `quick_action_visibility`.
 
-### Q: Bagaimana jika modul dinonaktifkan?
+### Q: What happens if a module is disabled?
 
-**A:** Quick actions dari modul yang tidak aktif tidak akan muncul, karena hanya `activeModules` yang diproses.
+**A:** Quick actions from inactive modules won't appear, since only `activeModules` are processed.
 
 ---
 
-## Quick Actions di External Module (SubModule)
+## Quick Actions in External Module (SubModule)
 
-External module (repository terpisah) juga dapat menyediakan quick actions. Prosesnya sama dengan internal module, namun ada beberapa hal yang perlu diperhatikan.
+External modules (separate repositories) can also provide quick actions. The process is the same as internal modules, but there are some things to note.
 
-### Contoh: super_module
+### Example: super_module
 
 Repository: [https://github.com/luridarmawan/super_app_module](https://github.com/luridarmawan/super_app_module)
 
-Lokasi setelah clone: `modules/super_module/`
+Location after clone: `modules/super_module/`
 
-#### Struktur File
+#### File Structure
 
 ```
 modules/super_module/
@@ -421,7 +421,7 @@ modules/super_module/
 └── pubspec.yaml
 ```
 
-#### Implementasi Quick Actions
+#### Quick Actions Implementation
 
 ```dart
 // modules/super_module/lib/super_module_module.dart
@@ -496,15 +496,15 @@ class SuperModuleModule extends BaseModule {
 }
 ```
 
-### Langkah Menambahkan Quick Actions ke External Module
+### Steps to Add Quick Actions to External Module
 
-1. **Pastikan import `module_interface`**
+1. **Make sure to import `module_interface`**
 
 ```dart
 import 'package:module_interface/module_interface.dart';
 ```
 
-2. **Override getter `quickActions`**
+2. **Override the `quickActions` getter**
 
 ```dart
 @override
@@ -521,23 +521,23 @@ List<QuickActionItem> get quickActions => [
 ];
 ```
 
-3. **Pastikan route sudah terdaftar**
+3. **Make sure the route is registered**
 
-Quick action dengan `route` memerlukan route yang sesuai di getter `routes`:
+Quick actions with `route` require a matching route in the `routes` getter:
 
 ```dart
 @override
 List<RouteBase> get routes => [
   GoRoute(
-    path: '/my-module/action',  // Harus match dengan route di QuickActionItem
+    path: '/my-module/action',  // Must match route in QuickActionItem
     builder: (context, state) => const MyActionScreen(),
   ),
 ];
 ```
 
-4. **Daftarkan module di main app**
+4. **Register the module in main app**
 
-Setelah clone external module, daftarkan di `lib/modules/all_modules.dart`:
+After cloning the external module, register it in `lib/modules/all_modules.dart`:
 
 ```dart
 import 'package:super_module/super_module_module.dart';
@@ -553,9 +553,9 @@ class ModuleManifest {
 }
 ```
 
-### Quick Actions dengan Custom Callback
+### Quick Actions with Custom Callback
 
-External module juga dapat menggunakan custom callback:
+External modules can also use custom callbacks:
 
 ```dart
 QuickActionItem(
@@ -585,25 +585,24 @@ QuickActionItem(
 ),
 ```
 
-### Perbedaan Internal vs External Module
+### Differences: Internal vs External Module
 
-| Aspek | Internal Module | External Module |
-|-------|-----------------|-----------------|
-| Lokasi | `lib/modules/` | `modules/` (root) |
+| Aspect | Internal Module | External Module |
+|--------|-----------------|-----------------|
+| Location | `lib/modules/` | `modules/` (root) |
 | Import | `import '../quick_action_item.dart'` | `import 'package:module_interface/module_interface.dart'` |
-| Repository | Sama dengan main app | Terpisah |
-| Contoh | `lib/modules/sample/` | `modules/super_module/` |
+| Repository | Same as main app | Separate |
+| Example | `lib/modules/sample/` | `modules/super_module/` |
 
 ---
 
-## Lihat Juga
+## See Also
 
-- **[Modular.md](./Modular.md)** - Arsitektur modular lengkap
-- **[SubModule.md](./SubModule.md)** - Panduan external modules
-- **[README.md](../README.md)** - Dokumentasi utama project
+- **[Modular.md](./Modular.md)** - Complete modular architecture
+- **[SubModule.md](./SubModule.md)** - External modules guide
+- **[README.md](../README.md)** - Main project documentation
 
 ---
 
-*Dibuat: 30 Desember 2025*
-*Diperbarui: 1 Januari 2026*
-*Versi: 1.2.0*
+*Updated: January 1, 2026*
+*Version: 1.2.0*
