@@ -1,8 +1,12 @@
 # Localization (Multi-Language) Guide
 
+> **📚 Related Documents:**
+> - **[README.md](../README.md)** - Main project documentation
+> - **[Modular.md](./Modular.md)** - Modular architecture (per-module localization)
+
 ## 📖 Overview
 
-Super App mendukung multi-bahasa dengan dua bahasa:
+Super App supports multi-language with two languages:
 - **Bahasa Indonesia (id)** - Default
 - **English (en)**
 
@@ -46,7 +50,7 @@ final l10n = AppLocalizations.of(context);
 Text(l10n.translate('welcomeBack'))
 ```
 
-## 📋 Kategori String yang Tersedia
+## 📋 Available String Categories
 
 ### General
 - `appName`, `appTagline`, `loading`, `error`, `success`
@@ -57,18 +61,18 @@ Text(l10n.translate('welcomeBack'))
 ### Authentication
 - `welcomeBack`, `signInToContinue`, `email`, `password`
 - `confirmPassword`, `fullName`, `forgotPassword`
-- `signIn`, `signUp`, `signOut`, `logout`
+- `signIn`, `signUp`, `signOut`, `logout`, `confirmLogout`
 - `createAccount`, `joinSuperApp`, `createAccountDesc`
 - `dontHaveAccount`, `alreadyHaveAccount`
 - `orContinueWith`, `continueWithGoogle`
-- `agreeToTerms`, `termsOfService`, `privacyPolicy`
+- `agreeToTerms`, `termsOfService`, `and`, `privacyPolicy`
 
 ### Validation
 - `pleaseEnterEmail`, `pleaseEnterValidEmail`
 - `pleaseEnterPassword`, `passwordMinLength`
 - `pleaseConfirmPassword`, `passwordsDoNotMatch`
-- `pleaseEnterName`, `loginFailed`, `registrationFailed`
-- `accountCreatedSuccess`
+- `pleaseEnterName`, `loginFailed`, `googleLoginFailed`
+- `registrationFailed`, `accountCreatedSuccess`
 
 ### Navigation
 - `home`, `explore`, `scan`, `activity`, `profile`
@@ -81,29 +85,67 @@ Text(l10n.translate('welcomeBack'))
 - `noNewNotifications`, `chatSupport`
 - `discoverNewServices`, `viewRecentTransactions`
 - `guestUser`, `pleaseLoginToContinue`, `editProfile`
+- `workspace`
+
+### Scan & Photo
+- `scanAndPhoto`, `scanQr`, `takePhoto`, `upload`
+- `photoCaptureCancelled`, `cameraError`, `photoPreview`
+- `photoCaptured`, `photoCapturedSuccessfully`, `photoSaved`
+- `imageSelectionCancelled`, `galleryError`
 
 ### Settings
 - `appearance`, `themeTemplate`, `darkMode`
 - `languageAndRegion`, `language`, `layout`
-- `sidebarPosition`, `authentication`, `authProvider`
+- `sidebarPosition`, `showQuickActionsLabel`, `showQuickActionsDesc`
+- `quickActionsManager`, `quickActionsManagerDesc`
+- `authentication`, `authProvider`
 - `about`, `appVersion`, `buildNumber`
 - `selectTheme`, `selectLanguage`
 - `bahasaIndonesia`, `english`
-- `firebaseAuth`, `customApi`
+- `firebaseAuth`, `customApi`, `useFirebaseAuth`, `useCustomApi`
 
 ### Theme Templates
 - `defaultBlue`, `modernPurple`, `elegantGreen`
-- `warmOrange`, `darkModeTheme`
+- `warmOrange`, `sweetBrown`, `darkModeTheme`
 
 ### Help & Support
 - `searchHelpArticles`, `quickHelp`, `contactUs`
 - `liveChat`, `chatWithSupport`, `emailSupport`
 - `callCenter`, `reportAnIssue`, `faq`
-- Dan banyak lagi...
+- `howToResetPassword`, `resetPasswordAnswer`
+- `howToUpdateProfile`, `updateProfileAnswer`
+- `howToContactSupport`, `contactSupportAnswer`
+- `describeYourIssue`, `submit`, `reportSubmittedThankYou`
+- And more...
 
 ### Menu Grid
 - `payment`, `transfer`, `topUp`, `bills`
 - `shopping`, `food`, `transport`, `more`
+
+### Profile
+- `personalInfo`, `phone`, `dateOfBirth`, `gender`, `address`
+- `accountSettings`, `changePassword`, `notificationSettings`
+- `linkedAccounts`, `accountInformation`, `emailVerified`
+- `notSet`, `notLoggedIn`, `privacyAndSecurity`
+- `dangerZone`, `deleteAccount`, `deleteAccountConfirm`
+- `accountDeletionRequested`
+
+### GPS / Location
+- `location`, `myLocation`, `gettingLocation`
+- `gpsDisabled`, `gpsDisabledDesc`
+- `locationPermissionDenied`, `locationServiceDisabled`
+- `openSettings`, `locationUpdated`, `failedToGetLocation`
+- `accuracy`
+
+### Banners & Articles
+- `promoTitle1`, `promoSubtitle1`, `promoTitle2`, `promoSubtitle2`
+- `promoTitle3`, `promoSubtitle3`
+- `articleTitle1`, `articleDesc1`, `articleTitle2`, `articleDesc2`
+- `articleTitle3`, `articleDesc3`
+
+### TOS & Privacy
+- `tosTitle`, `tosLastUpdated`, `tosIntro`
+- `privacyTitle`, `privacyLastUpdated`, `privacyIntro`
 
 ## 🔄 Mengganti Bahasa
 
@@ -239,3 +281,16 @@ testWidgets('should display correct localized text', (tester) async {
   expect(find.text('Selamat Datang Kembali'), findsOneWidget);
 });
 ```
+
+---
+
+## See Also
+
+- **[README.md](../README.md)** - Main project documentation
+- **[Modular.md](./Modular.md)** - Modular architecture (per-module localization)
+- **[GPS.md](./GPS.md)** - GPS feature with localized strings
+
+---
+
+*Updated: January 1, 2026*
+*Version: 1.0.1*
