@@ -42,7 +42,7 @@ void main() async {
   final moduleName = _askModuleName();
   final moduleNameSnake = _toSnakeCase(moduleName);
   final moduleNamePascal = _toPascalCase(moduleNameSnake);
-  final moduleNameDisplay = _toDisplayName(moduleNameSnake);
+  final moduleNameDisplay = moduleName; // Keep original capitalization from user input
 
   print('');
   print('📦 Module name: $moduleNameDisplay ($moduleNameSnake)');
@@ -79,7 +79,7 @@ void main() async {
   print('📝 Description: $description');
 
   // 3. Ask for workspaces
-  final workspaces = _askWorkspaces(moduleNameSnake);
+  final workspaces = _askWorkspaces(moduleNameSnake, moduleNameDisplay);
   print('📂 Workspaces: ${workspaces.map((w) => w['display']).join(', ')}');
 
   // 4. Ask for quick actions
@@ -150,7 +150,7 @@ String _askDescription(String moduleNameDisplay) {
   return input.isEmpty ? '$moduleNameDisplay module' : input;
 }
 
-List<Map<String, String>> _askWorkspaces(String moduleNameSnake) {
+List<Map<String, String>> _askWorkspaces(String moduleNameSnake, String moduleNameDisplay) {
   stdout.write('📂 How many workspaces? (default: 1): ');
   final countInput = stdin.readLineSync()?.trim() ?? '';
   final count = int.tryParse(countInput) ?? 1;
@@ -163,26 +163,26 @@ List<Map<String, String>> _askWorkspaces(String moduleNameSnake) {
   final workspaces = <Map<String, String>>[];
   
   for (var i = 0; i < count; i++) {
-    String workspaceName;
+    String workspaceInput;
     
     if (count == 1) {
-      // Default to module name for single workspace
-      stdout.write('   Workspace name (default: "${_toDisplayName(moduleNameSnake)}"): ');
+      // Default to module display name for single workspace
+      stdout.write('   Workspace name (default: "$moduleNameDisplay"): ');
       final input = stdin.readLineSync()?.trim() ?? '';
-      workspaceName = input.isEmpty ? moduleNameSnake : input;
+      workspaceInput = input.isEmpty ? moduleNameDisplay : input;
     } else {
       stdout.write('   Workspace ${i + 1} name: ');
-      workspaceName = stdin.readLineSync()?.trim() ?? '';
+      workspaceInput = stdin.readLineSync()?.trim() ?? '';
       
-      if (workspaceName.isEmpty) {
+      if (workspaceInput.isEmpty) {
         print('❌ Error: Workspace name is required');
         exit(1);
       }
     }
     
-    final snakeName = _toSnakeCase(workspaceName);
+    final snakeName = _toSnakeCase(workspaceInput);
     final pascalName = _toPascalCase(snakeName);
-    final displayName = _toDisplayName(snakeName);
+    final displayName = workspaceInput; // Keep original capitalization from user input
     
     workspaces.add({
       'snake': snakeName,
@@ -394,13 +394,6 @@ String _toPascalCase(String snakeCase) {
       .split('_')
       .map((word) => word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1))
       .join('');
-}
-
-String _toDisplayName(String snakeCase) {
-  return snakeCase
-      .split('_')
-      .map((word) => word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1))
-      .join(' ');
 }
 
 // ============================================================================
