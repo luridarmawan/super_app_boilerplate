@@ -1,6 +1,11 @@
 # Permission Helper
 
-A utility class for managing Android runtime permissions in Flutter.
+A utility class for managing Android and iOS runtime permissions in Flutter.
+
+> **📚 Related Documents:**
+> - **[GPS.md](./GPS.md)** - GPS/Location feature documentation
+> - **[Notification.md](./Notification.md)** - Push notification (requires permission)
+> - **[README.md](../README.md)** - Main project documentation
 
 ## Overview
 
@@ -169,3 +174,61 @@ Future<void> takePicture() async {
 
 - **Permission Helper Class**: `lib/core/utils/permission_helper.dart`
 - **Android Manifest**: `android/app/src/main/AndroidManifest.xml`
+- **iOS Info.plist**: `ios/Runner/Info.plist`
+
+---
+
+## iOS Configuration
+
+For iOS, permissions are configured in `ios/Runner/Info.plist`:
+
+### Camera Permission
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>This app needs camera access to take photos.</string>
+```
+
+### Photo Library Permission
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>This app needs photo library access to select images.</string>
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>This app needs photo library access to save images.</string>
+```
+
+### Location Permission
+
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>This app needs location access to show your current position.</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>This app needs location access in background to track your position.</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>This app needs location access to show your position and track in background.</string>
+```
+
+### iOS vs Android Comparison
+
+| Permission | Android | iOS |
+|------------|---------|-----|
+| Camera | `CAMERA` | `NSCameraUsageDescription` |
+| Gallery | `READ_MEDIA_IMAGES` (API 33+) | `NSPhotoLibraryUsageDescription` |
+| Storage | `READ_EXTERNAL_STORAGE` | Not needed |
+| Location | `ACCESS_FINE_LOCATION` | `NSLocationWhenInUseUsageDescription` |
+| Background Location | `ACCESS_BACKGROUND_LOCATION` | `NSLocationAlwaysUsageDescription` |
+
+---
+
+## See Also
+
+- **[GPS.md](./GPS.md)** - Complete GPS/Location documentation
+- **[Notification.md](./Notification.md)** - Push notification (POST_NOTIFICATIONS permission)
+- [permission_handler Package](https://pub.dev/packages/permission_handler)
+- [geolocator Package](https://pub.dev/packages/geolocator)
+
+---
+
+*Updated: January 1, 2026*
+*Version: 1.0.1*
