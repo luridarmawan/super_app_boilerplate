@@ -47,6 +47,33 @@ void main() async {
   print('');
   print('📦 Module name: $moduleNameDisplay ($moduleNameSnake)');
 
+  // Check if module folder already exists
+  final modulePath = 'modules/$moduleNameSnake';
+  final moduleDir = Directory(modulePath);
+  if (moduleDir.existsSync()) {
+    print('');
+    print('⚠️  Warning: Folder "$modulePath" already exists!');
+    stdout.write('   Delete and recreate? (y/N): ');
+    final response = stdin.readLineSync()?.toLowerCase().trim() ?? '';
+    
+    if (response == 'y' || response == 'yes') {
+      print('   🗑️  Deleting existing folder...');
+      try {
+        moduleDir.deleteSync(recursive: true);
+        print('   ✓ Deleted successfully');
+      } catch (e) {
+        print('   ❌ Failed to delete: $e');
+        print('');
+        print('❌ Module generation cancelled.');
+        exit(1);
+      }
+    } else {
+      print('');
+      print('❌ Module generation cancelled.');
+      exit(0);
+    }
+  }
+
   // 2. Ask for module description
   final description = _askDescription(moduleNameDisplay);
   print('📝 Description: $description');
@@ -624,26 +651,69 @@ class ${workspacePascal}ListScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView.builder(
+      body: ListView(
         padding: const EdgeInsets.all(16),
-        itemCount: 4, // Demo data
-        itemBuilder: (context, index) {
-          return Card(
-            margin: const EdgeInsets.only(bottom: 8),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: theme.colorScheme.primaryContainer,
-                child: Text('\${index + 1}'),
-              ),
-              title: Text('$workspaceDisplay Item \${index + 1}'),
-              subtitle: const Text('Tap to edit'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.push(
-                '/$moduleNameSnake/$workspaceSnake/form/\${index + 1}',
+        children: [
+          // Header Card
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.folder_outlined,
+                    size: 64,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Welcome to $workspaceDisplay',
+                    style: theme.textTheme.headlineSmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Manage your $workspaceDisplay data here. '
+                    'Tap on an item to edit or use the button below to add new.',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
-          );
-        },
+          ),
+          const SizedBox(height: 24),
+
+          // Section Title
+          Text(
+            '$workspaceDisplay Items',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // List Items
+          ...List.generate(4, (index) {
+            return Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: theme.colorScheme.primaryContainer,
+                  child: Text('\${index + 1}'),
+                ),
+                title: Text('$workspaceDisplay Item \${index + 1}'),
+                subtitle: const Text('Tap to edit'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push(
+                  '/$moduleNameSnake/$workspaceSnake/form/\${index + 1}',
+                ),
+              ),
+            );
+          }),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/$moduleNameSnake/$workspaceSnake/form'),
@@ -655,6 +725,7 @@ class ${workspacePascal}ListScreen extends StatelessWidget {
 }
 ''';
 }
+
 
 String _generateFormScreenCode({
   required String moduleNameSnake,
