@@ -17,7 +17,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 3.7.1+34
+version: 3.7.1+35
 
 # 3.5.0
 # - custom quick action from module
@@ -94,6 +94,13 @@ dependencies:
   # Module Interface (shared with submodules)
   module_interface:
     path: packages/module_interface
+
+  super_module:
+    path: modules/super_module
+
+  # External Modules (from modules/ folder)
+  crm:
+    path: modules/crm
 
 dev_dependencies:
   flutter_test:

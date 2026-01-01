@@ -1,11 +1,14 @@
 # Super App Boilerplate
 
-## Deskripsi
-Super App Boilerplate
-
 Super App adalah aplikasi mobile (Android & iOS) yang dibangun dengan arsitektur Clean Architecture, menggunakan Material 3, dan mendukung multi-bahasa serta multi-template.
 
 **Org:** id.carik.superapp_demo
+
+## Screenshot
+
+![Dashboard](docs/images/dashboard-width.jpg)
+
+*Main dashboard showing banner carousel, quick actions, and workspace icons including Super Module*
 
 ---
 

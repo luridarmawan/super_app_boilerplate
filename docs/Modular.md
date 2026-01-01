@@ -564,6 +564,7 @@ super_app_boilerplate/
 | `lib/modules/all_modules.dart` | Manifest pendaftaran modul (Auto-generated) |
 | `lib/modules/sample/sample_module.dart` | Contoh implementasi modul internal |
 | `tool/generate_module.dart` | CLI tool untuk module internal (local folder) |
+| `tool/generate_external_module.dart` | CLI tool interaktif untuk membuat modul eksternal baru |
 | `tool/manage_external_modules.dart` | CLI tool untuk module eksternal (tanpa git submodule) |
 | `tool/sync_modules.dart` | Script sinkronisasi pendaftaran modul internal |
 | `modules.yaml.example` | Template manifest untuk modul eksternal |
@@ -588,6 +589,44 @@ Cocok jika modul ingin dipisah repository-nya (misal: dikerjakan tim berbeda).
 Strategi ini **tidak menggunakan git submodule** sehingga tidak ada perubahan di `.gitmodules`.
 Lihat panduan lengkapnya di [SubModule.md](./SubModule.md).
 
+#### Membuat Modul Eksternal Baru (Interaktif)
+
+Gunakan CLI tool interaktif untuk membuat modul eksternal baru:
+
+```bash
+dart run tool/generate_external_module.dart
+```
+
+Tool akan menanyakan:
+1. **Nama module** - Akan dikonversi ke snake_case (contoh: "CRM System" → `crm_system`)
+2. **Deskripsi module** - Deskripsi singkat tentang modul
+3. **Jumlah workspace** - Setiap workspace memiliki fitur list dan add/update
+   - Jika hanya 1, nama default = nama modul
+   - Contoh: Modul CRM bisa punya workspace `Customer`, `Sales`, `Vendor`
+4. **Jumlah Quick Action** - Default 1, sesuai nama modul
+
+Struktur yang akan dibuat:
+```
+modules/[nama_modul]/
+├── lib/
+│   ├── [nama_modul].dart           # Library exports
+│   ├── [nama_modul]_module.dart    # Main module class
+│   └── screens/
+│       └── [workspace]/
+│           ├── [workspace]_list_screen.dart
+│           └── [workspace]_form_screen.dart
+├── test/
+│   └── [nama_modul]_test.dart
+├── pubspec.yaml
+├── LICENSE
+├── README.md
+└── .gitignore
+```
+
+#### Clone Modul Eksternal dari Repository
+
+Untuk clone modul yang sudah ada dari repository terpisah:
+
 ```bash
 # 1. Copy template manifest
 copy modules.yaml.example modules.yaml
@@ -598,7 +637,9 @@ copy modules.yaml.example modules.yaml
 dart run tool/manage_external_modules.dart
 ```
 
-Contoh:
+#### Contoh Modul Internal (generate_module.dart)
+
+Untuk modul internal yang lebih sederhana:
 ```bash
 dart run tool/generate_module.dart news
 dart run tool/generate_module.dart ecommerce
