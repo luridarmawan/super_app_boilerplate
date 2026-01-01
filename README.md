@@ -452,7 +452,8 @@ flutter run -d emulator-5554
 - `lib/modules/module_registry.dart` - Registry untuk manajemen modul
 - `lib/modules/all_modules.dart` - Module manifest (auto-generated)
 - `lib/core/constants/app_info.dart` - App info & branding configuration
-- `tool/generate_module.dart` - CLI tool untuk generate modul baru
+- `tool/generate_module_internal.dart` - CLI tool untuk generate modul internal
+- `tool/generate_module.dart` - CLI tool untuk generate modul eksternal
 - `tool/manage_external_modules.dart` - CLI tool untuk external modules
 
 ---
