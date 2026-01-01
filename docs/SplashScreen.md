@@ -1,55 +1,55 @@
 # Splash Screen 
 
-Dokumentasi lengkap untuk konfigurasi dan penggunaan Splash Screen.
+Complete documentation for Splash Screen configuration and usage.
 
-> **📚 Dokumen Terkait:**
-> - **[README.md](../README.md)** - Dokumentasi utama project
+> **📚 Related Documents:**
+> - **[README.md](../README.md)** - Main project documentation
 
 ---
 
-## Daftar Isi
+## Table of Contents
 
-1. [Pendahuluan](#pendahuluan)
-2. [Fitur Utama](#fitur-utama)
-3. [Konfigurasi .env](#konfigurasi-env)
-4. [Kustomisasi Visual](#kustomisasi-visual)
+1. [Introduction](#introduction)
+2. [Main Features](#main-features)
+3. [.env Configuration](#env-configuration)
+4. [Visual Customization](#visual-customization)
 5. [Flow Logic](#flow-logic)
 6. [Technical Implementation](#technical-implementation)
 7. [Troubleshooting](#troubleshooting)
 
 ---
 
-## Pendahuluan
+## Introduction
 
-Splash Screen adalah layar pembuka yang ditampilkan saat aplikasi pertama kali dibuka. Super App Boilerplate menyediakan splash screen yang dapat dikustomisasi sepenuhnya melalui file `.env`.
+Splash Screen is the opening screen displayed when the app is first launched. Super App Boilerplate provides a fully customizable splash screen through the `.env` file.
 
-### Bagaimana Splash Screen Bekerja
+### How Splash Screen Works
 
-1. **Jika belum login**: Splash screen **selalu ditampilkan**.
-2. **Jika sudah login**:
-   - Splash screen ditampilkan pada N kali pembukaan pertama (default: 5).
-   - Setelah itu, splash screen hanya muncul jika user tidak membuka app lebih dari X jam (default: 24 jam).
-
----
-
-## Fitur Utama
-
-| Fitur | Deskripsi |
-|-------|-----------|
-| **Smooth Transition** | Transisi mulus dari native splash ke Flutter splash |
-| **Custom Background** | Background image dari URL (dengan fallback gradient) |
-| **Custom Gradient** | Konfigurasi warna gradient 3 titik (start, middle, end) |
-| **Configurable Duration** | Durasi splash dapat dikonfigurasi |
-| **Tap to Dismiss** | User dapat tap layar untuk skip splash |
-| **Loading Indicator** | Animasi loading di bagian bawah |
-| **Version Display** | Menampilkan versi app di bagian bawah |
-| **Conditional Display** | Logic cerdas untuk menentukan kapan splash ditampilkan |
+1. **If not logged in**: Splash screen is **always displayed**.
+2. **If logged in**:
+   - Splash screen is displayed on the first N app opens (default: 5).
+   - After that, splash screen only appears if the user hasn't opened the app for more than X hours (default: 24 hours).
 
 ---
 
-## Konfigurasi .env
+## Main Features
 
-### Semua Variable yang Tersedia
+| Feature | Description |
+|---------|-------------|
+| **Smooth Transition** | Smooth transition from native splash to Flutter splash |
+| **Custom Background** | Background image from URL (with gradient fallback) |
+| **Custom Gradient** | Configure 3-point gradient colors (start, middle, end) |
+| **Configurable Duration** | Splash duration can be configured |
+| **Tap to Dismiss** | User can tap screen to skip splash |
+| **Loading Indicator** | Loading animation at the bottom |
+| **Version Display** | Shows app version at the bottom |
+| **Conditional Display** | Smart logic to determine when splash is displayed |
+
+---
+
+## .env Configuration
+
+### All Available Variables
 
 ```env
 # ============================================
@@ -59,89 +59,89 @@ Splash Screen adalah layar pembuka yang ditampilkan saat aplikasi pertama kali d
 # Enable/disable splash screen
 ENABLE_SPLASH_SCREEN=true
 
-# Duration splash screen ditampilkan (dalam detik)
+# Duration splash screen is displayed (in seconds)
 SPLASH_DURATION=5
 
-# Jumlah pembukaan app pertama yang menampilkan splash (untuk user login)
+# Number of first app opens that show splash (for logged-in users)
 SPLASH_SHOW_COUNT=5
 
-# Jam tidak aktif sebelum splash ditampilkan lagi (untuk user login)
+# Hours of inactivity before splash is shown again (for logged-in users)
 SPLASH_DELAY=24
 
-# Background image URL (opsional, jika kosong gunakan gradient saja)
+# Background image URL (optional, if empty uses gradient only)
 SPLASH_BACKGROUND=https://example.com/splash-bg.jpg
 
-# Gradient colors (format hex: #RRGGBB)
+# Gradient colors (hex format: #RRGGBB)
 SPLASH_GRADIENT_START=#1E88E5
 SPLASH_GRADIENT_MIDDLE=#42A5F5
 SPLASH_GRADIENT_END=#90CAF9
 
-# Custom logo untuk splash (opsional)
+# Custom logo for splash (optional)
 SPLASH_LOGO=assets/images/logo/my_logo.png
 ```
 
-### Penjelasan Detail
+### Detailed Explanation
 
-| Variable | Type | Default | Deskripsi |
-|----------|------|---------|-----------|
-| `ENABLE_SPLASH_SCREEN` | bool | `false` | Aktifkan/nonaktifkan splash screen |
-| `SPLASH_DURATION` | int | `5` | Durasi splash dalam detik |
-| `SPLASH_SHOW_COUNT` | int | `5` | Jumlah pembukaan awal yang tampilkan splash |
-| `SPLASH_DELAY` | int | `24` | Jam tidak aktif sebelum splash muncul lagi |
-| `SPLASH_BACKGROUND` | string | `picsum` | URL gambar background |
-| `SPLASH_GRADIENT_START` | hex | theme | Warna gradient atas |
-| `SPLASH_GRADIENT_MIDDLE` | hex | theme | Warna gradient tengah (opsional) |
-| `SPLASH_GRADIENT_END` | hex | theme | Warna gradient bawah |
-| `SPLASH_LOGO` | string | default | Path ke logo splash |
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `ENABLE_SPLASH_SCREEN` | bool | `false` | Enable/disable splash screen |
+| `SPLASH_DURATION` | int | `5` | Splash duration in seconds |
+| `SPLASH_SHOW_COUNT` | int | `5` | Number of initial opens that show splash |
+| `SPLASH_DELAY` | int | `24` | Hours of inactivity before splash appears again |
+| `SPLASH_BACKGROUND` | string | `picsum` | Background image URL |
+| `SPLASH_GRADIENT_START` | hex | theme | Top gradient color |
+| `SPLASH_GRADIENT_MIDDLE` | hex | theme | Middle gradient color (optional) |
+| `SPLASH_GRADIENT_END` | hex | theme | Bottom gradient color |
+| `SPLASH_LOGO` | string | default | Path to splash logo |
 
 ---
 
-## Kustomisasi Visual
+## Visual Customization
 
 ### Background Image
 
-Background image akan di-load dari URL dan ditampilkan dengan overlay gelap untuk memastikan text tetap terbaca.
+Background image will be loaded from URL and displayed with a dark overlay to ensure text remains readable.
 
 ```env
-# Gunakan gambar sendiri
+# Use your own image
 SPLASH_BACKGROUND=https://your-cdn.com/splash-background.jpg
 
-# Atau kosongkan untuk gradient saja
+# Or leave empty for gradient only
 SPLASH_BACKGROUND=
 ```
 
-**Catatan:**
-- Image akan di-cache menggunakan `CachedNetworkImage`
-- Timeout 3 detik untuk loading image
-- Jika gagal load, akan fallback ke gradient
+**Notes:**
+- Image will be cached using `CachedNetworkImage`
+- 3-second timeout for image loading
+- If loading fails, will fallback to gradient
 
 ### Custom Gradient
 
-Konfigurasi gradient 3 warna dari atas ke bawah:
+Configure 3-color gradient from top to bottom:
 
 ```env
-# Contoh: Blue gradient
+# Example: Blue gradient
 SPLASH_GRADIENT_START=#1565C0
 SPLASH_GRADIENT_MIDDLE=#42A5F5
 SPLASH_GRADIENT_END=#BBDEFB
 
-# Contoh: Purple gradient
+# Example: Purple gradient
 SPLASH_GRADIENT_START=#7B1FA2
 SPLASH_GRADIENT_MIDDLE=#AB47BC
 SPLASH_GRADIENT_END=#E1BEE7
 
-# Contoh: Green gradient
+# Example: Green gradient
 SPLASH_GRADIENT_START=#2E7D32
 SPLASH_GRADIENT_MIDDLE=#66BB6A
 SPLASH_GRADIENT_END=#C8E6C9
 ```
 
-**Jika tidak di-set**, gradient akan menggunakan warna dari theme:
+**If not set**, gradient will use theme colors:
 - `colorScheme.primary`
 - `colorScheme.primaryContainer`
 - `colorScheme.secondaryContainer`
 
-### Struktur Visual Splash Screen
+### Visual Structure of Splash Screen
 
 ```
 ┌────────────────────────────────────┐
@@ -168,7 +168,7 @@ SPLASH_GRADIENT_END=#C8E6C9
 
 ## Flow Logic
 
-### Diagram Alur Splash Screen
+### Splash Screen Flow Diagram
 
 ```
 ┌─────────────────────────────────────┐
@@ -213,22 +213,22 @@ SPLASH_GRADIENT_END=#C8E6C9
 ### Smooth Transition Flow
 
 ```
-1. Native splash (solid color) tampil instan saat app launch
+1. Native splash (solid color) appears instantly when app launches
                     │
                     ▼
-2. Flutter splash muncul di atas native splash
+2. Flutter splash appears on top of native splash
                     │
                     ▼
-3. Background image di-preload (async)
+3. Background image is preloaded (async)
                     │
                     ▼
-4. Setelah image ready, crossfade dari solid ke image
+4. After image ready, crossfade from solid to image
                     │
                     ▼
-5. Animasi logo dan content fade-in + scale
+5. Logo and content fade-in + scale animation
                     │
                     ▼
-6. Setelah SPLASH_DURATION atau user tap → Navigate
+6. After SPLASH_DURATION or user tap → Navigate
 ```
 
 ---
@@ -237,12 +237,12 @@ SPLASH_GRADIENT_END=#C8E6C9
 
 ### Files Involved
 
-| File | Deskripsi |
-|------|-----------|
-| `lib/core/constants/app_info.dart` | Konfigurasi splash dari .env |
-| `lib/core/services/prefs_service.dart` | Tracking open count dan last opened time |
-| `lib/core/routes/app_router.dart` | Logic routing berdasarkan kondisi splash |
-| `lib/features/splash/splash_screen.dart` | Widget splash screen |
+| File | Description |
+|------|-------------|
+| `lib/core/constants/app_info.dart` | Splash configuration from .env |
+| `lib/core/services/prefs_service.dart` | Tracking open count and last opened time |
+| `lib/core/routes/app_router.dart` | Routing logic based on splash conditions |
+| `lib/features/splash/splash_screen.dart` | Splash screen widget |
 | `pubspec.yaml` (flutter_native_splash) | Native splash configuration |
 
 ### AppInfo Properties
@@ -253,7 +253,7 @@ SPLASH_GRADIENT_END=#C8E6C9
 // Enable/disable
 static bool get enableSplashScreen => ...;
 
-// Durasi
+// Duration
 static Duration get splashScreenDuration => ...;
 
 // Visibility logic
@@ -289,14 +289,14 @@ Future<void> recordAppOpen();
 // lib/features/splash/splash_screen.dart
 
 class SplashScreen extends ConsumerStatefulWidget {
-  final VoidCallback? onComplete;      // Callback setelah splash selesai
-  final Duration? splashDuration;       // Override durasi (opsional)
+  final VoidCallback? onComplete;      // Callback after splash completes
+  final Duration? splashDuration;       // Override duration (optional)
   
   // Features:
-  // - Smooth transition dari native splash
-  // - Background image dengan preload
+  // - Smooth transition from native splash
+  // - Background image with preload
   // - Gradient fallback
-  // - Animasi logo fade + scale
+  // - Logo fade + scale animation
   // - Tap to dismiss
   // - Loading indicator
   // - Version display
@@ -307,40 +307,40 @@ class SplashScreen extends ConsumerStatefulWidget {
 
 ## Troubleshooting
 
-### Splash tidak muncul
+### Splash not appearing
 
-1. Pastikan `ENABLE_SPLASH_SCREEN=true` di `.env`
-2. Restart app sepenuhnya (bukan hot reload)
-3. Cek apakah sudah melebihi `SPLASH_SHOW_COUNT`
+1. Make sure `ENABLE_SPLASH_SCREEN=true` in `.env`
+2. Fully restart the app (not hot reload)
+3. Check if you've exceeded `SPLASH_SHOW_COUNT`
 
-### Background image tidak muncul
+### Background image not appearing
 
-1. Cek URL valid dan accessible
-2. Pastikan device memiliki koneksi internet
-3. Image akan timeout setelah 3 detik
+1. Check if URL is valid and accessible
+2. Make sure device has internet connection
+3. Image will timeout after 3 seconds
 
-### Gradient tidak sesuai
+### Gradient not matching
 
-1. Pastikan format hex benar: `#RRGGBB`
-2. Jika hanya set 1-2 warna, colors lain akan menggunakan theme default
+1. Make sure hex format is correct: `#RRGGBB`
+2. If only 1-2 colors are set, other colors will use theme defaults
 
-### Native splash berbeda dengan Flutter splash
+### Native splash different from Flutter splash
 
-Edit `pubspec.yaml` bagian `flutter_native_splash`:
+Edit `pubspec.yaml` section `flutter_native_splash`:
 
 ```yaml
 flutter_native_splash:
-  color: "#1565C0"  # Harus sama dengan SPLASH_GRADIENT_START
+  color: "#1565C0"  # Must match SPLASH_GRADIENT_START
 ```
 
-Lalu jalankan:
+Then run:
 ```bash
 dart run flutter_native_splash:create
 ```
 
 ---
 
-## Contoh Konfigurasi
+## Configuration Examples
 
 ### Minimal (Default)
 
@@ -373,13 +373,12 @@ SPLASH_LOGO=assets/images/logo/custom_logo.png
 
 ---
 
-## Lihat Juga
+## See Also
 
-- **[README.md](../README.md)** - Dokumentasi utama project
-- **[Modular.md](./Modular.md)** - Arsitektur modular
+- **[README.md](../README.md)** - Main project documentation
+- **[Modular.md](./Modular.md)** - Modular architecture
 
 ---
 
-*Dibuat: 30 Desember 2025*
-*Diperbarui: 1 Januari 2026*
-*Versi: 2.0.0*
+*Updated: January 1, 2026*
+*Version: 2.0.0*
