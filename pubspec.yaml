@@ -95,12 +95,12 @@ dependencies:
   module_interface:
     path: packages/module_interface
 
-  super_module:
-    path: modules/super_module
+  # External Modules (from modules/ folder) - Example
+  # super_module:
+  #   path: modules/super_module
 
-  # External Modules (from modules/ folder)
-  crm:
-    path: modules/crm
+  # crm:
+  #   path: modules/crm
 
 dev_dependencies:
   flutter_test:
