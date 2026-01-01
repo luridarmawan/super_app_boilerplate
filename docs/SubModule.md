@@ -280,6 +280,120 @@ Jika menggunakan URL SSH, pastikan:
 
 ---
 
+## Localization / Multi-Bahasa
+
+External module dapat memiliki sistem lokalisasi sendiri yang **self-contained** tanpa bergantung pada `AppLocalizations` di app utama.
+
+### Struktur Folder L10n
+
+```
+modules/nama_module/
+└── lib/
+    └── l10n/
+        ├── strings/
+        │   ├── id_strings.dart      # Bahasa Indonesia
+        │   └── en_strings.dart      # English
+        ├── nama_module_localizations.dart  # Class utama
+        └── l10n.dart               # Barrel export
+```
+
+### Contoh Implementasi
+
+#### 1. String Bahasa Indonesia (`l10n/strings/id_strings.dart`)
+
+```dart
+const Map<String, String> namaModuleIdStrings = {
+  'welcomeTitle': 'Selamat Datang',
+  'description': 'Ini adalah deskripsi dalam Bahasa Indonesia',
+  // ... string lainnya
+};
+```
+
+#### 2. String English (`l10n/strings/en_strings.dart`)
+
+```dart
+const Map<String, String> namaModuleEnStrings = {
+  'welcomeTitle': 'Welcome',
+  'description': 'This is a description in English',
+  // ... other strings
+};
+```
+
+#### 3. Class Lokalisasi (`l10n/nama_module_localizations.dart`)
+
+```dart
+import 'package:flutter/material.dart';
+import 'strings/en_strings.dart';
+import 'strings/id_strings.dart';
+
+class NamaModuleLocalizations {
+  final Locale locale;
+
+  NamaModuleLocalizations(this.locale);
+
+  static NamaModuleLocalizations of(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    return NamaModuleLocalizations(locale);
+  }
+
+  static final Map<String, Map<String, String>> _localizedStrings = {
+    'id': namaModuleIdStrings,
+    'en': namaModuleEnStrings,
+  };
+
+  String translate(String key) {
+    return _localizedStrings[locale.languageCode]?[key] ??
+        _localizedStrings['en']?[key] ??
+        key;
+  }
+
+  // Getter untuk setiap string
+  String get welcomeTitle => translate('welcomeTitle');
+  String get description => translate('description');
+}
+
+/// Extension untuk akses mudah
+extension NamaModuleLocalizationsExtension on BuildContext {
+  NamaModuleLocalizations get namaModuleL10n =>
+      NamaModuleLocalizations.of(this);
+}
+```
+
+#### 4. Penggunaan di Widget
+
+```dart
+import '../l10n/nama_module_localizations.dart';
+
+class MyScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.namaModuleL10n;
+
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.welcomeTitle)),
+      body: Text(l10n.description),
+    );
+  }
+}
+```
+
+### Bagaimana Cara Kerjanya
+
+1. **App utama** mengeset `Locale` di `MaterialApp.locale`
+2. **Module** membaca locale dari `Localizations.localeOf(context)`
+3. **Module** menampilkan string sesuai bahasa yang aktif
+4. **Fallback** ke English jika bahasa tidak didukung
+
+### Best Practices
+
+1. **Jangan import `AppLocalizations`** dari app utama
+2. **Gunakan key yang deskriptif** - `welcomeTitle` lebih baik dari `title1`
+3. **Grouping yang jelas** - Kelompokkan string berdasarkan screen/fitur
+4. **Selalu sediakan English** sebagai fallback default
+5. **Export melalui barrel file** (`l10n/l10n.dart`)
+
+---
+
 ## Lihat Juga
 
 - **[Modular.md](./Modular.md)** - Arsitektur modular lengkap (internal + external modules)
@@ -289,4 +403,4 @@ Jika menggunakan URL SSH, pastikan:
 ---
 
 *Diperbarui: 1 Januari 2026*
-*Versi: 1.1.0*
+*Versi: 1.2.0*
