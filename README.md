@@ -84,6 +84,8 @@ lib/
 
 > **Note:** Konfigurasi branding (colors, company info, social links, legal URLs) sudah terintegrasi di `lib/core/constants/app_info.dart`
 
+> **📚 Architecture Overview:** Untuk gambaran arsitektur lengkap, lihat [docs/SuperApp-Architecture.md](docs/SuperApp-Architecture.md)
+
 ---
 
 ## ✨ Fitur yang Diimplementasi
@@ -451,6 +453,21 @@ flutter run -d emulator-5554
 - `tool/manage_external_modules.dart` - CLI tool untuk external modules
 
 ---
+
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [SuperApp-Architecture.md](docs/SuperApp-Architecture.md) | Architecture overview & design |
+| [API.md](docs/API.md) | Network layer (Dio + Retrofit) |
+| [Modular.md](docs/Modular.md) | Modular architecture guide |
+| [SubModule.md](docs/SubModule.md) | External modules integration |
+| [Notification.md](docs/Notification.md) | Push notification system |
+| [GPS.md](docs/GPS.md) | GPS/Location feature |
+| [Localization.md](docs/Localization.md) | Multi-language support |
+| [SplashScreen.md](docs/SplashScreen.md) | Splash screen configuration |
+| [QuickAction.md](docs/QuickAction.md) | Quick actions system |
+| [Permission Helper.md](docs/Permission%20Helper.md) | Permission management |
 
 ## 📋 TODO (Pengembangan Lanjut)
 
