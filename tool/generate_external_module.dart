@@ -18,6 +18,12 @@
 //   ├── lib/
 //   │   ├── [module_name].dart
 //   │   ├── [module_name]_module.dart
+//   │   ├── l10n/
+//   │   │   ├── l10n.dart
+//   │   │   ├── [module_name]_localizations.dart
+//   │   │   └── strings/
+//   │   │       ├── id_strings.dart
+//   │   │       └── en_strings.dart
 //   │   └── screens/
 //   │       └── [workspace]/
 //   │           ├── [workspace]_list_screen.dart
@@ -250,12 +256,16 @@ void _generateModule({
   final basePath = 'modules/$moduleNameSnake';
   final libPath = '$basePath/lib';
   final screensPath = '$libPath/screens';
+  final l10nPath = '$libPath/l10n';
+  final stringsPath = '$l10nPath/strings';
   final testPath = '$basePath/test';
   
   print('📁 Creating directories...');
   _createDirectory(basePath);
   _createDirectory(libPath);
   _createDirectory(screensPath);
+  _createDirectory(l10nPath);
+  _createDirectory(stringsPath);
   _createDirectory(testPath);
   
   // Create workspace directories and screens
@@ -289,6 +299,39 @@ void _generateModule({
       ),
     );
   }
+  
+  // Create l10n files
+  print('📝 Creating l10n files...');
+  _createFile(
+    '$stringsPath/id_strings.dart',
+    _generateIdStringsCode(
+      moduleNameSnake: moduleNameSnake,
+      moduleNameDisplay: moduleNameDisplay,
+      description: description,
+      workspaces: workspaces,
+    ),
+  );
+  _createFile(
+    '$stringsPath/en_strings.dart',
+    _generateEnStringsCode(
+      moduleNameSnake: moduleNameSnake,
+      moduleNameDisplay: moduleNameDisplay,
+      description: description,
+      workspaces: workspaces,
+    ),
+  );
+  _createFile(
+    '$l10nPath/${moduleNameSnake}_localizations.dart',
+    _generateLocalizationsCode(
+      moduleNameSnake: moduleNameSnake,
+      moduleNamePascal: moduleNamePascal,
+      workspaces: workspaces,
+    ),
+  );
+  _createFile(
+    '$l10nPath/l10n.dart',
+    _generateL10nBarrelCode(moduleNameSnake),
+  );
   
   // Create module file
   print('📝 Creating module file...');
@@ -479,11 +522,13 @@ String _generateModuleCode({
   // Generate dashboard card
   final firstWorkspace = workspaces.first;
   final dashboardRoute = '/$moduleNameSnake/${firstWorkspace['snake']}';
+  final l10nExtName = _toCamelCase(moduleNameSnake);
   
   return '''import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:module_interface/module_interface.dart';
 
+import 'l10n/${moduleNameSnake}_localizations.dart';
 $screenImports
 
 /// $moduleNameDisplay Module - $description
@@ -546,6 +591,7 @@ class ${moduleNamePascal}DashboardCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.${l10nExtName}L10n;
 
     return Card(
       elevation: 2,
@@ -574,7 +620,7 @@ class ${moduleNamePascal}DashboardCard extends StatelessWidget {
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    '$moduleNameDisplay',
+                    l10n.dashboardTitle,
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -587,7 +633,7 @@ class ${moduleNamePascal}DashboardCard extends StatelessWidget {
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    '$description',
+                    l10n.dashboardSubtitle,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -614,8 +660,11 @@ String _generateListScreenCode({
   required String workspacePascal,
   required String workspaceDisplay,
 }) {
+  final l10nExtName = _toCamelCase(moduleNameSnake);
   return '''import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../l10n/${moduleNameSnake}_localizations.dart';
 
 /// List screen for $workspaceDisplay in $moduleNamePascal module
 class ${workspacePascal}ListScreen extends StatelessWidget {
@@ -624,10 +673,11 @@ class ${workspacePascal}ListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.${l10nExtName}L10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('$workspaceDisplay'),
+        title: Text(l10n.${workspaceSnake}Title),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -638,7 +688,7 @@ class ${workspacePascal}ListScreen extends StatelessWidget {
             onPressed: () {
               // TODO: Implement search
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Search coming soon')),
+                SnackBar(content: Text(l10n.searchComingSoon)),
               );
             },
           ),
@@ -660,14 +710,13 @@ class ${workspacePascal}ListScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Welcome to $workspaceDisplay',
+                    l10n.${workspaceSnake}WelcomeTitle,
                     style: theme.textTheme.headlineSmall,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Manage your $workspaceDisplay data here. '
-                    'Tap on an item to edit or use the button below to add new.',
+                    l10n.${workspaceSnake}WelcomeDescription,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -681,7 +730,7 @@ class ${workspacePascal}ListScreen extends StatelessWidget {
 
           // Section Title
           Text(
-            '$workspaceDisplay Items',
+            l10n.${workspaceSnake}Items,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -697,8 +746,8 @@ class ${workspacePascal}ListScreen extends StatelessWidget {
                   backgroundColor: theme.colorScheme.primaryContainer,
                   child: Text('\${index + 1}'),
                 ),
-                title: Text('$workspaceDisplay Item \${index + 1}'),
-                subtitle: const Text('Tap to edit'),
+                title: Text('\${l10n.${workspaceSnake}Item} \${index + 1}'),
+                subtitle: Text(l10n.${workspaceSnake}TapToEdit),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.push(
                   '/$moduleNameSnake/$workspaceSnake/form/\${index + 1}',
@@ -711,7 +760,7 @@ class ${workspacePascal}ListScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/$moduleNameSnake/$workspaceSnake/form'),
         icon: const Icon(Icons.add),
-        label: const Text('Add $workspaceDisplay'),
+        label: Text(l10n.${workspaceSnake}Add),
       ),
     );
   }
@@ -727,8 +776,11 @@ String _generateFormScreenCode({
   required String workspacePascal,
   required String workspaceDisplay,
 }) {
+  final l10nExtName = _toCamelCase(moduleNameSnake);
   return '''import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../l10n/${moduleNameSnake}_localizations.dart';
 
 /// Form screen for adding/editing $workspaceDisplay in $moduleNamePascal module
 class ${workspacePascal}FormScreen extends StatefulWidget {
@@ -783,6 +835,7 @@ class _${workspacePascal}FormScreenState extends State<${workspacePascal}FormScr
   Future<void> _saveData() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final l10n = context.${l10nExtName}L10n;
     setState(() => _isLoading = true);
 
     // TODO: Save data to API
@@ -793,7 +846,7 @@ class _${workspacePascal}FormScreenState extends State<${workspacePascal}FormScr
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            isEditing ? '$workspaceDisplay updated!' : '$workspaceDisplay created!',
+            isEditing ? l10n.${workspaceSnake}Updated : l10n.${workspaceSnake}Created,
           ),
         ),
       );
@@ -804,10 +857,11 @@ class _${workspacePascal}FormScreenState extends State<${workspacePascal}FormScr
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.${l10nExtName}L10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Edit $workspaceDisplay' : 'Add $workspaceDisplay'),
+        title: Text(isEditing ? l10n.${workspaceSnake}Edit : l10n.${workspaceSnake}Add),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -820,23 +874,23 @@ class _${workspacePascal}FormScreenState extends State<${workspacePascal}FormScr
                 // TODO: Implement delete
                 showDialog(
                   context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Delete $workspaceDisplay'),
-                    content: const Text('Are you sure you want to delete this item?'),
+                  builder: (dialogContext) => AlertDialog(
+                    title: Text(l10n.${workspaceSnake}Delete),
+                    content: Text(l10n.${workspaceSnake}DeleteConfirm),
                     actions: [
                       TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
+                        onPressed: () => Navigator.pop(dialogContext),
+                        child: Text(l10n.cancel),
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.pop(context);
+                          Navigator.pop(dialogContext);
                           context.pop();
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Item deleted')),
+                            SnackBar(content: Text(l10n.${workspaceSnake}Deleted)),
                           );
                         },
-                        child: const Text('Delete'),
+                        child: Text(l10n.delete),
                       ),
                     ],
                   ),
@@ -855,15 +909,15 @@ class _${workspacePascal}FormScreenState extends State<${workspacePascal}FormScr
                   // Name field
                   TextFormField(
                     controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Name',
-                      hintText: 'Enter name',
-                      prefixIcon: Icon(Icons.badge_outlined),
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.name,
+                      hintText: l10n.enterName,
+                      prefixIcon: const Icon(Icons.badge_outlined),
+                      border: const OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Name is required';
+                        return l10n.nameRequired;
                       }
                       return null;
                     },
@@ -873,11 +927,11 @@ class _${workspacePascal}FormScreenState extends State<${workspacePascal}FormScr
                   // Description field
                   TextFormField(
                     controller: _descriptionController,
-                    decoration: const InputDecoration(
-                      labelText: 'Description',
-                      hintText: 'Enter description',
-                      prefixIcon: Icon(Icons.description_outlined),
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.descriptionLabel,
+                      hintText: l10n.enterDescription,
+                      prefixIcon: const Icon(Icons.description_outlined),
+                      border: const OutlineInputBorder(),
                       alignLabelWithHint: true,
                     ),
                     maxLines: 4,
@@ -899,7 +953,7 @@ class _${workspacePascal}FormScreenState extends State<${workspacePascal}FormScr
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'Editing item #\${widget.id}',
+                                '\${l10n.editingItem} #\${widget.id}',
                                 style: theme.textTheme.bodyMedium,
                               ),
                             ),
@@ -923,7 +977,7 @@ class _${workspacePascal}FormScreenState extends State<${workspacePascal}FormScr
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : Text(isEditing ? 'Update' : 'Save'),
+                  : Text(isEditing ? l10n.update : l10n.save),
             ),
           ),
         ),
@@ -940,7 +994,11 @@ String _generateLibraryCode(String moduleNameSnake, String moduleNamePascal) {
 /// This library exports all public APIs of the $moduleNamePascal module.
 library $moduleNameSnake;
 
+// Module exports
 export '${moduleNameSnake}_module.dart';
+
+// Localization exports
+export 'l10n/l10n.dart';
 ''';
 }
 
@@ -1122,6 +1180,263 @@ migrate_working_dir/
 # Platform specific
 *.lock
 ''';
+}
+
+// ============================================================================
+// L10N CODE GENERATORS
+// ============================================================================
+
+String _generateIdStringsCode({
+  required String moduleNameSnake,
+  required String moduleNameDisplay,
+  required String description,
+  required List<Map<String, String>> workspaces,
+}) {
+  final workspaceStrings = workspaces.map((w) {
+    final snake = w['snake']!;
+    final display = w['display']!;
+    return '''
+  // $display
+  '${snake}Title': '$display',
+  '${snake}WelcomeTitle': 'Selamat Datang di $display',
+  '${snake}WelcomeDescription': 'Kelola data $display Anda di sini. '
+      'Ketuk item untuk mengedit atau gunakan tombol di bawah untuk menambah baru.',
+  '${snake}Items': 'Item $display',
+  '${snake}Item': 'Item $display',
+  '${snake}TapToEdit': 'Ketuk untuk edit',
+  '${snake}Add': 'Tambah $display',
+  '${snake}Edit': 'Edit $display',
+  '${snake}Created': '$display dibuat!',
+  '${snake}Updated': '$display diperbarui!',
+  '${snake}Delete': 'Hapus $display',
+  '${snake}DeleteConfirm': 'Apakah Anda yakin ingin menghapus item ini?',
+  '${snake}Deleted': 'Item dihapus',''';
+  }).join('\n');
+
+  return '''/// Bahasa Indonesia strings for $moduleNameDisplay Module
+const Map<String, String> ${moduleNameSnake}IdStrings = {
+  // Module Info
+  'moduleName': '$moduleNameDisplay',
+  'moduleDescription': '$description',
+
+  // Dashboard
+  'dashboardTitle': '$moduleNameDisplay',
+  'dashboardSubtitle': '$description',
+
+  // Common
+  'searchComingSoon': 'Pencarian segera hadir',
+  'name': 'Nama',
+  'enterName': 'Masukkan nama',
+  'nameRequired': 'Nama harus diisi',
+  'descriptionLabel': 'Deskripsi',
+  'enterDescription': 'Masukkan deskripsi',
+  'editingItem': 'Mengedit item',
+  'update': 'Perbarui',
+  'save': 'Simpan',
+  'cancel': 'Batal',
+  'delete': 'Hapus',
+$workspaceStrings
+};
+''';
+}
+
+String _generateEnStringsCode({
+  required String moduleNameSnake,
+  required String moduleNameDisplay,
+  required String description,
+  required List<Map<String, String>> workspaces,
+}) {
+  final workspaceStrings = workspaces.map((w) {
+    final snake = w['snake']!;
+    final display = w['display']!;
+    return '''
+  // $display
+  '${snake}Title': '$display',
+  '${snake}WelcomeTitle': 'Welcome to $display',
+  '${snake}WelcomeDescription': 'Manage your $display data here. '
+      'Tap on an item to edit or use the button below to add new.',
+  '${snake}Items': '$display Items',
+  '${snake}Item': '$display Item',
+  '${snake}TapToEdit': 'Tap to edit',
+  '${snake}Add': 'Add $display',
+  '${snake}Edit': 'Edit $display',
+  '${snake}Created': '$display created!',
+  '${snake}Updated': '$display updated!',
+  '${snake}Delete': 'Delete $display',
+  '${snake}DeleteConfirm': 'Are you sure you want to delete this item?',
+  '${snake}Deleted': 'Item deleted',''';
+  }).join('\n');
+
+  return '''/// English strings for $moduleNameDisplay Module
+const Map<String, String> ${moduleNameSnake}EnStrings = {
+  // Module Info
+  'moduleName': '$moduleNameDisplay',
+  'moduleDescription': '$description',
+
+  // Dashboard
+  'dashboardTitle': '$moduleNameDisplay',
+  'dashboardSubtitle': '$description',
+
+  // Common
+  'searchComingSoon': 'Search coming soon',
+  'name': 'Name',
+  'enterName': 'Enter name',
+  'nameRequired': 'Name is required',
+  'descriptionLabel': 'Description',
+  'enterDescription': 'Enter description',
+  'editingItem': 'Editing item',
+  'update': 'Update',
+  'save': 'Save',
+  'cancel': 'Cancel',
+  'delete': 'Delete',
+$workspaceStrings
+};
+''';
+}
+
+String _generateLocalizationsCode({
+  required String moduleNameSnake,
+  required String moduleNamePascal,
+  required List<Map<String, String>> workspaces,
+}) {
+  // Generate getters for each workspace
+  final workspaceGetters = workspaces.map((w) {
+    final snake = w['snake']!;
+    return '''
+  // ${w['display']} Getters
+  String get ${snake}Title => translate('${snake}Title');
+  String get ${snake}WelcomeTitle => translate('${snake}WelcomeTitle');
+  String get ${snake}WelcomeDescription => translate('${snake}WelcomeDescription');
+  String get ${snake}Items => translate('${snake}Items');
+  String get ${snake}Item => translate('${snake}Item');
+  String get ${snake}TapToEdit => translate('${snake}TapToEdit');
+  String get ${snake}Add => translate('${snake}Add');
+  String get ${snake}Edit => translate('${snake}Edit');
+  String get ${snake}Created => translate('${snake}Created');
+  String get ${snake}Updated => translate('${snake}Updated');
+  String get ${snake}Delete => translate('${snake}Delete');
+  String get ${snake}DeleteConfirm => translate('${snake}DeleteConfirm');
+  String get ${snake}Deleted => translate('${snake}Deleted');''';
+  }).join('\n');
+
+  return '''import 'package:flutter/material.dart';
+
+import 'strings/en_strings.dart';
+import 'strings/id_strings.dart';
+
+/// Delegate untuk ${moduleNamePascal}Localizations
+class ${moduleNamePascal}LocalizationsDelegate
+    extends LocalizationsDelegate<${moduleNamePascal}Localizations> {
+  const ${moduleNamePascal}LocalizationsDelegate();
+
+  @override
+  bool isSupported(Locale locale) {
+    return ['id', 'en'].contains(locale.languageCode);
+  }
+
+  @override
+  Future<${moduleNamePascal}Localizations> load(Locale locale) async {
+    return ${moduleNamePascal}Localizations(locale);
+  }
+
+  @override
+  bool shouldReload(${moduleNamePascal}LocalizationsDelegate old) => false;
+}
+
+/// Class utama untuk lokalisasi $moduleNamePascal Module
+/// Mendukung Bahasa Indonesia (id) dan English (en)
+class ${moduleNamePascal}Localizations {
+  final Locale locale;
+
+  ${moduleNamePascal}Localizations(this.locale);
+
+  /// Helper method untuk mendapatkan instance dari BuildContext
+  static ${moduleNamePascal}Localizations of(BuildContext context) {
+    // Pertama coba dari Localizations
+    final localizations = Localizations.of<${moduleNamePascal}Localizations>(
+      context,
+      ${moduleNamePascal}Localizations,
+    );
+
+    if (localizations != null) {
+      return localizations;
+    }
+
+    // Fallback: gunakan locale dari context
+    final locale = Localizations.localeOf(context);
+    return ${moduleNamePascal}Localizations(locale);
+  }
+
+  /// Delegate untuk digunakan di MaterialApp
+  static const LocalizationsDelegate<${moduleNamePascal}Localizations> delegate =
+      ${moduleNamePascal}LocalizationsDelegate();
+
+  /// Map untuk menyimpan semua string terjemahan
+  static final Map<String, Map<String, String>> _localizedStrings = {
+    'id': ${moduleNameSnake}IdStrings,
+    'en': ${moduleNameSnake}EnStrings,
+  };
+
+  /// Mendapatkan string berdasarkan key
+  String translate(String key) {
+    return _localizedStrings[locale.languageCode]?[key] ??
+        _localizedStrings['en']?[key] ??
+        key;
+  }
+
+  // ============================================
+  // MODULE INFO
+  // ============================================
+  String get moduleName => translate('moduleName');
+  String get moduleDescription => translate('moduleDescription');
+
+  // ============================================
+  // DASHBOARD
+  // ============================================
+  String get dashboardTitle => translate('dashboardTitle');
+  String get dashboardSubtitle => translate('dashboardSubtitle');
+
+  // ============================================
+  // COMMON
+  // ============================================
+  String get searchComingSoon => translate('searchComingSoon');
+  String get name => translate('name');
+  String get enterName => translate('enterName');
+  String get nameRequired => translate('nameRequired');
+  String get descriptionLabel => translate('descriptionLabel');
+  String get enterDescription => translate('enterDescription');
+  String get editingItem => translate('editingItem');
+  String get update => translate('update');
+  String get save => translate('save');
+  String get cancel => translate('cancel');
+  String get delete => translate('delete');
+$workspaceGetters
+}
+
+/// Extension untuk akses mudah dari BuildContext
+extension ${moduleNamePascal}LocalizationsExtension on BuildContext {
+  ${moduleNamePascal}Localizations get ${_toCamelCase(moduleNameSnake)}L10n =>
+      ${moduleNamePascal}Localizations.of(this);
+}
+''';
+}
+
+String _generateL10nBarrelCode(String moduleNameSnake) {
+  return '''/// Barrel file untuk lokalisasi $moduleNameSnake Module
+library;
+
+export '${moduleNameSnake}_localizations.dart';
+export 'strings/id_strings.dart';
+export 'strings/en_strings.dart';
+''';
+}
+
+String _toCamelCase(String snakeCase) {
+  final parts = snakeCase.split('_');
+  return parts.first + 
+      parts.skip(1).map((word) => 
+          word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1)
+      ).join('');
 }
 
 // ============================================================================
