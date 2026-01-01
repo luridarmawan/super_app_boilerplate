@@ -2,6 +2,10 @@
 
 Quick Actions adalah fitur yang memungkinkan setiap modul menyediakan aksi cepat yang ditampilkan dalam grid menu di dashboard.
 
+> **📚 Dokumen Terkait:**
+> - **[Modular.md](./Modular.md)** - Arsitektur modular (BaseModule, registry)
+> - **[SubModule.md](./SubModule.md)** - Panduan external modules
+
 ---
 
 ## Daftar Isi
@@ -16,12 +20,13 @@ Quick Actions adalah fitur yang memungkinkan setiap modul menyediakan aksi cepat
 6. [Static Quick Actions](#static-quick-actions)
 7. [Quick Actions Manager](#quick-actions-manager)
 8. [Contoh Implementasi](#contoh-implementasi)
+9. [**Quick Actions di External Module (SubModule)**](#quick-actions-di-external-module-submodule) ⭐ NEW
 
 ---
 
 ## Pendahuluan
 
-Quick Actions adalah aksi cepat berupa ikon/tombol yang ditampilkan di dashboard dalam format grid. Fitur ini memungkinkan:
+Quick Actions adalah ikon/tombol yang ditampilkan di dashboard dalam format grid. Fitur ini memungkinkan:
 
 - **Setiap modul** dapat menyediakan **lebih dari satu quick action**
 - User dapat **mengaktifkan/menonaktifkan** quick action individual
@@ -391,3 +396,214 @@ class MainDashboard extends ConsumerWidget {
 ### Q: Bagaimana jika modul dinonaktifkan?
 
 **A:** Quick actions dari modul yang tidak aktif tidak akan muncul, karena hanya `activeModules` yang diproses.
+
+---
+
+## Quick Actions di External Module (SubModule)
+
+External module (repository terpisah) juga dapat menyediakan quick actions. Prosesnya sama dengan internal module, namun ada beberapa hal yang perlu diperhatikan.
+
+### Contoh: super_module
+
+Repository: [https://github.com/luridarmawan/super_app_module](https://github.com/luridarmawan/super_app_module)
+
+Lokasi setelah clone: `modules/super_module/`
+
+#### Struktur File
+
+```
+modules/super_module/
+├── lib/
+│   ├── super_module.dart           # Export file
+│   ├── super_module_module.dart    # Module definition + Quick Actions
+│   └── screens/
+│       └── super_module_screen.dart
+└── pubspec.yaml
+```
+
+#### Implementasi Quick Actions
+
+```dart
+// modules/super_module/lib/super_module_module.dart
+
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:module_interface/module_interface.dart';
+
+class SuperModuleModule extends BaseModule {
+  @override
+  String get name => 'super_module';
+
+  @override
+  String get displayName => 'Super Module';
+
+  @override
+  String get version => '1.0.0';
+
+  @override
+  String get description => 'Super Module for Super App';
+
+  @override
+  IconData get icon => Icons.science;
+
+  // Quick Actions definition
+  @override
+  List<QuickActionItem> get quickActions => [
+    // Quick action 1: Navigate to main screen
+    QuickActionItem(
+      id: 'super_module_quick',        // Unique ID
+      moduleId: 'super_module',         // Module ID (must match `name`)
+      label: 'Super Module',
+      icon: Icons.science,
+      route: '/super-module',           // Route path (defined in `routes`)
+      order: 50,                        // Sorting order
+      description: 'Explore Super Module',
+    ),
+    
+    // Quick action 2: Navigate to detail screen
+    QuickActionItem(
+      id: 'super_module_detail',
+      moduleId: 'super_module',
+      label: 'Detail Super',
+      icon: Icons.info_outline,
+      color: const Color(0xFF00BFA5),   // Custom color
+      route: '/super-module/detail/2',  // Route with parameter
+      order: 51,
+      description: 'View super item 2',
+    ),
+  ];
+
+  @override
+  List<RouteBase> get routes => [
+    GoRoute(
+      path: '/super-module',
+      name: 'super_module',
+      builder: (context, state) => const DemoScreen(),
+      routes: [
+        GoRoute(
+          path: 'detail/:id',
+          name: 'super_module_detail',
+          builder: (context, state) {
+            final id = state.pathParameters['id'] ?? '0';
+            return DemoDetailScreen(id: id);
+          },
+        ),
+      ],
+    ),
+  ];
+
+  // ... other overrides
+}
+```
+
+### Langkah Menambahkan Quick Actions ke External Module
+
+1. **Pastikan import `module_interface`**
+
+```dart
+import 'package:module_interface/module_interface.dart';
+```
+
+2. **Override getter `quickActions`**
+
+```dart
+@override
+List<QuickActionItem> get quickActions => [
+  QuickActionItem(
+    id: '${name}_action1',  // Format: {moduleId}_{actionName}
+    moduleId: name,
+    label: 'My Action',
+    icon: Icons.star,
+    route: '/my-module/action',
+    order: 100,
+    description: 'Description for manager screen',
+  ),
+];
+```
+
+3. **Pastikan route sudah terdaftar**
+
+Quick action dengan `route` memerlukan route yang sesuai di getter `routes`:
+
+```dart
+@override
+List<RouteBase> get routes => [
+  GoRoute(
+    path: '/my-module/action',  // Harus match dengan route di QuickActionItem
+    builder: (context, state) => const MyActionScreen(),
+  ),
+];
+```
+
+4. **Daftarkan module di main app**
+
+Setelah clone external module, daftarkan di `lib/modules/all_modules.dart`:
+
+```dart
+import 'package:super_module/super_module_module.dart';
+
+class ModuleManifest {
+  static void register() {
+    // Internal modules
+    ModuleRegistry.register(SampleModule());
+    
+    // External modules
+    ModuleRegistry.register(SuperModuleModule());
+  }
+}
+```
+
+### Quick Actions dengan Custom Callback
+
+External module juga dapat menggunakan custom callback:
+
+```dart
+QuickActionItem(
+  id: 'super_module_scan',
+  moduleId: 'super_module',
+  label: 'Scan',
+  icon: Icons.qr_code_scanner,
+  color: const Color(0xFF2E7D32),
+  onTap: (context) {
+    // Custom action - dialog, snackbar, etc.
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Scanner'),
+        content: const Text('Opening scanner...'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  },
+  order: 52,
+  description: 'Scan QR code',
+),
+```
+
+### Perbedaan Internal vs External Module
+
+| Aspek | Internal Module | External Module |
+|-------|-----------------|-----------------|
+| Lokasi | `lib/modules/` | `modules/` (root) |
+| Import | `import '../quick_action_item.dart'` | `import 'package:module_interface/module_interface.dart'` |
+| Repository | Sama dengan main app | Terpisah |
+| Contoh | `lib/modules/sample/` | `modules/super_module/` |
+
+---
+
+## Lihat Juga
+
+- **[Modular.md](./Modular.md)** - Arsitektur modular lengkap
+- **[SubModule.md](./SubModule.md)** - Panduan external modules
+- **[README.md](../README.md)** - Dokumentasi utama project
+
+---
+
+*Dibuat: 30 Desember 2025*
+*Diperbarui: 1 Januari 2026*
+*Versi: 1.2.0*
