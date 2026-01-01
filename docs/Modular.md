@@ -521,7 +521,7 @@ super_app_boilerplate/
 │   └── main.dart                 # App entry point
 │
 ├── tool/                         # CLI tools
-│   ├── generate_module.dart      # Generate modul internal
+│   ├── generate_module_internal.dart  # Generate modul internal
 │   ├── manage_external_modules.dart  # Kelola modul eksternal
 │   └── sync_modules.dart         # Sync pendaftaran modul
 │
@@ -537,7 +537,7 @@ super_app_boilerplate/
 | **Git tracking** | ✅ Di-track | ❌ Gitignored |
 | **Repository** | Sama dengan app | Terpisah |
 | **Cocok untuk** | Fitur spesifik app ini | Fitur yang di-reuse antar project |
-| **CLI Tool** | `generate_module.dart` | `manage_external_modules.dart` |
+| **CLI Tool** | `generate_module_internal.dart` | `manage_external_modules.dart` |
 | **Dokumentasi** | Dokumen ini | [SubModule.md](./SubModule.md) |
 
 ---
@@ -563,8 +563,8 @@ super_app_boilerplate/
 | `lib/modules/module_registry.dart` | Registry untuk registrasi dan manajemen modul |
 | `lib/modules/all_modules.dart` | Manifest pendaftaran modul (Auto-generated) |
 | `lib/modules/sample/sample_module.dart` | Contoh implementasi modul internal |
-| `tool/generate_module.dart` | CLI tool untuk module internal (local folder) |
-| `tool/generate_external_module.dart` | CLI tool interaktif untuk membuat modul eksternal baru |
+| `tool/generate_module_internal.dart` | CLI tool untuk module internal (local folder) |
+| `tool/generate_module.dart` | CLI tool interaktif untuk membuat modul eksternal baru |
 | `tool/manage_external_modules.dart` | CLI tool untuk module eksternal (tanpa git submodule) |
 | `tool/sync_modules.dart` | Script sinkronisasi pendaftaran modul internal |
 | `modules.yaml.example` | Template manifest untuk modul eksternal |
@@ -580,7 +580,7 @@ Terdapat dua cara untuk membuat modul tergantung pada kebutuhan skalabilitas:
 Cocok untuk fitur yang spesifik hanya untuk aplikasi ini. Menggunakan CLI tool:
 
 ```bash
-dart run tool/generate_module.dart <nama_modul>
+dart run tool/generate_module_internal.dart <nama_modul>
 ```
 
 ### Opsi 2: Modul Eksternal (Repository Terpisah)
@@ -594,7 +594,7 @@ Lihat panduan lengkapnya di [SubModule.md](./SubModule.md).
 Gunakan CLI tool interaktif untuk membuat modul eksternal baru:
 
 ```bash
-dart run tool/generate_external_module.dart
+dart run tool/generate_module.dart
 ```
 
 Tool akan menanyakan:
@@ -637,13 +637,13 @@ copy modules.yaml.example modules.yaml
 dart run tool/manage_external_modules.dart
 ```
 
-#### Contoh Modul Internal (generate_module.dart)
+#### Contoh Modul Internal (generate_module_internal.dart)
 
 Untuk modul internal yang lebih sederhana:
 ```bash
-dart run tool/generate_module.dart news
-dart run tool/generate_module.dart ecommerce
-dart run tool/generate_module.dart booking
+dart run tool/generate_module_internal.dart news
+dart run tool/generate_module_internal.dart ecommerce
+dart run tool/generate_module_internal.dart booking
 ```
 
 CLI tool akan otomatis membuat:
