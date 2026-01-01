@@ -138,6 +138,9 @@ Future<void> _syncModules(YamlList modules, {bool pullUpdates = false}) async {
       } else {
         print('✓ $name: Already exists');
       }
+      
+      // Always verify registration even if module already exists
+      await _verifyRegistration(name, targetPath);
     } else {
       print('📥 $name: Cloning from $url (branch: $branch)...');
       
@@ -149,16 +152,24 @@ Future<void> _syncModules(YamlList modules, {bool pullUpdates = false}) async {
       if (cloneResult.exitCode == 0) {
         print('   ✓ Cloned successfully');
         
-        // Register in pubspec.yaml
-        await _registerModule(name, targetPath);
-        
-        // Register in all_modules.dart
-        await _registerModuleManifest(name);
+        // Register in pubspec.yaml and all_modules.dart
+        await _verifyRegistration(name, targetPath);
       } else {
         print('   ❌ Clone failed: ${cloneResult.stderr}');
       }
     }
   }
+}
+
+/// Verify and fix module registration in pubspec.yaml and all_modules.dart
+Future<void> _verifyRegistration(String moduleName, String targetPath) async {
+  print('   🔍 Verifying registration...');
+  
+  // Check and register in pubspec.yaml
+  await _registerModule(moduleName, targetPath);
+  
+  // Check and register in all_modules.dart
+  await _registerModuleManifest(moduleName);
 }
 
 Future<void> _checkStatus(YamlList modules) async {
@@ -242,8 +253,6 @@ Future<void> _cleanModules(YamlList modules) async {
 }
 
 Future<void> _registerModule(String moduleName, String targetPath) async {
-  print('   📝 Registering in pubspec.yaml...');
-  
   final pubspecFile = File('pubspec.yaml');
   String pubspecContent = pubspecFile.readAsStringSync();
 
@@ -263,19 +272,17 @@ Future<void> _registerModule(String moduleName, String targetPath) async {
         pubspecContent = pubspecContent.substring(0, nextLineIndex) + insertion + pubspecContent.substring(nextLineIndex);
       }
       pubspecFile.writeAsStringSync(pubspecContent);
-      print('      ✓ Added to pubspec.yaml');
+      print('      📝 pubspec.yaml: Added');
     }
   } else {
-    print('      ⚠ Already in pubspec.yaml');
+    print('      ✓ pubspec.yaml: OK');
   }
 }
 
 Future<void> _registerModuleManifest(String moduleName) async {
-  print('   📝 Registering in all_modules.dart...');
-  
   final manifestFile = File('lib/modules/all_modules.dart');
   if (!manifestFile.existsSync()) {
-    print('      ⚠ all_modules.dart not found, skipping registration');
+    print('      ⚠ all_modules.dart: Not found, skipping');
     return;
   }
 
@@ -306,9 +313,9 @@ Future<void> _registerModuleManifest(String moduleName) async {
     }
     
     manifestFile.writeAsStringSync(manifestContent);
-    print('      ✓ Added to all_modules.dart');
+    print('      📝 all_modules.dart: Added');
   } else {
-    print('      ⚠ Already in all_modules.dart');
+    print('      ✓ all_modules.dart: OK');
   }
 }
 
