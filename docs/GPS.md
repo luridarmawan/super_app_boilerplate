@@ -2,6 +2,10 @@
 
 The GPS feature allows the application to access user location using the `geolocator` package. This feature can be enabled or disabled via environment variables.
 
+> **📚 Related Documents:**
+> - **[README.md](../README.md)** - Main project documentation
+> - **[Modular.md](./Modular.md)** - Modular architecture
+
 ## Table of Contents
 
 - [Environment Configuration](#environment-configuration)
@@ -528,6 +532,12 @@ if (AppInfo.enableGps)
 
 ## See Also
 
+- **[README.md](../README.md)** - Main project documentation
+- **[Modular.md](./Modular.md)** - Modular architecture
+- **[API.md](./API.md)** - Network layer documentation
 - [Geolocator Package Documentation](https://pub.dev/packages/geolocator)
-- [Permission Helper](./Permission%20Helper.md)
-- [Environment Configuration](./Environment.md)
+
+---
+
+*Updated: January 1, 2026*
+*Version: 1.2.1*
