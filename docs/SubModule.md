@@ -1,6 +1,10 @@
 # Panduan External Module
 
-Dokumentasi ini menjelaskan cara mengelola modul eksternal **tanpa menggunakan git submodule**, sehingga tidak ada perubahan di `.gitmodules` pada repository utama.
+Dokumentasi ini menjelaskan cara mengelola **modul eksternal** (repository terpisah) **tanpa menggunakan git submodule**, sehingga tidak ada perubahan di `.gitmodules` pada repository utama.
+
+> **📚 Dokumen Terkait:**
+> - **[Modular.md](./Modular.md)** - Arsitektur modular secara keseluruhan (konsep, BaseModule, registry)
+> - Dokumen ini fokus **khusus** pada modul eksternal yang memiliki repository terpisah
 
 ---
 
@@ -273,3 +277,16 @@ Jika menggunakan URL SSH, pastikan:
 | Kompleksitas | ⚡ Rendah | 🔧 Sedang |
 | Clone | `git clone` + script | `git clone --recursive` |
 | Tracking versi | Manual di manifest | Otomatis via pointer |
+
+---
+
+## Lihat Juga
+
+- **[Modular.md](./Modular.md)** - Arsitektur modular lengkap (internal + external modules)
+- **[API.md](./API.md)** - Panduan Network Layer
+- **[README.md](../README.md)** - Dokumentasi utama project
+
+---
+
+*Diperbarui: 1 Januari 2026*
+*Versi: 1.1.0*

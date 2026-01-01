@@ -1,10 +1,14 @@
 # Push Notification
 
+> **📚 Related Documents:**
+> - **[README.md](../README.md)** - Main project documentation
+> - **[Modular.md](./Modular.md)** - Modular architecture
+
 ## Overview
 
-Super App mengimplementasikan **Multi-Provider Push Notification** dengan abstraction layer, memungkinkan pergantian provider notifikasi tanpa mengubah kode UI.
+Super App implements **Multi-Provider Push Notification** with an abstraction layer, allowing notification provider switching without changing UI code.
 
-## Arsitektur
+## Architecture
 
 ```
 UI Layer
@@ -15,23 +19,23 @@ UI Layer
            └── MockNotificationService      (For Testing)
 ```
 
-## Keunggulan
+## Benefits
 
-| Benefit | Deskripsi |
-|---------|-----------|
-| **Clean Separation** | Tidak ada `if (isFcm)` logic di UI layer |
-| **Easy Switching** | Ganti provider dengan mengubah 1 baris const |
-| **A/B Testing Ready** | Bisa dikontrol via remote config |
-| **Testable** | `MockNotificationService` untuk unit testing |
-| **Clean Architecture** | Konsisten dengan arsitektur aplikasi |
+| Benefit | Description |
+|---------|-------------|
+| **Clean Separation** | No `if (isFcm)` logic in UI layer |
+| **Easy Switching** | Change provider by modifying 1 line of const |
+| **A/B Testing Ready** | Can be controlled via remote config |
+| **Testable** | `MockNotificationService` for unit testing |
+| **Clean Architecture** | Consistent with app architecture |
 
 ---
 
-## ⚡ Kemudahan Pemilihan Provider
+## ⚡ Easy Provider Selection
 
-### Semua Konfigurasi di Satu Tempat
+### All Configuration in One Place
 
-Tidak perlu mengubah banyak file! Semua konfigurasi notification ada di **satu file**:
+No need to modify multiple files! All notification configuration is in **one file**:
 
 📁 **`lib/core/constants/app_info.dart`**
 
@@ -43,87 +47,86 @@ class AppInfo {
   // NOTIFICATION CONFIGURATION
   // ============================================
   
-  /// Enable/disable seluruh fitur notification
+  /// Enable/disable entire notification feature
   static const bool enableNotification = true;
   
-  /// Pilih provider: 'firebase', 'onesignal', 'mock'
+  /// Choose provider: 'firebase', 'onesignal', 'mock'
   static const String notificationProvider = 'firebase';
 }
 ```
 
-### Cara Ganti Provider
+### How to Change Provider
 
-Cukup **ubah 1 baris** di `app_info.dart`:
+Just **change 1 line** in `app_info.dart`:
 
 ```dart
-// Untuk Firebase Cloud Messaging (default)
+// For Firebase Cloud Messaging (default)
 static const String notificationProvider = 'firebase';
 
-// Untuk OneSignal
+// For OneSignal
 static const String notificationProvider = 'onesignal';
 
-// Untuk Testing/Development
+// For Testing/Development
 static const String notificationProvider = 'mock';
 ```
 
-### Provider yang Tersedia
+### Available Providers
 
-| Value | Provider | Deskripsi | Kapan Digunakan |
-|-------|----------|-----------|-----------------|
-| `firebase` / `fcm` | Firebase Cloud Messaging | Push notification dari Google | Production (default) |
-| `onesignal` | OneSignal | Alternatif push notification | Jika butuh fitur OneSignal |
-| `mock` / `test` | Mock Service | Tidak ada koneksi ke server | Testing & Development |
+| Value | Provider | Description | When to Use |
+|-------|----------|-------------|-------------|
+| `firebase` / `fcm` | Firebase Cloud Messaging | Push notification from Google | Production (default) |
+| `onesignal` | OneSignal | Alternative push notification | If you need OneSignal features |
+| `mock` / `test` | Mock Service | No server connection | Testing & Development |
 
-### Perbandingan Provider
+### Provider Comparison
 
-| Fitur | Firebase (FCM) | OneSignal |
-|-------|----------------|-----------|
-| **Gratis** | ✅ Unlimited | ✅ Sampai 10k subscribers |
-| **Setup Kompleksitas** | Medium | Mudah |
+| Feature | Firebase (FCM) | OneSignal |
+|---------|----------------|-----------|
+| **Free** | ✅ Unlimited | ✅ Up to 10k subscribers |
+| **Setup Complexity** | Medium | Easy |
 | **Analytics** | Via Firebase Console | Built-in dashboard |
-| **Segmentasi** | Manual via topics | Otomatis |
+| **Segmentation** | Manual via topics | Automatic |
 | **A/B Testing** | Via Remote Config | Built-in |
 | **Rich Notifications** | ✅ | ✅ |
 | **iOS Support** | ✅ | ✅ |
 | **Android Support** | ✅ | ✅ |
 
-### Anti-Pattern yang Dihindari
+### Anti-Patterns Avoided
 
-| ❌ Anti-Pattern | ✅ Solusi yang Diterapkan |
-|-----------------|---------------------------|
-| `if (provider == 'fcm')` di setiap screen | Abstraction layer dengan interface |
-| Konfigurasi tersebar di banyak file | Semua config di `app_info.dart` |
-| Susah testing karena butuh koneksi | `MockNotificationService` untuk testing |
-| Perlu refactor besar untuk ganti provider | Ubah 1 baris, selesai! |
-
+| ❌ Anti-Pattern | ✅ Applied Solution |
+|-----------------|---------------------|
+| `if (provider == 'fcm')` in every screen | Abstraction layer with interface |
+| Configuration scattered across many files | All config in `app_info.dart` |
+| Hard to test because it needs connection | `MockNotificationService` for testing |
+| Need major refactor to change provider | Change 1 line, done! |
 ---
 
-## Konfigurasi Detail
+## Detailed Configuration
 
 ### 1. Enable/Disable Notification
 
 ```dart
-// Set to false untuk menonaktifkan seluruh fitur notification
-// UI tetap berjalan normal, hanya notification yang off
+// Set to false to disable entire notification feature
+// UI still runs normally, only notification is off
 static const bool enableNotification = true;
 ```
 
-**Apa yang terjadi jika `false`:**
-- Tidak ada inisialisasi Firebase/OneSignal
-- Tidak ada request permission
-- `MockNotificationService` digunakan secara internal
-- Tidak ada error di UI
+**What happens if `false`:**
+- No Firebase/OneSignal initialization
+- No permission request
+- `MockNotificationService` used internally
+- No error in UI
 
-### 2. Pilih Provider
+### 2. Choose Provider
 
 ```dart
-// Pilihan: 'firebase', 'onesignal', 'mock'
+// Options: 'firebase', 'onesignal', 'mock'
 static const String notificationProvider = 'firebase';
 ```
 
 ---
 
-## Struktur File
+## File Structure
 
 ```
 lib/core/notification/
@@ -141,9 +144,9 @@ lib/core/notification/
 
 ## 📖 Quick Example
 
-### Inisialisasi (Sudah Otomatis)
+### Initialization (Already Automatic)
 
-Notification sudah **otomatis diinisialisasi** di `MainDashboard`. Untuk manual:
+Notification is **automatically initialized** in `MainDashboard`. For manual initialization:
 
 ```dart
 // 1. Initialize & request permission
@@ -203,8 +206,7 @@ ref.listen(foregroundMessageProvider, (prev, next) {
 
 ### Get Device Token
 
-```dart
-// 6. Get device token (untuk kirim ke backend)
+// 6. Get device token (to send to backend)
 final state = ref.read(notificationProvider);
 
 if (state.hasPermission && state.deviceToken != null) {
@@ -218,33 +220,33 @@ if (state.hasPermission && state.deviceToken != null) {
 
 ## Setup Firebase Cloud Messaging (FCM)
 
-### 1. Buat Project Firebase
+### 1. Create Firebase Project
 
-1. Buka [Firebase Console](https://console.firebase.google.com)
-2. Klik "Add Project" atau "Create Project"
-3. Masukkan nama project dan ikuti wizard
+1. Open [Firebase Console](https://console.firebase.google.com)
+2. Click "Add Project" or "Create Project"
+3. Enter project name and follow the wizard
 
-### 2. Tambahkan App ke Firebase
+### 2. Add App to Firebase
 
 #### Android
-1. Klik ikon Android di Firebase Console
-2. Masukkan package name: `id.carik.superapp` (sesuaikan dengan aplikasi Anda)
+1. Click Android icon in Firebase Console
+2. Enter package name: `id.carik.superapp_demo` (adjust for your app)
 3. Download `google-services.json`
-4. Letakkan di: `android/app/google-services.json`
+4. Place in: `android/app/google-services.json`
 
 #### iOS
-1. Klik ikon Apple di Firebase Console
-2. Masukkan Bundle ID
+1. Click Apple icon in Firebase Console
+2. Enter Bundle ID
 3. Download `GoogleService-Info.plist`
-4. Letakkan di: `ios/Runner/GoogleService-Info.plist`
+4. Place in: `ios/Runner/GoogleService-Info.plist`
 
-### 3. Konfigurasi Android
+### 3. Android Configuration
 
 File: `android/build.gradle`
 ```gradle
 buildscript {
     dependencies {
-        // Tambahkan ini
+        // Add this
         classpath 'com.google.gms:google-services:4.4.2'
     }
 }
@@ -252,38 +254,38 @@ buildscript {
 
 File: `android/app/build.gradle`
 ```gradle
-// Di bagian paling bawah file
+// At the very bottom of the file
 apply plugin: 'com.google.gms.google-services'
 ```
 
-### 4. Konfigurasi iOS
+### 4. iOS Configuration
 
-1. Buka `ios/Runner.xcworkspace` di Xcode
-2. Pilih Runner target > Signing & Capabilities
-3. Klik "+ Capability" dan tambahkan "Push Notifications"
-4. Tambahkan juga "Background Modes" dan enable "Remote notifications"
+1. Open `ios/Runner.xcworkspace` in Xcode
+2. Select Runner target > Signing & Capabilities
+3. Click "+ Capability" and add "Push Notifications"
+4. Also add "Background Modes" and enable "Remote notifications"
 
 ---
 
 ## Setup OneSignal
 
-### 1. Buat Akun OneSignal
+### 1. Create OneSignal Account
 
-1. Buka [OneSignal Dashboard](https://onesignal.com)
+1. Open [OneSignal Dashboard](https://onesignal.com)
 2. Create new app
-3. Pilih platform (Android/iOS/Web)
-4. Ikuti wizard setup
+3. Select platform (Android/iOS/Web)
+4. Follow setup wizard
 
 ### 2. Update App ID
 
 File: `lib/core/constants/app_info.dart`
 
 ```dart
-// Ganti dengan App ID dari OneSignal Dashboard
+// Replace with App ID from OneSignal Dashboard
 static const String oneSignalAppId = 'YOUR_ONESIGNAL_APP_ID';
 ```
 
-### 3. Set Provider ke OneSignal
+### 3. Set Provider to OneSignal
 
 File: `lib/core/constants/app_info.dart`
 
@@ -293,11 +295,11 @@ static const String notificationProvider = 'onesignal';
 
 ---
 
-## Penggunaan
+## Usage
 
-### Inisialisasi
+### Initialization
 
-Notification sudah otomatis diinisialisasi di `MainDashboard`. Jika perlu manual:
+Notification is automatically initialized in `MainDashboard`. For manual initialization:
 
 ```dart
 // Initialize
@@ -365,7 +367,7 @@ if (state.hasPermission) {
 
 ## NotificationWrapper Widget
 
-Untuk integrasi lebih mudah, gunakan `NotificationWrapper`:
+For easier integration, use `NotificationWrapper`:
 
 ```dart
 NotificationWrapper(
@@ -392,24 +394,24 @@ NotificationWrapper(
 
 ```dart
 class NotificationState {
-  final bool isInitialized;           // Service sudah diinisialisasi
-  final bool hasPermission;           // User sudah memberikan izin
-  final String? deviceToken;          // Push token untuk device ini
-  final NotificationMessage? lastMessage;  // Pesan terakhir diterima
-  final bool isLoading;               // Operasi async sedang berjalan
-  final String? error;                // Pesan error jika ada
+  final bool isInitialized;           // Service has been initialized
+  final bool hasPermission;           // User has granted permission
+  final String? deviceToken;          // Push token for this device
+  final NotificationMessage? lastMessage;  // Last received message
+  final bool isLoading;               // Async operation in progress
+  final String? error;                // Error message if any
 }
 ```
 
 ---
 
-## Testing dengan MockNotificationService
+## Testing with MockNotificationService
 
 ```dart
-// Di app_info.dart, set provider ke mock
+// In app_info.dart, set provider to mock
 static const String notificationProvider = 'mock';
 
-// Di test
+// In test
 void main() {
   test('should handle notification tap', () async {
     final mockService = container.read(notificationServiceProvider) 
@@ -435,30 +437,36 @@ void main() {
 
 ### FCM Token Null
 
-1. Pastikan `google-services.json` sudah ada di `android/app/`
-2. Jalankan `flutter clean` dan `flutter pub get`
-3. Pastikan Firebase sudah diinisialisasi di `main.dart`
+1. Make sure `google-services.json` exists in `android/app/`
+2. Run `flutter clean` and `flutter pub get`
+3. Make sure Firebase is initialized in `main.dart`
 
-### Notification Tidak Muncul di Android
+### Notification Not Appearing on Android
 
-1. Pastikan channel sudah dibuat dengan importance HIGH
-2. Cek apakah app sudah punya permission di Settings
-3. Untuk Android 13+, pastikan `POST_NOTIFICATIONS` permission diminta
+1. Make sure channel is created with importance HIGH
+2. Check if app has permission in Settings
+3. For Android 13+, make sure `POST_NOTIFICATIONS` permission is requested
 
-### iOS Background Notification Tidak Jalan
+### iOS Background Notification Not Working
 
-1. Pastikan "Background Modes > Remote notifications" enabled di Xcode
-2. Upload APNs Authentication Key ke Firebase Console
-3. Pastikan `content-available: 1` ada di payload
+1. Make sure "Background Modes > Remote notifications" is enabled in Xcode
+2. Upload APNs Authentication Key to Firebase Console
+3. Make sure `content-available: 1` is in payload
 
 ---
 
-## Referensi
+## See Also
 
+- **[README.md](../README.md)** - Main project documentation
 - [Firebase Cloud Messaging Documentation](https://firebase.google.com/docs/cloud-messaging)
 - [OneSignal Flutter SDK](https://documentation.onesignal.com/docs/flutter-sdk-setup)
 - [Flutter Local Notifications](https://pub.dev/packages/flutter_local_notifications)
 
 ---
 
-📚 **Dokumentasi teknis lengkap:** [`lib/core/notification/README.md`](../lib/core/notification/README.md)
+📚 **Full technical documentation:** [`lib/core/notification/README.md`](../lib/core/notification/README.md)
+
+---
+
+*Updated: January 1, 2026*
+*Version: 1.0.1*

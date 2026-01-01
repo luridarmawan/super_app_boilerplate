@@ -5,7 +5,7 @@ Super App Boilerplate
 
 Super App adalah aplikasi mobile (Android & iOS) yang dibangun dengan arsitektur Clean Architecture, menggunakan Material 3, dan mendukung multi-bahasa serta multi-template.
 
-**Org:** id.carik.superapp
+**Org:** id.carik.superapp_demo
 
 ---
 
@@ -21,15 +21,24 @@ lib/
 │   ├── config/
 │   │   └── app_config.dart         # Riverpod providers & config
 │   ├── constants/
+│   │   ├── app_info.dart           # App info & branding configuration
 │   │   └── assets.dart             # Path assets
+│   ├── gps/                        # GPS & Location services
+│   ├── l10n/                       # Localization
+│   ├── network/                    # Network layer (Dio + Retrofit)
+│   ├── notification/               # Push notification services
 │   ├── routes/
 │   │   └── app_router.dart         # GoRouter navigation
-│   └── theme/
-│       └── app_theme.dart          # Material 3 themes & templates
+│   ├── services/                   # Core services
+│   ├── theme/
+│   │   └── app_theme.dart          # Material 3 themes & templates
+│   └── utils/                      # Utility functions
 │
-├── modules/                        # Pluggable modules (NEW)
+├── modules/                        # Pluggable modules
+│   ├── all_modules.dart            # Module manifest (auto-generated)
 │   ├── module_base.dart            # Abstract module class
 │   ├── module_registry.dart        # Module registration & management
+│   ├── modules.dart                # Module exports
 │   ├── navigation_item.dart        # Navigation item model
 │   ├── quick_action_item.dart      # Quick action item model
 │   └── [module_name]/              # Setiap modul self-contained
@@ -43,6 +52,8 @@ lib/
 │   │   └── register_screen.dart    # Registrasi
 │   ├── dashboard/
 │   │   ├── main_dashboard.dart     # Halaman utama
+│   │   ├── providers/              # Dashboard state providers
+│   │   ├── screens/                # Additional screens
 │   │   └── widgets/
 │   │       ├── banner_carousel.dart # Top banner (carousel)
 │   │       ├── menu_grid.dart       # Grid ikon modul
@@ -63,12 +74,17 @@ lib/
 │       ├── custom_header.dart      # Header dinamis (AppBar/SliverAppBar)
 │       ├── custom_footer.dart      # Footer NavigationBar + center FAB
 │       ├── custom_sidebar.dart     # NavigationDrawer Material 3
-│       └── module_dashboard_slots.dart # Dashboard widget slots
+│       ├── location_display_widget.dart # GPS location display
+│       ├── module_dashboard_slots.dart # Dashboard widget slots
+│       ├── notification_banner.dart # Notification banner widget
+│       └── workspace_icon.dart     # Workspace icon widget
 │
 └── main.dart                       # Entry point dengan Riverpod
 ```
 
 > **Note:** Konfigurasi branding (colors, company info, social links, legal URLs) sudah terintegrasi di `lib/core/constants/app_info.dart`
+
+> **📚 Architecture Overview:** Untuk gambaran arsitektur lengkap, lihat [docs/SuperApp-Architecture.md](docs/SuperApp-Architecture.md)
 
 ---
 
@@ -90,6 +106,10 @@ lib/
 | **Network Layer** | ✅ | Dio + Retrofit dengan Repository Pattern (lihat [docs/API.md](docs/API.md)) |
 | **Push Notification** | ✅ | Multi-provider (FCM, OneSignal, Mock) dengan abstraction layer (lihat [docs/Notification.md](docs/Notification.md)) |
 | **Modular Architecture** | ✅ | Plugin-based module system dengan dynamic routes & dashboard slots (lihat [docs/Modular.md](docs/Modular.md)) |
+| **External Modules** | ✅ | Integrasi modul eksternal tanpa edit repo utama (lihat [docs/SubModule.md](docs/SubModule.md)) |
+| **Environment Config** | ✅ | Konfigurasi via `.env` file dengan `flutter_dotenv` |
+| **GPS & Location** | ✅ | Geolocator + URL launcher untuk integrasi maps |
+| **Google Sign-In** | ✅ | OAuth authentication dengan `google_sign_in` |
 
 ---
 
@@ -98,7 +118,7 @@ lib/
 ```yaml
 dependencies:
   flutter_riverpod: ^2.6.1      # State Management
-  go_router: ^14.6.3            # Navigation
+  go_router: ^17.0.1            # Navigation
   google_fonts: ^6.2.1          # Typography
   carousel_slider: ^5.0.0       # Banner carousel
   cached_network_image: ^3.4.1  # Image caching
@@ -109,14 +129,19 @@ dependencies:
   dio: ^5.4.0                   # HTTP Client
   retrofit: ^4.1.0              # Type-safe API
   json_annotation: ^4.8.1       # JSON serialization
-  connectivity_plus: ^6.1.1     # Network connectivity
-  permission_handler: ^11.3.1   # Permission management
+  connectivity_plus: ^7.0.0     # Network connectivity
+  permission_handler: ^12.0.1   # Permission management
   image_picker: ^1.0.7          # Camera & Gallery
   geolocator: ^13.0.2           # GPS & Location
-  firebase_core: ^3.8.1         # Firebase Core
-  firebase_messaging: ^15.2.1   # Push Notifications (FCM)
-  flutter_local_notifications: ^18.0.1  # Local notifications
-  onesignal_flutter: ^5.2.7     # Push Notifications (OneSignal)
+  url_launcher: ^6.2.5          # Open URLs (Maps, etc.)
+  flutter_local_notifications: ^19.5.0  # Local notifications
+  google_sign_in: ^7.2.0        # Google OAuth
+  flutter_dotenv: ^5.2.1        # Environment configuration
+  package_info_plus: ^8.0.0     # App version info
+  module_interface: (local)     # Shared module interface
+  # firebase_core: (optional)   # Firebase Core - disabled by default
+  # firebase_messaging: (optional)  # FCM - disabled by default
+  # onesignal_flutter: (optional)   # OneSignal - disabled by default
 ```
 
 ---
@@ -152,6 +177,8 @@ lib/core/network/
 ├── api_config.dart              # Konfigurasi base URL & environment
 ├── api_client.dart              # Dio instance terpusat + providers
 ├── network.dart                 # Barrel export
+├── connectivity/
+│   └── connectivity_provider.dart # Network connectivity monitoring
 ├── exceptions/
 │   └── api_exception.dart       # Unified exception handling
 ├── interceptors/
@@ -163,9 +190,12 @@ lib/core/network/
 │   └── base_response.dart       # Standardized response wrapper
 ├── repository/
 │   ├── base_repository.dart     # Base repository (GET, POST, PUT, DELETE)
-│   └── user_repository.dart     # Contoh implementasi
+│   ├── user_repository.dart     # User API repository
+│   ├── article_repository.dart  # Article API repository
+│   └── banner_repository.dart   # Banner API repository
 └── services/
-    └── api_service.dart         # Retrofit API definitions
+    ├── api_service.dart         # Retrofit API definitions
+    └── api_service.g.dart       # Generated Retrofit implementation
 ```
 
 ### ✨ Fitur Unggulan
@@ -180,6 +210,8 @@ lib/core/network/
 | **Structured Logging** | Log request/response di debug mode |
 | **BaseRequest** | Field shared (deviceId, timestamp, locale) untuk semua request |
 | **BaseResponse** | Wrapper standar dengan support pagination |
+| **Connectivity Monitoring** | Deteksi status koneksi jaringan secara real-time |
+| **External Modules** | Integrasi modul eksternal tanpa mengubah repository utama (lihat [docs/SubModule.md](docs/SubModule.md)) |
 
 ### 🚫 Anti-Pattern yang Dihindari
 
@@ -194,9 +226,13 @@ Arsitektur network layer ini dirancang untuk menghindari anti-pattern umum:
 | **Token management tersebar** | `TokenStorage` abstraction dengan satu source of truth |
 | **Refactoring existing screens** | Layer network 100% additive, tidak mengubah UI existing |
 | **Membuat Dio instance baru** | Singleton `ApiClient` via Riverpod provider |
-| **Request boilerplate berulang** | `BaseRepository` menyediakan method standar (get, post, put, delete) |
+| **Request boilerplate berulang** | `BaseRepository` menyediakan method standar (get, post, put, patch, delete) |
+| **Manual bot protection handling** | `fetchWithCloudflareRetry()` otomatis deteksi & retry untuk Cloudflare/Imunify360 |
+| **Edit main repo untuk module baru** | External modules dengan `modules.yaml` - repo utama tetap bersih |
 
 ### 📖 Quick Example
+
+**Basic Repository:**
 
 ```dart
 // 1. Import
@@ -208,6 +244,10 @@ class ProductRepository extends BaseRepository {
 
   Future<BaseResponse<Product>> getProduct(String id) async {
     return get<Product>('/products/$id', parser: Product.fromJson);
+  }
+  
+  Future<BaseResponse<Product>> createProduct(Product product) async {
+    return post<Product>('/products', data: product.toJson(), parser: Product.fromJson);
   }
 }
 
@@ -221,6 +261,34 @@ final response = await ref.read(productRepoProvider).getProduct('123');
 if (response.success) {
   print(response.data);
 }
+```
+
+**Dengan Bot Protection Retry:**
+
+```dart
+// Untuk API yang sering kena Cloudflare/Imunify360
+Future<List<Banner>> getBanners() async {
+  final response = await fetchWithCloudflareRetry(
+    () => dio.get('https://api.example.com/banners'),
+    apiName: 'Banner API',
+    maxRetries: 3,
+    retryDelayMs: 2000,
+  );
+  // Parse response...
+}
+```
+
+**File Upload:**
+
+```dart
+final response = await uploadFile<UploadResult>(
+  '/uploads',
+  filePath: '/path/to/image.jpg',
+  fieldName: 'file',
+  additionalData: {'type': 'profile'},
+  parser: UploadResult.fromJson,
+  onProgress: (sent, total) => print('${sent / total * 100}%'),
+);
 ```
 
 📚 **Dokumentasi lengkap:** [`docs/API.md`](docs/API.md)
@@ -366,7 +434,7 @@ flutter run -d emulator-5554
 
 ---
 
-## �📝 File Penting
+## 📝 File Penting
 
 - `lib/main.dart` - Entry point aplikasi
 - `lib/core/config/app_config.dart` - Konfigurasi & Riverpod providers
@@ -379,10 +447,27 @@ flutter run -d emulator-5554
 - `lib/features/dashboard/main_dashboard.dart` - Halaman utama
 - `lib/modules/module_base.dart` - Abstract class untuk modular system
 - `lib/modules/module_registry.dart` - Registry untuk manajemen modul
+- `lib/modules/all_modules.dart` - Module manifest (auto-generated)
 - `lib/core/constants/app_info.dart` - App info & branding configuration
 - `tool/generate_module.dart` - CLI tool untuk generate modul baru
+- `tool/manage_external_modules.dart` - CLI tool untuk external modules
 
 ---
+
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [SuperApp-Architecture.md](docs/SuperApp-Architecture.md) | Architecture overview & design |
+| [API.md](docs/API.md) | Network layer (Dio + Retrofit) |
+| [Modular.md](docs/Modular.md) | Modular architecture guide |
+| [SubModule.md](docs/SubModule.md) | External modules integration |
+| [Notification.md](docs/Notification.md) | Push notification system |
+| [GPS.md](docs/GPS.md) | GPS/Location feature |
+| [Localization.md](docs/Localization.md) | Multi-language support |
+| [SplashScreen.md](docs/SplashScreen.md) | Splash screen configuration |
+| [QuickAction.md](docs/QuickAction.md) | Quick actions system |
+| [Permission Helper.md](docs/Permission%20Helper.md) | Permission management |
 
 ## 📋 TODO (Pengembangan Lanjut)
 

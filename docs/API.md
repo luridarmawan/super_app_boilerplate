@@ -11,6 +11,8 @@ lib/core/network/
 ├── api_config.dart              # Konfigurasi base URL, timeout, environment
 ├── api_client.dart              # Instance Dio terpusat dengan interceptors
 ├── network.dart                 # Barrel export untuk kemudahan import
+├── connectivity/
+│   └── connectivity_provider.dart # Network connectivity monitoring
 ├── exceptions/
 │   └── api_exception.dart       # Penanganan exception terpadu
 ├── interceptors/
@@ -22,7 +24,9 @@ lib/core/network/
 │   └── base_response.dart       # Wrapper response standar
 ├── repository/
 │   ├── base_repository.dart     # Base repository dengan method HTTP
-│   └── user_repository.dart     # Contoh implementasi repository
+│   ├── user_repository.dart     # User API repository
+│   ├── article_repository.dart  # Article API repository
+│   └── banner_repository.dart   # Banner API repository
 └── services/
     ├── api_service.dart         # Definisi API Retrofit
     └── api_service.g.dart       # Kode hasil generate
@@ -85,12 +89,13 @@ dependencies:
   dio: ^5.4.0
   retrofit: ^4.1.0
   json_annotation: ^4.8.1
+  connectivity_plus: ^7.0.0      # Network connectivity monitoring
 
 dev_dependencies:
   # Code Generation
   build_runner: ^2.4.8
-  retrofit_generator: ^8.1.0
-  json_serializable: ^6.7.1
+  retrofit_generator: ^8.2.1
+  json_serializable: ^6.8.0
 ```
 
 Jalankan:
@@ -356,6 +361,83 @@ abstract class BaseRepository {
   
   // File download
   Future<void> downloadFile(String url, String savePath, {...});
+  
+  // Bot protection detection & retry
+  Future<Response> fetchWithCloudflareRetry(Future<Response> Function() fetchFunction, {...});
+  bool isCloudflareResponse(Response response);
+  bool isImunify360Response(Response response);
+  bool isBotProtectedResponse(Response response);
+  String detectBotProtection(Response response);
+}
+```
+
+### 🛡️ Bot Protection Detection
+
+BaseRepository menyediakan method untuk mendeteksi dan menangani berbagai jenis bot protection:
+
+#### Jenis Bot Protection yang Dideteksi
+
+| Type | Konstanta | Penanganan |
+|------|-----------|------------|
+| Cloudflare | `protectionCloudflare` | Auto-retry dengan delay |
+| Imunify360 | `protectionImunify360` | Fail immediately (IP-based blocking) |
+| Generic Access Denied | `protectionGeneric` | Auto-retry dengan delay |
+| None | `protectionNone` | Normal processing |
+
+#### Penggunaan `fetchWithCloudflareRetry`
+
+```dart
+// Untuk API yang sering kena bot protection
+Future<List<Banner>> getBanners() async {
+  try {
+    final response = await fetchWithCloudflareRetry(
+      () => dio.get('https://api.example.com/banners'),
+      apiName: 'Banner API',     // Untuk logging
+      maxRetries: 3,             // Default: 3
+      retryDelayMs: 2000,        // Default: 2000ms
+    );
+    
+    // Parse response jika berhasil
+    final data = response.data as List;
+    return data.map((e) => Banner.fromJson(e)).toList();
+    
+  } on DioException catch (e) {
+    // Handle error - bisa gunakan fallback data
+    debugPrint('Failed to fetch banners: ${e.message}');
+    return _getFallbackBanners();
+  }
+}
+```
+
+#### Manual Detection
+
+```dart
+// Deteksi manual jika diperlukan
+final response = await dio.get('/endpoint');
+
+if (isCloudflareResponse(response)) {
+  print('Cloudflare challenge detected');
+}
+
+if (isImunify360Response(response)) {
+  print('Blocked by Imunify360 - IP-based blocking');
+}
+
+// Atau gunakan detectBotProtection untuk hasil detail
+final protectionType = detectBotProtection(response);
+switch (protectionType) {
+  case protectionCloudflare:
+    print('Cloudflare detected');
+    break;
+  case protectionImunify360:
+    print('Imunify360 detected');
+    break;
+  case protectionGeneric:
+    print('Generic access denied');
+    break;
+  case protectionNone:
+    print('No bot protection');
+    break;
 }
 ```
 
@@ -823,4 +905,5 @@ testWidgets('should display user profile', (tester) async {
 ---
 
 *Dibuat: 4 Mei 2025*
-*Versi: 1.2.1*
+*Diperbarui: 1 Januari 2026*
+*Versi: 1.3.0*
