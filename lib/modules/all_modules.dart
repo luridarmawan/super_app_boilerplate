@@ -3,6 +3,7 @@ import 'sample/demo_module.dart';
 import 'sample/sample_module.dart';
 // import 'package:super_module/super_module_module.dart';
 // import 'package:crm/crm_module.dart';
+import 'package:arrow_sense/arrow_sense_module.dart';
 
 /// Auto-generated file. Do not edit manually.
 /// This file registers all available modules to the registry.
@@ -12,5 +13,6 @@ class ModuleManifest {
     ModuleRegistry.register(SampleModule());
     // ModuleRegistry.register(SuperModuleModule());
     // ModuleRegistry.register(CrmModule());
+    ModuleRegistry.register(ArrowSenseModule());
   }
 }

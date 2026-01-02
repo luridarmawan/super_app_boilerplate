@@ -212,14 +212,21 @@ class ModuleRegistry {
 
   /// Get dashboard widgets from active modules
   /// Sorted by order (lower order = appears first)
+  /// Now supports multiple widgets per module via [dashboardWidgets] property.
   static List<Widget> get dashboardWidgets {
     final widgets = <_OrderedWidget>[];
-    
+
     for (final module in activeModules) {
-      if (module.dashboardWidget != null) {
+      final moduleWidgets = module.dashboardWidgets;
+      final moduleConfigs = module.dashboardConfigs;
+
+      for (var i = 0; i < moduleWidgets.length; i++) {
+        final config = i < moduleConfigs.length
+            ? moduleConfigs[i]
+            : const DashboardWidgetConfig();
         widgets.add(_OrderedWidget(
-          widget: module.dashboardWidget!,
-          order: module.dashboardConfig.order,
+          widget: moduleWidgets[i],
+          order: config.order,
         ));
       }
     }
@@ -232,10 +239,11 @@ class ModuleRegistry {
 
   /// Get dashboard widget configs from active modules
   static List<DashboardWidgetConfig> get dashboardConfigs {
-    return activeModules
-        .where((m) => m.dashboardWidget != null)
-        .map((m) => m.dashboardConfig)
-        .toList();
+    final configs = <DashboardWidgetConfig>[];
+    for (final module in activeModules) {
+      configs.addAll(module.dashboardConfigs);
+    }
+    return configs;
   }
 
   // ============================================

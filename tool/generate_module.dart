@@ -518,11 +518,100 @@ String _generateModuleCode({
       description: '${q['label']}',
     ),''';
   }).join('\n');
-  
-  // Generate dashboard card
-  final firstWorkspace = workspaces.first;
-  final dashboardRoute = '/$moduleNameSnake/${firstWorkspace['snake']}';
+
+  // Generate dashboard widgets list - one per workspace
+  final dashboardWidgetsList = workspaces.asMap().entries.map((entry) {
+    final w = entry.value;
+    return "    const ${w['pascal']}DashboardCard(),";
+  }).join('\n');
+
+  // Generate dashboard configs list - one per workspace
+  final dashboardConfigsList = workspaces.asMap().entries.map((entry) {
+    final i = entry.key;
+    return '''
+    const DashboardWidgetConfig(
+      columnSpan: 1,
+      rowSpan: 1,
+      order: ${50 + i},
+    ),''';
+  }).join('\n');
+
   final l10nExtName = _toCamelCase(moduleNameSnake);
+
+  // Generate dashboard card classes - one per workspace
+  final dashboardCardClasses = workspaces.map((w) {
+    final workspaceSnake = w['snake'];
+    final workspacePascal = w['pascal'];
+    final workspaceDisplay = w['display'];
+    return '''
+/// Dashboard card widget for ${workspaceDisplay} workspace
+class ${workspacePascal}DashboardCard extends StatelessWidget {
+  const ${workspacePascal}DashboardCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.${l10nExtName}L10n;
+
+    return Card(
+      elevation: 2,
+      child: InkWell(
+        onTap: () => context.push('/$moduleNameSnake/$workspaceSnake'),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                flex: 2,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Icon(
+                    Icons.folder_outlined,
+                    size: 40,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    l10n.${workspaceSnake}Title,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    l10n.${workspaceSnake}Subtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+''';
+  }).join('\n');
   
   return '''import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -554,14 +643,14 @@ $routesList
   ];
 
   @override
-  Widget? get dashboardWidget => const ${moduleNamePascal}DashboardCard();
+  List<Widget> get dashboardWidgets => [
+$dashboardWidgetsList
+  ];
 
   @override
-  DashboardWidgetConfig get dashboardConfig => const DashboardWidgetConfig(
-    columnSpan: 1,
-    rowSpan: 1,
-    order: 50,
-  );
+  List<DashboardWidgetConfig> get dashboardConfigs => [
+$dashboardConfigsList
+  ];
 
   @override
   List<NavigationItem> get menuItems => [
@@ -584,74 +673,10 @@ $quickActionsList
   }
 }
 
-/// Dashboard card widget for the $moduleNameDisplay module
-class ${moduleNamePascal}DashboardCard extends StatelessWidget {
-  const ${moduleNamePascal}DashboardCard({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final l10n = context.${l10nExtName}L10n;
-
-    return Card(
-      elevation: 2,
-      child: InkWell(
-        onTap: () => context.push('$dashboardRoute'),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                flex: 2,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Icon(
-                    Icons.business,
-                    size: 40,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    l10n.dashboardTitle,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 2),
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    l10n.dashboardSubtitle,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+$dashboardCardClasses
 ''';
 }
+
 
 String _generateListScreenCode({
   required String moduleNameSnake,
@@ -1140,8 +1165,8 @@ void main() {
       expect(module.quickActions, isNotEmpty);
     });
 
-    test('should have dashboard widget', () {
-      expect(module.dashboardWidget, isNotNull);
+    test('should have dashboard widgets', () {
+      expect(module.dashboardWidgets, isNotEmpty);
     });
   });
 }
@@ -1198,6 +1223,7 @@ String _generateIdStringsCode({
     return '''
   // $display
   '${snake}Title': '$display',
+  '${snake}Subtitle': 'Kelola $display',
   '${snake}WelcomeTitle': 'Selamat Datang di $display',
   '${snake}WelcomeDescription': 'Kelola data $display Anda di sini. '
       'Ketuk item untuk mengedit atau gunakan tombol di bawah untuk menambah baru.',
@@ -1252,6 +1278,7 @@ String _generateEnStringsCode({
     return '''
   // $display
   '${snake}Title': '$display',
+  '${snake}Subtitle': 'Manage $display',
   '${snake}WelcomeTitle': 'Welcome to $display',
   '${snake}WelcomeDescription': 'Manage your $display data here. '
       'Tap on an item to edit or use the button below to add new.',
@@ -1305,6 +1332,7 @@ String _generateLocalizationsCode({
     return '''
   // ${w['display']} Getters
   String get ${snake}Title => translate('${snake}Title');
+  String get ${snake}Subtitle => translate('${snake}Subtitle');
   String get ${snake}WelcomeTitle => translate('${snake}WelcomeTitle');
   String get ${snake}WelcomeDescription => translate('${snake}WelcomeDescription');
   String get ${snake}Items => translate('${snake}Items');
