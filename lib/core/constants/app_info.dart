@@ -28,6 +28,12 @@ class AppInfo {
   /// Application tagline
   static String get tagline => dotenv.env['APP_TAGLINE'] ?? 'Your All-in-One Solution.';
 
+  /// Application sub tagline
+  static String get subTagline => dotenv.env['APP_SUB_TAGLINE'] ?? '';
+
+  /// Application copyright
+  static String get copyright => dotenv.env['APP_COPYRIGHT'] ?? '- Developed by CARIK.id -';
+
   /// Application version (from pubspec.yaml via package_info_plus)
   static String _version = '1.0.0';
   static String get version => _version;

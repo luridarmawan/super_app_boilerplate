@@ -220,6 +220,16 @@ class SettingScreen extends ConsumerWidget {
               ],
             ),
           ),
+
+          // Copyright
+          const SizedBox(height: 24),
+          Text(
+            AppInfo.copyright,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+          ),
         ],
       ),
     );

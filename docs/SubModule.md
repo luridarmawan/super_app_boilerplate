@@ -194,7 +194,7 @@ cd ../..
 
 ```bash
 # 1. Clone repo utama
-git clone https://github.com/company/super_app_boilerplate.git
+git clone https://github.com/luridarmawan/super_app_boilerplate.git
 cd super_app_boilerplate
 
 # 2. Copy dan edit manifest

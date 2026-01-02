@@ -277,6 +277,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             color: Colors.white.withValues(alpha: 0.9),
                           ),
                     ),
+
+                    // Sub Tagline
+                    Text(
+                      AppInfo.subTagline,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: 10,
+                          ),
+                    ),
+
                   ],
                 ),
               ),
@@ -284,7 +294,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
             // Loading indicator at bottom
             Positioned(
-              bottom: MediaQuery.of(context).padding.bottom + 48,
+              bottom: MediaQuery.of(context).padding.bottom + 80,
               left: 0,
               right: 0,
               child: FadeTransition(
@@ -313,19 +323,34 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               ),
             ),
 
-            // Version at bottom
+            // Version and Copyright at bottom
             Positioned(
               bottom: MediaQuery.of(context).padding.bottom + 16,
               left: 0,
               right: 0,
-              child: Text(
-                'v${AppInfo.version} build ${AppInfo.buildNumber}',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.5),
-                    ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'v${AppInfo.version} build ${AppInfo.buildNumber}',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    AppInfo.copyright,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 11,
+                        ),
+                  ),
+                ],
               ),
             ),
+
           ],
         ),
       ),
