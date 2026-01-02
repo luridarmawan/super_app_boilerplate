@@ -230,7 +230,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       width: 120,
                       height: 120,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Colors.transparent,
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
@@ -243,7 +243,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
                         child: Image.asset(
-                          Assets.logo,
+                          AppInfo.launcherIcon,
                           width: 80,
                           height: 80,
                           fit: BoxFit.cover,
