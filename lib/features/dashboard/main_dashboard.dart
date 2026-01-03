@@ -396,12 +396,9 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
                 );
               },
               onArticleTap: (article) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Selected: ${article.slug}'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                if (article.slug != null) {
+                  context.push('/article/${article.slug}');
+                }
               },
             ),
 

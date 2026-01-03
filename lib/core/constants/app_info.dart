@@ -230,7 +230,7 @@ class AppInfo {
 
   // CONTENT LINK
   static String get bannerApiURL => dotenv.env['BANNER_API_URL'] ?? 'https://api.carik.id/dummy/banner.json';
-  static String get articleLApiURL => dotenv.env['ARTICLE_API_URL'] ?? 'https://api.carik.id/dummy/article.json?slug={slug}';
+  static String get articleApiURL => dotenv.env['ARTICLE_API_URL'] ?? 'https://api.carik.id/dummy/article.json?slug={slug}';
   static String get articleLastApiURL => dotenv.env['ARTICLE_LAST_API_URL'] ?? 'https://api.carik.id/dummy/articles.json';
   static String get articleRecommendationApiURL => dotenv.env['ARTICLE_RECOMMENDATION_API_URL'] ?? 'https://api.carik.id/dummy/articles.json';
 

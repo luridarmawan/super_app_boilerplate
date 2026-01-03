@@ -126,5 +126,6 @@ app.*.symbols
 
 # External Modules (managed by tool/manage_external_modules.dart)
 modules/
+!lib/modules/
 !modules/.gitkeep
 modules.yaml

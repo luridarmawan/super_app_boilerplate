@@ -14,6 +14,7 @@ import '../../shared/info/help_screen.dart';
 import '../../shared/info/tos_screen.dart';
 import '../../shared/info/privacy_screen.dart';
 import '../../features/dashboard/screens/quick_actions_manager_screen.dart';
+import '../../modules/news/screens/article_screen.dart';
 
 // Modular Architecture
 import '../../modules/module_registry.dart';
@@ -186,6 +187,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.quickActions,
         builder: (context, state) => const QuickActionsManagerScreen(),
+      ),
+      GoRoute(
+        path: '/article/:slug',
+        name: 'article_detail',
+        builder: (context, state) {
+          final slug = state.pathParameters['slug'] ?? '';
+          return ArticleScreen(slug: slug);
+        },
       ),
 
       // ============================================

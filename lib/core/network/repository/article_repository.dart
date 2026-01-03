@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api_client.dart';
 import '../api_config.dart';
@@ -27,7 +28,14 @@ class ArticleModel {
     this.publishedAt,
     this.category,
     this.slug,
+    this.content,
+    this.prev,
+    this.next,
   });
+
+  final String? content;
+  final ArticleModel? prev;
+  final ArticleModel? next;
 
   /// Parse from JSON
   factory ArticleModel.fromJson(Map<String, dynamic> json) {
@@ -42,6 +50,9 @@ class ArticleModel {
           : null,
       category: json['category'] as String?,
       slug: json['slug'] as String?,
+      content: json['content'] as String?,
+      prev: json['prev'] != null ? ArticleModel.fromJson(json['prev'] as Map<String, dynamic>) : null,
+      next: json['next'] != null ? ArticleModel.fromJson(json['next'] as Map<String, dynamic>) : null,
     );
   }
 
@@ -55,6 +66,9 @@ class ArticleModel {
         'publishedAt': publishedAt?.toIso8601String(),
         'category': category,
         'slug': slug,
+        'content': content,
+        'prev': prev?.toJson(),
+        'next': next?.toJson(),
       };
 }
 
@@ -140,6 +154,43 @@ class ArticleRepository extends BaseRepository {
       return BaseResponse.error(message: 'Article not found');
     } catch (e) {
       return BaseResponse.error(message: e.toString());
+    }
+  }
+
+  /// Ambil detail artikel berdasarkan slug
+  Future<BaseResponse<ArticleModel>> getArticleBySlug(String slug) async {
+    try {
+      final url = AppInfo.articleApiURL.replaceAll('{slug}', slug);
+
+      final response = await fetchWithCloudflareRetry(
+        () => dio.get(
+          url,
+          options: Options(
+            headers: {
+              'User-Agent': ApiConfig.browserUserAgent,
+              'Accept': 'application/json, text/plain, */*',
+              'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
+            },
+          ),
+        ),
+        apiName: 'Article Detail',
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        return BaseResponse.success(
+          data: ArticleModel.fromJson(response.data as Map<String, dynamic>),
+          statusCode: response.statusCode,
+        );
+      }
+
+      return BaseResponse.error(
+        message: 'Failed to fetch article detail',
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return BaseResponse.error(
+        message: 'Error fetching article detail: ${e.toString()}',
+      );
     }
   }
 
