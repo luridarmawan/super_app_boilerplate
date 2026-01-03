@@ -59,7 +59,7 @@ class ArticleModel {
 class ArticleRepository extends BaseRepository {
   /// Base URL untuk API artikel
   /// Configured via ARTICLE_API_URL in .env file
-  static String get _articleApiUrl => AppInfo.articleApiURL;
+  static String get _articleLastApiUrl => AppInfo.articleLastApiURL;
 
   ArticleRepository({required super.apiClient});
 
@@ -79,7 +79,7 @@ class ArticleRepository extends BaseRepository {
       // Fetch with bot protection retry and browser-like headers
       final response = await fetchWithCloudflareRetry(
         () => dio.get(
-          _articleApiUrl,
+          _articleLastApiUrl,
           options: Options(
             headers: {
               'User-Agent': ApiConfig.browserUserAgent,
