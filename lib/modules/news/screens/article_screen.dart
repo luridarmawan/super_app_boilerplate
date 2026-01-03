@@ -262,10 +262,16 @@ class _ArticleContent extends StatelessWidget {
       children: [
         if (article.prev != null)
           Expanded(
-            child: OutlinedButton.icon(
+            child: OutlinedButton(
               onPressed: () => context.pushReplacement('/article/${article.prev!.slug}'),
-              icon: const Icon(Icons.arrow_back),
-              label: const Text('Prev'),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.arrow_back_ios_new, size: 16),
+                  SizedBox(width: 8),
+                  Text('Prev'),
+                ],
+              ),
             ),
           )
         else
@@ -273,12 +279,15 @@ class _ArticleContent extends StatelessWidget {
         const SizedBox(width: 16),
         if (article.next != null)
           Expanded(
-            child: Directionality(
-              textDirection: TextDirection.rtl,
-              child: OutlinedButton.icon(
-                onPressed: () => context.pushReplacement('/article/${article.next!.slug}'),
-                icon: const Icon(Icons.arrow_forward),
-                label: const Text('Next'),
+            child: OutlinedButton(
+              onPressed: () => context.pushReplacement('/article/${article.next!.slug}'),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Next'),
+                  SizedBox(width: 8),
+                  Icon(Icons.arrow_forward_ios, size: 16),
+                ],
               ),
             ),
           )
