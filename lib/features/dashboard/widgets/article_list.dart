@@ -12,6 +12,7 @@ class Article {
   final String? author;
   final DateTime? publishedAt;
   final String? category;
+  final String? slug;
 
   const Article({
     required this.id,
@@ -21,6 +22,7 @@ class Article {
     this.author,
     this.publishedAt,
     this.category,
+    this.slug,
   });
 
   /// Convert dari ArticleModel (dari API)
@@ -33,6 +35,7 @@ class Article {
       author: model.author,
       publishedAt: model.publishedAt,
       category: model.category,
+      slug: model.slug,
     );
   }
 }

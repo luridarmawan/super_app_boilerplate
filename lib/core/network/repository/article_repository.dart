@@ -16,6 +16,7 @@ class ArticleModel {
   final String? author;
   final DateTime? publishedAt;
   final String? category;
+  final String? slug;
 
   const ArticleModel({
     required this.id,
@@ -25,6 +26,7 @@ class ArticleModel {
     this.author,
     this.publishedAt,
     this.category,
+    this.slug,
   });
 
   /// Parse from JSON
@@ -39,6 +41,7 @@ class ArticleModel {
           ? DateTime.tryParse(json['publishedAt'] as String)
           : null,
       category: json['category'] as String?,
+      slug: json['slug'] as String?,
     );
   }
 
@@ -51,6 +54,7 @@ class ArticleModel {
         'author': author,
         'publishedAt': publishedAt?.toIso8601String(),
         'category': category,
+        'slug': slug,
       };
 }
 
