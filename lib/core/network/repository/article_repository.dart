@@ -31,11 +31,13 @@ class ArticleModel {
     this.content,
     this.prev,
     this.next,
+    this.related,
   });
 
   final String? content;
   final ArticleModel? prev;
   final ArticleModel? next;
+  final List<ArticleModel>? related;
 
   /// Parse from JSON
   factory ArticleModel.fromJson(Map<String, dynamic> json) {
@@ -51,8 +53,14 @@ class ArticleModel {
       category: json['category'] as String?,
       slug: json['slug'] as String?,
       content: json['content'] as String?,
-      prev: json['prev'] != null ? ArticleModel.fromJson(json['prev'] as Map<String, dynamic>) : null,
-      next: json['next'] != null ? ArticleModel.fromJson(json['next'] as Map<String, dynamic>) : null,
+      prev: json['prev'] is Map<String, dynamic> ? ArticleModel.fromJson(json['prev'] as Map<String, dynamic>) : null,
+      next: json['next'] is Map<String, dynamic> ? ArticleModel.fromJson(json['next'] as Map<String, dynamic>) : null,
+      related: (json['related'] is List)
+          ? (json['related'] as List)
+              .whereType<Map<String, dynamic>>()
+              .map((i) => ArticleModel.fromJson(i))
+              .toList()
+          : null,
     );
   }
 
@@ -69,6 +77,7 @@ class ArticleModel {
         'content': content,
         'prev': prev?.toJson(),
         'next': next?.toJson(),
+        'related': related?.map((r) => r.toJson()).toList(),
       };
 }
 
@@ -161,6 +170,7 @@ class ArticleRepository extends BaseRepository {
   Future<BaseResponse<ArticleModel>> getArticleBySlug(String slug) async {
     try {
       final url = AppInfo.articleApiURL.replaceAll('{slug}', slug);
+      debugPrint('URL: $url');
 
       final response = await fetchWithCloudflareRetry(
         () => dio.get(
@@ -177,10 +187,24 @@ class ArticleRepository extends BaseRepository {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        return BaseResponse.success(
-          data: ArticleModel.fromJson(response.data as Map<String, dynamic>),
-          statusCode: response.statusCode,
-        );
+        dynamic data = response.data;
+        
+        // Handle if response is wrapped in a "data" field
+        if (data is Map<String, dynamic> && data.containsKey('data')) {
+          data = data['data'];
+        }
+        
+        // Handle if response is a list (take first item)
+        if (data is List && data.isNotEmpty) {
+          data = data.first;
+        }
+
+        if (data is Map<String, dynamic>) {
+          return BaseResponse.success(
+            data: ArticleModel.fromJson(data),
+            statusCode: response.statusCode,
+          );
+        }
       }
 
       return BaseResponse.error(
@@ -317,3 +341,15 @@ final recommendedArticlesProvider =
     StateNotifierProvider<RecommendedArticlesNotifier, AsyncValue<List<ArticleModel>>>(
   (ref) => RecommendedArticlesNotifier(ref.watch(articleRepositoryProvider)),
 );
+
+/// Article Detail Provider (Lazy Load)
+final articleDetailProvider = FutureProvider.family<ArticleModel, String>((ref, slug) async {
+  final repository = ref.watch(articleRepositoryProvider);
+  final response = await repository.getArticleBySlug(slug);
+  
+  if (response.success && response.data != null) {
+    return response.data!;
+  }
+  
+  throw Exception(response.message ?? 'Failed to load article detail');
+});
