@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/config/app_config.dart';
-import '../../core/constants/assets.dart';
 import '../../core/constants/app_info.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/network/repository/article_repository.dart';
@@ -25,6 +24,7 @@ import 'widgets/article_list.dart';
 import '../profile/profile_screen.dart';
 import '../../shared/widgets/location_display_widget.dart';
 import '../../shared/widgets/module_dashboard_slots.dart';
+import 'widgets/article_recommendation.dart';
 
 /// Current navigation index
 final currentNavIndexProvider = StateProvider<int>((ref) => 0);
@@ -315,6 +315,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
         await Future.wait([
           ref.read(bannersProvider.notifier).refresh(),
           ref.read(articlesProvider.notifier).refresh(),
+          ref.read(recommendedArticlesProvider.notifier).refresh(),
         ]);
       },
       child: SingleChildScrollView(
@@ -406,14 +407,12 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
 
             const SizedBox(height: 24),
 
-            // Articles from API (Vertical)
-            ArticleListFromApi(
-              title: context.l10n.recommendedForYou,
-              isHorizontal: false,
+            // Recommended Articles from API
+            ArticleRecommendation(
               onArticleTap: (article) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Selected: ${article.title}'),
+                    content: Text('Selected Recommended: ${article.title}'),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
