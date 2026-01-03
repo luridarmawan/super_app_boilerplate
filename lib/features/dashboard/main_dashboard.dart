@@ -407,12 +407,9 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
             // Recommended Articles from API
             ArticleRecommendation(
               onArticleTap: (article) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Selected Recommended: ${article.title}'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                if (article.slug != null) {
+                  context.push('/article/${article.slug}');
+                }
               },
             ),
 
