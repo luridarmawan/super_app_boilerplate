@@ -170,7 +170,6 @@ class ArticleRepository extends BaseRepository {
   Future<BaseResponse<ArticleModel>> getArticleBySlug(String slug) async {
     try {
       final url = AppInfo.articleApiURL.replaceAll('{slug}', slug);
-      debugPrint('URL: $url');
 
       final response = await fetchWithCloudflareRetry(
         () => dio.get(

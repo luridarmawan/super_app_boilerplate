@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/gestures.dart';
 import '../../../core/network/repository/article_repository.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../features/dashboard/widgets/article_list.dart';
@@ -114,8 +116,19 @@ class _ArticleContent extends StatelessWidget {
   String _stripHtml(String htmlString) {
     if (htmlString.isEmpty) return '';
     
+    // Preserve links by converting <a href="url">text</a> to a marker [L:text|url]
+    String content = htmlString.replaceAllMapped(
+      RegExp(r'''<a[^>]+href=["']([^"']+)["'][^>]*>(.*?)</a>''', caseSensitive: false),
+      (match) {
+        final url = match.group(1) ?? '';
+        final text = (match.group(2) ?? '').replaceAll(RegExp(r'<[^>]*>'), '');
+        if (url.isEmpty) return text;
+        return '[L:$text|$url]';
+      },
+    );
+
     // Replace block-level tags with newlines
-    String content = htmlString
+    content = content
         .replaceAll(RegExp(r'</p>|<br\s*/?>|</div>|</h1>|</h2>|</h3>|</h4>|</h5>|</h6>'), '\n')
         .replaceAll(RegExp(r'<[^>]*>|&nbsp;'), ' ')
         // Remove multiple spaces/newlines
@@ -207,12 +220,12 @@ class _ArticleContent extends StatelessWidget {
               delegate: SliverChildBuilderDelegate(
                 (context, index) => Padding(
                   padding: const EdgeInsets.only(bottom: 16),
-                  child: SelectableText( // Use SelectableText for better UX
-                    paragraphs[index],
+                  child: _LinkifiedParagraph(
+                    text: paragraphs[index],
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           height: 1.6,
                           letterSpacing: 0.2,
-                        ),
+                        ) ?? const TextStyle(),
                   ),
                 ),
                 childCount: paragraphs.length,
@@ -294,6 +307,82 @@ class _ArticleContent extends StatelessWidget {
         else
           const Spacer(),
       ],
+    );
+  }
+}
+
+/// A widget that renders text with clickable URLs
+class _LinkifiedParagraph extends StatelessWidget {
+  final String text;
+  final TextStyle style;
+
+  const _LinkifiedParagraph({required this.text, required this.style});
+
+  @override
+    Widget build(BuildContext context) {
+    final List<InlineSpan> spans = [];
+    
+    // Regex to match both our custom [L:text|url] markers and plain URLs
+    final combinedRegExp = RegExp(
+      r"\[L:([^|\]]+)\|([^\]]+)\]|(https?://[^\s)\]]+)",
+      caseSensitive: false,
+    );
+    
+    int lastMatchEnd = 0;
+    final matches = combinedRegExp.allMatches(text);
+
+    if (matches.isEmpty) {
+      return SelectableText(text, style: style);
+    }
+
+    for (final match in matches) {
+      // Add text before the match
+      if (match.start > lastMatchEnd) {
+        spans.add(TextSpan(text: text.substring(lastMatchEnd, match.start)));
+      }
+      
+      if (match.group(1) != null) {
+        // CASE 1: Custom marker [L:text|url]
+        final linkText = match.group(1)!;
+        final url = match.group(2)!;
+        spans.add(_buildLinkSpan(context, linkText, url));
+      } else {
+        // CASE 2: Plain URL
+        final url = match.group(3)!;
+        spans.add(_buildLinkSpan(context, url, url));
+      }
+      
+      lastMatchEnd = match.end;
+    }
+    
+    if (lastMatchEnd < text.length) {
+      spans.add(TextSpan(text: text.substring(lastMatchEnd)));
+    }
+
+    return SelectableText.rich(
+      TextSpan(children: spans, style: style),
+    );
+  }
+
+  InlineSpan _buildLinkSpan(BuildContext context, String label, String destination) {
+    return TextSpan(
+      text: label,
+      style: style.copyWith(
+        color: Theme.of(context).colorScheme.primary,
+        decoration: TextDecoration.underline,
+        fontWeight: FontWeight.w500,
+      ),
+      recognizer: TapGestureRecognizer()
+        ..onTap = () async {
+          final uri = Uri.tryParse(destination);
+          if (uri != null) {
+            try {
+              await launchUrl(uri, mode: LaunchMode.externalApplication);
+            } catch (e) {
+              debugPrint('Could not launch $destination: $e');
+            }
+          }
+        },
     );
   }
 }
