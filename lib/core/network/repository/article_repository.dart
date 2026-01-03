@@ -139,24 +139,48 @@ class ArticleRepository extends BaseRepository {
     }
   }
 
-  /// Ambil artikel berdasarkan kategori
-  Future<BaseResponse<List<ArticleModel>>> getArticlesByCategory(
-    String category,
-  ) async {
+  /// Ambil artikel rekomendasi
+  Future<BaseResponse<List<ArticleModel>>> getRecommendedArticles() async {
     try {
-      final response = await getArticles();
+      final response = await fetchWithCloudflareRetry(
+        () => dio.get(
+          AppInfo.articleRecommendationApiURL,
+          options: Options(
+            headers: {
+              'User-Agent': ApiConfig.browserUserAgent,
+              'Accept': 'application/json, text/plain, */*',
+              'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
+            },
+          ),
+        ),
+        apiName: 'Article Recommendation',
+      );
 
-      if (response.success && response.data != null) {
-        final filtered = response.data!
-            .where((a) =>
-                a.category?.toLowerCase() == category.toLowerCase())
-            .toList();
-        return BaseResponse.success(data: filtered);
+      if (response.statusCode == 200 && response.data != null) {
+        final List<ArticleModel> articles = [];
+
+        if (response.data is List) {
+          for (final item in response.data) {
+            if (item is Map<String, dynamic>) {
+              articles.add(ArticleModel.fromJson(item));
+            }
+          }
+        }
+
+        return BaseResponse.success(
+          data: articles,
+          statusCode: response.statusCode,
+        );
       }
 
-      return BaseResponse.error(message: 'Failed to fetch articles');
+      return BaseResponse.error(
+        message: 'Failed to fetch recommended articles',
+        statusCode: response.statusCode,
+      );
     } catch (e) {
-      return BaseResponse.error(message: e.toString());
+      return BaseResponse.error(
+        message: 'Error fetching recommended articles: ${e.toString()}',
+      );
     }
   }
 }
@@ -204,4 +228,37 @@ class ArticlesNotifier extends StateNotifier<AsyncValue<List<ArticleModel>>> {
 final articlesProvider =
     StateNotifierProvider<ArticlesNotifier, AsyncValue<List<ArticleModel>>>(
   (ref) => ArticlesNotifier(ref.watch(articleRepositoryProvider)),
+);
+
+/// Recommended Articles Notifier
+class RecommendedArticlesNotifier extends StateNotifier<AsyncValue<List<ArticleModel>>> {
+  final ArticleRepository _repository;
+
+  RecommendedArticlesNotifier(this._repository) : super(const AsyncValue.loading()) {
+    fetchArticles();
+  }
+
+  Future<void> fetchArticles() async {
+    state = const AsyncValue.loading();
+    final response = await _repository.getRecommendedArticles();
+
+    if (response.success && response.data != null) {
+      state = AsyncValue.data(response.data!);
+    } else {
+      state = AsyncValue.error(
+        response.message ?? 'Failed to fetch recommended articles',
+        StackTrace.current,
+      );
+    }
+  }
+
+  Future<void> refresh() async {
+    await fetchArticles();
+  }
+}
+
+/// Recommended Articles Provider
+final recommendedArticlesProvider =
+    StateNotifierProvider<RecommendedArticlesNotifier, AsyncValue<List<ArticleModel>>>(
+  (ref) => RecommendedArticlesNotifier(ref.watch(articleRepositoryProvider)),
 );
