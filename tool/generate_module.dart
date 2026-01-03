@@ -544,7 +544,7 @@ String _generateModuleCode({
     final workspacePascal = w['pascal'];
     final workspaceDisplay = w['display'];
     return '''
-/// Dashboard card widget for ${workspaceDisplay} workspace
+/// Dashboard card widget for $workspaceDisplay workspace
 class ${workspacePascal}DashboardCard extends StatelessWidget {
   const ${workspacePascal}DashboardCard({super.key});
 
