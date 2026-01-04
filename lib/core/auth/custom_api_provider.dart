@@ -6,8 +6,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_interface.dart';
 import '../constants/app_info.dart';
-import '../network/api_client.dart';
-import '../network/api_config.dart';
 
 /// Implementasi Custom API Auth
 /// Gunakan ini untuk backend custom (REST API, GraphQL, dll)
@@ -111,19 +109,41 @@ class CustomApiAuthProvider implements BaseAuthService {
       debugPrint('[AUTH] >>> Starting Email/Password Login');
       debugPrint('[AUTH] Email: $email');
 
-      // Build API URL using ApiConfig and AppInfo
-      final endpoint = AppInfo.apiEndpointLogin;
-      final fullUrl = ApiConfig.buildUrl(endpoint);
-      debugPrint('[AUTH] POST $fullUrl');
+      // Get login URL directly from AppInfo
+      final loginUrl = AppInfo.authLoginUrl;
+      final contentType = AppInfo.authLoginContentType;
+      debugPrint('[AUTH] POST $loginUrl');
+      debugPrint('[AUTH] Content-Type: $contentType');
 
-      // Create ApiClient instance and make request
-      final apiClient = ApiClient(baseUrl: ApiConfig.fullBaseUrl);
-      final response = await apiClient.dio.post(
-        endpoint,
-        data: {
+      // Prepare request data based on content type
+      final dio = Dio();
+      Object requestData;
+
+      if (contentType == 'application/x-www-form-urlencoded') {
+        // For form-urlencoded, use FormData or string format
+        requestData = {
           'username': email,
           'password': password,
-        },
+        };
+      } else {
+        // Default: application/json
+        requestData = {
+          'username': email,
+          'password': password,
+        };
+      }
+
+      final response = await dio.post(
+        loginUrl,
+        options: Options(
+          headers: {
+            'Content-Type': contentType,
+            ...?headers,
+          },
+          // For form-urlencoded, Dio needs this to encode properly
+          contentType: contentType,
+        ),
+        data: requestData,
       );
 
       debugPrint('[AUTH] Response: ${response.statusCode} - ${response.data}');
@@ -135,7 +155,9 @@ class CustomApiAuthProvider implements BaseAuthService {
 
         if (errorData is Map<String, dynamic>) {
           // Try to extract error message from response
+          // Support various field names: message, msg, error, detail
           errorMessage = errorData['message']?.toString() ??
+              errorData['msg']?.toString() ??
               errorData['error']?.toString() ??
               errorData['detail']?.toString() ??
               'Login failed: ${response.statusCode}';
@@ -162,7 +184,11 @@ class CustomApiAuthProvider implements BaseAuthService {
       // code 0 atau 200 artinya success
       if (responseData.containsKey('code')) {
         if (responseData['code'] != 0 && responseData['code'] != 200) {
-          return AuthResult.failure(responseData['message']?.toString() ?? 'Login failed');
+          // Support both 'message' and 'msg' field names
+          final errorMsg = responseData['message']?.toString() ??
+              responseData['msg']?.toString() ??
+              'Login failed';
+          return AuthResult.failure(errorMsg);
         }
       }
 
@@ -250,7 +276,9 @@ class CustomApiAuthProvider implements BaseAuthService {
         // Try to extract error message from response
         final data = e.response?.data;
         if (data is Map<String, dynamic>) {
+          // Support various field names: message, msg, error, detail
           errorMessage = data['message']?.toString() ??
+              data['msg']?.toString() ??
               data['error']?.toString() ??
               data['detail']?.toString() ??
               'Login gagal';

@@ -72,7 +72,9 @@ class AppInfo {
   // API ENDPOINT
   // ============================================
 
-  static String get apiEndpointLogin => dotenv.env['API_ENDPOINT_LOGIN'] ?? '/o/auth/login/';
+  static String get authLoginUrl => dotenv.env['AUTH_LOGIN_URL'] ?? '';
+  static String get authLoginContentType => dotenv.env['AUTH_LOGIN_CONTENT_TYPE'] ?? 'application/json';
+
   static String get apiEndpointRegister => dotenv.env['API_ENDPOINT_REGISTER'] ?? '/o/auth/register/';
   static String get apiEndpointForgotPassword => dotenv.env['API_ENDPOINT_FORGOT_PASSWORD'] ?? '/o/auth/forgot-password/';
   static String get apiEndpointResetPassword => dotenv.env['API_ENDPOINT_RESET_PASSWORD'] ?? '/o/auth/reset-password/';

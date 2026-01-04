@@ -94,7 +94,10 @@ API_BASE_URL=https://api.yourdomain.com/
 API_BASE_URL_DEVELOPMENT=https://dev-api.yourdomain.com/
 
 # Auth Endpoints
-API_ENDPOINT_LOGIN=/v1/auth/login/
+AUTH_LOGIN_URL=https://your_api_url/o/auth/login/
+AUTH_LOGIN_CONTENT_TYPE="application/json"
+
+
 API_ENDPOINT_REGISTER=/v1/auth/register/
 API_ENDPOINT_LOGOUT=/v1/auth/logout/
 API_ENDPOINT_REFRESH_TOKEN=/v1/auth/refresh-token/
@@ -112,23 +115,44 @@ API_ENDPOINT_VERIFY_TOKEN=/v1/auth/verify-token/
 Endpoint for login using username/email and password.
 
 ### Endpoint
+
+Login uses the URL directly from the `AUTH_LOGIN_URL` configuration in the `.env` file:
+
 ```
-POST {API_BASE_URL}{API_ENDPOINT_LOGIN}
+POST {AUTH_LOGIN_URL}
 ```
+
 
 ### Request
 
 #### Headers
-| Header | Value |
-|--------|-------|
-| Content-Type | application/json |
+
+Content-Type is configured via `AUTH_LOGIN_CONTENT_TYPE` in the `.env` file.
+
+| Header | Value | Description |
+|--------|-------|-------------|
+| Content-Type | Configurable | `application/json` (default) or `application/x-www-form-urlencoded` |
+
+**Supported Content Types:**
+
+| Content-Type | Format Data |
+|--------------|-------------|
+| `application/json` | JSON body (default) |
+| `application/x-www-form-urlencoded` | Form URL encoded |
 
 #### Payload
+
+**JSON Format** (`application/json`):
 ```json
 {
     "username": "admin@yourdomain.com",
     "password": "admin123"
 }
+```
+
+**Form URL Encoded** (`application/x-www-form-urlencoded`):
+```
+username=admin%40yourdomain.com&password=admin123
 ```
 
 | Field | Type | Required | Description |
@@ -171,19 +195,43 @@ POST {API_BASE_URL}{API_ENDPOINT_LOGIN}
 > - `{ data: { user: {...}, token: "..." } }`
 
 #### Error Response
+
+The application supports various error response formats:
+
+**Format 1: With `message` field**
 ```json
 {
-    "code": 1,
+    "code": 400,
     "message": "Invalid email format",
     "elapsed_time": 0
 }
 ```
 
-| HTTP Status | code | message |
-|-------------|------|---------|
-| 200 | 1 | Invalid email format |
-| 200 | 2 | User not found |
-| 200 | 3 | Wrong password |
+**Format 2: With `msg` field**
+```json
+{
+    "code": 404,
+    "msg": "Invalid password or username not exists.",
+    "attempt": 1
+}
+```
+
+**Supported Error Fields:**
+
+The application will look for error messages from the following fields (in priority order):
+
+| Priority | Field Name | Example |
+|----------|------------|--------|
+| 1 | `message` | `{"message": "Invalid email"}` |
+| 2 | `msg` | `{"msg": "Invalid password"}` |
+| 3 | `error` | `{"error": "Unauthorized"}` |
+| 4 | `detail` | `{"detail": "Not found"}` |
+
+**Error Code Reference:**
+
+| HTTP Status | code | message/msg |
+|-------------|------|-------------|
+| 200 | 404 | Invalid password or username not exists |
 | 401 | - | Unauthorized |
 | 500 | - | Internal Server Error |
 
@@ -509,5 +557,5 @@ abstract class BaseAuthService {
 
 ---
 
-*Updated: January 1, 2026*
-*Version: 2.0.0*
+*Updated: January 5, 2026*
+*Version: 2.1.0*
