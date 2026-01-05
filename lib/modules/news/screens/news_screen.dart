@@ -80,9 +80,13 @@ class NewsScreen extends ConsumerWidget {
   }
 }
 
-/// Hero Banner Widget for Cover Story
+/// Hero Banner Carousel Widget for Cover Story
+/// Displays up to 5 cover story articles in a swipeable carousel
 class _CoverStoryHeroBanner extends ConsumerWidget {
   final ValueChanged<Article>? onArticleTap;
+  
+  /// Maximum number of articles to display in carousel
+  static const int maxArticles = 5;
 
   const _CoverStoryHeroBanner({this.onArticleTap});
 
@@ -98,12 +102,15 @@ class _CoverStoryHeroBanner extends ConsumerWidget {
           return const SizedBox.shrink();
         }
 
-        // Take the first article as main cover story
-        final coverArticle = Article.fromModel(articles.first);
+        // Take up to maxArticles articles
+        final coverArticles = articles
+            .take(maxArticles)
+            .map(Article.fromModel)
+            .toList();
 
-        return _CoverStoryCard(
-          article: coverArticle,
-          onTap: () => onArticleTap?.call(coverArticle),
+        return _CoverStoryCarousel(
+          articles: coverArticles,
+          onArticleTap: onArticleTap,
         );
       },
     );
@@ -157,6 +164,24 @@ class _CoverStoryHeroBanner extends ConsumerWidget {
               ],
             ),
           ),
+          // Shimmer dots indicator
+          Positioned(
+            bottom: 16,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(3, (index) => Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: index == 0 ? 24 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: colorScheme.surface.withValues(alpha: index == 0 ? 0.8 : 0.4),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              )),
+            ),
+          ),
         ],
       ),
     );
@@ -196,14 +221,140 @@ class _CoverStoryHeroBanner extends ConsumerWidget {
   }
 }
 
+/// Cover Story Carousel with auto-scroll and page indicators
+class _CoverStoryCarousel extends StatefulWidget {
+  final List<Article> articles;
+  final ValueChanged<Article>? onArticleTap;
+
+  const _CoverStoryCarousel({
+    required this.articles,
+    this.onArticleTap,
+  });
+
+  @override
+  State<_CoverStoryCarousel> createState() => _CoverStoryCarouselState();
+}
+
+class _CoverStoryCarouselState extends State<_CoverStoryCarousel> {
+  late PageController _pageController;
+  int _currentPage = 0;
+  
+  /// Auto-scroll timer duration in seconds
+  static const int autoScrollDuration = 5;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(
+      viewportFraction: 1.0,
+    );
+    
+    // Start auto-scroll if more than 1 article
+    if (widget.articles.length > 1) {
+      _startAutoScroll();
+    }
+  }
+
+  void _startAutoScroll() {
+    Future.delayed(const Duration(seconds: autoScrollDuration), () {
+      if (mounted && widget.articles.length > 1) {
+        final nextPage = (_currentPage + 1) % widget.articles.length;
+        _pageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+        _startAutoScroll();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Carousel
+        SizedBox(
+          height: 280,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: widget.articles.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              final article = widget.articles[index];
+              return _CoverStoryCard(
+                article: article,
+                onTap: () => widget.onArticleTap?.call(article),
+                showIndicator: false,
+              );
+            },
+          ),
+        ),
+        
+        // Page Indicators (only show if more than 1 article)
+        if (widget.articles.length > 1)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                widget.articles.length,
+                (index) => _buildDotIndicator(index),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildDotIndicator(int index) {
+    final isActive = index == _currentPage;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return GestureDetector(
+      onTap: () {
+        _pageController.animateToPage(
+          index,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        width: isActive ? 24 : 8,
+        height: 8,
+        decoration: BoxDecoration(
+          color: isActive 
+              ? colorScheme.primary 
+              : colorScheme.onSurface.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(4),
+        ),
+      ),
+    );
+  }
+}
+
 /// Cover Story Card Widget with gradient overlay
 class _CoverStoryCard extends StatelessWidget {
   final Article article;
   final VoidCallback? onTap;
+  final bool showIndicator;
 
   const _CoverStoryCard({
     required this.article,
     this.onTap,
+    this.showIndicator = true,
   });
 
   @override
@@ -211,8 +362,7 @@ class _CoverStoryCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      margin: const EdgeInsets.all(16),
-      height: 280,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -346,22 +496,23 @@ class _CoverStoryCard extends StatelessWidget {
               ),
 
               // Play/Read Indicator
-              Positioned(
-                top: 16,
-                right: 16,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.arrow_forward,
-                    color: Colors.white,
-                    size: 20,
+              if (showIndicator)
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),

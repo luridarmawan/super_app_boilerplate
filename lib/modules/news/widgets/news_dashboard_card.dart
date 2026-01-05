@@ -11,7 +11,7 @@ class NewsDashboardCard extends StatelessWidget {
     return const WorkspaceIcon(
       pushUrl: '/news',
       title: 'News',
-      subTitle: 'Tap to explore',
+      subTitle: 'News & insights',
       icon: Icons.widgets,
     );
   }

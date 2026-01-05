@@ -64,30 +64,15 @@ class NewsModule extends BaseModule {
   @override
   List<QuickActionItem> get quickActions => [
     // Example: Route-based quick action
-    QuickActionItem(
-      id: 'news_main',
-      moduleId: name,
-      icon: Icons.widgets_outlined,
-      label: 'News',
-      color: const Color(0xFF1565C0),
-      route: '/news',
-      order: 100,
-      description: 'Open News module',
-    ),
-    // Example: Custom callback quick action (uncomment if needed)
     // QuickActionItem(
-    //   id: 'news_action',
+    //   id: 'news_main',
     //   moduleId: name,
-    //   icon: Icons.flash_on_outlined,
-    //   label: 'Quick Action',
-    //   color: const Color(0xFFFF6D00),
-    //   onTap: (context) {
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //       const SnackBar(content: Text('Quick action!')),
-    //     );
-    //   },
-    //   order: 101,
-    //   description: 'Execute quick action',
+    //   icon: Icons.widgets_outlined,
+    //   label: 'News',
+    //   color: const Color(0xFF1565C0),
+    //   route: '/news',
+    //   order: 100,
+    //   description: 'Open News module',
     // ),
   ];
 
