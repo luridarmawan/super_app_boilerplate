@@ -260,6 +260,51 @@ class ArticleRepository extends BaseRepository {
       );
     }
   }
+
+  /// Ambil artikel cover story
+  Future<BaseResponse<List<ArticleModel>>> getCoverStoryArticles() async {
+    try {
+      final response = await fetchWithCloudflareRetry(
+        () => dio.get(
+          AppInfo.articleCoverApiURL,
+          options: Options(
+            headers: {
+              'User-Agent': ApiConfig.browserUserAgent,
+              'Accept': 'application/json, text/plain, */*',
+              'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
+            },
+          ),
+        ),
+        apiName: 'Article Cover Story',
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final List<ArticleModel> articles = [];
+
+        if (response.data is List) {
+          for (final item in response.data) {
+            if (item is Map<String, dynamic>) {
+              articles.add(ArticleModel.fromJson(item));
+            }
+          }
+        }
+
+        return BaseResponse.success(
+          data: articles,
+          statusCode: response.statusCode,
+        );
+      }
+
+      return BaseResponse.error(
+        message: 'Failed to fetch cover story articles',
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return BaseResponse.error(
+        message: 'Error fetching cover story articles: ${e.toString()}',
+      );
+    }
+  }
 }
 
 /// Article Repository Provider
@@ -351,3 +396,36 @@ final articleDetailProvider = FutureProvider.family<ArticleModel, String>((ref, 
   
   throw Exception(response.message ?? 'Failed to load article detail');
 });
+
+/// Cover Story Articles Notifier
+class CoverStoryArticlesNotifier extends StateNotifier<AsyncValue<List<ArticleModel>>> {
+  final ArticleRepository _repository;
+
+  CoverStoryArticlesNotifier(this._repository) : super(const AsyncValue.loading()) {
+    fetchArticles();
+  }
+
+  Future<void> fetchArticles() async {
+    state = const AsyncValue.loading();
+    final response = await _repository.getCoverStoryArticles();
+
+    if (response.success && response.data != null) {
+      state = AsyncValue.data(response.data!);
+    } else {
+      state = AsyncValue.error(
+        response.message ?? 'Failed to fetch cover story articles',
+        StackTrace.current,
+      );
+    }
+  }
+
+  Future<void> refresh() async {
+    await fetchArticles();
+  }
+}
+
+/// Cover Story Articles Provider
+final coverStoryArticlesProvider =
+    StateNotifierProvider<CoverStoryArticlesNotifier, AsyncValue<List<ArticleModel>>>(
+  (ref) => CoverStoryArticlesNotifier(ref.watch(articleRepositoryProvider)),
+);

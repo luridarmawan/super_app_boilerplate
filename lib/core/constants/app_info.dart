@@ -235,6 +235,7 @@ class AppInfo {
   static String get articleApiURL => dotenv.env['ARTICLE_API_URL'] ?? 'https://api.carik.id/dummy/article.json?slug={slug}';
   static String get articleLastApiURL => dotenv.env['ARTICLE_LAST_API_URL'] ?? 'https://api.carik.id/dummy/articles.json';
   static String get articleRecommendationApiURL => dotenv.env['ARTICLE_RECOMMENDATION_API_URL'] ?? 'https://api.carik.id/dummy/articles.json';
+  static String get articleCoverApiURL => dotenv.env['ARTICLE_COVER_API_URL'] ?? 'https://api.carik.id/dummy/articles.json';
 
 
   // ============================================
