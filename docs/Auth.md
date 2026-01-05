@@ -93,20 +93,19 @@ All API endpoints are configured through `.env` file:
 API_BASE_URL=https://api.yourdomain.com/
 API_BASE_URL_DEVELOPMENT=https://dev-api.yourdomain.com/
 
-# Auth Endpoints
-AUTH_LOGIN_URL=https://your_api_url/o/auth/login/
+# Auth Endpoints (Full URLs)
+AUTH_LOGIN_URL=https://api.yourdomain.com/o/auth/login/
 AUTH_LOGIN_CONTENT_TYPE="application/json"
 
-
-API_ENDPOINT_REGISTER=/v1/auth/register/
-API_ENDPOINT_LOGOUT=/v1/auth/logout/
-API_ENDPOINT_REFRESH_TOKEN=/v1/auth/refresh-token/
-API_ENDPOINT_FORGOT_PASSWORD=/v1/auth/forgot-password/
-API_ENDPOINT_RESET_PASSWORD=/v1/auth/reset-password/
-API_ENDPOINT_VERIFY_TOKEN=/v1/auth/verify-token/
+AUTH_REFRESH_TOKEN_URL=https://api.yourdomain.com/o/auth/token/
+AUTH_LOGOUT_URL=https://api.yourdomain.com/o/auth/logout/
+AUTH_REGISTER_URL=https://api.yourdomain.com/o/auth/register/
+AUTH_FORGOT_PASSWORD_URL=https://api.yourdomain.com/o/auth/forgot-password/
+AUTH_RESET_PASSWORD_URL=https://api.yourdomain.com/o/auth/reset-password/
+AUTH_VERIFY_TOKEN_URL=https://api.yourdomain.com/o/auth/verify-token/
 ```
 
-> **Note:** Default endpoints use `/v1/auth/` prefix. Adjust according to your backend structure.
+> **Note:** All auth endpoints use full URLs. Adjust according to your backend structure.
 
 ---
 
@@ -243,7 +242,7 @@ Endpoint for user registration.
 
 ### Endpoint
 ```
-POST {API_BASE_URL}{API_ENDPOINT_REGISTER}
+POST {AUTH_REGISTER_URL}
 ```
 
 ### Request
@@ -289,7 +288,7 @@ Endpoint for user logout.
 
 ### Endpoint
 ```
-POST {API_BASE_URL}{API_ENDPOINT_LOGOUT}
+POST {AUTH_LOGOUT_URL}
 ```
 
 ### Request
@@ -318,7 +317,7 @@ Endpoint to refresh access token.
 
 ### Endpoint
 ```
-POST {API_BASE_URL}{API_ENDPOINT_REFRESH_TOKEN}
+POST {AUTH_REFRESH_TOKEN_URL}
 ```
 
 ### Request
@@ -422,7 +421,7 @@ AUTH_GOOGLE_VERIFICATION_URL=https://api.yourdomain.com/v1/auth/google/verify
 
 #### Endpoint
 ```
-POST {API_BASE_URL}{API_ENDPOINT_FORGOT_PASSWORD}
+POST {AUTH_FORGOT_PASSWORD_URL}
 ```
 
 #### Payload
@@ -444,7 +443,7 @@ POST {API_BASE_URL}{API_ENDPOINT_FORGOT_PASSWORD}
 
 #### Endpoint
 ```
-POST {API_BASE_URL}{API_ENDPOINT_RESET_PASSWORD}
+POST {AUTH_RESET_PASSWORD_URL}
 ```
 
 #### Payload

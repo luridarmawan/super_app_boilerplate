@@ -75,12 +75,12 @@ class AppInfo {
   static String get authLoginUrl => dotenv.env['AUTH_LOGIN_URL'] ?? '';
   static String get authLoginContentType => dotenv.env['AUTH_LOGIN_CONTENT_TYPE'] ?? 'application/json';
 
-  static String get apiEndpointRegister => dotenv.env['API_ENDPOINT_REGISTER'] ?? '/o/auth/register/';
-  static String get apiEndpointForgotPassword => dotenv.env['API_ENDPOINT_FORGOT_PASSWORD'] ?? '/o/auth/forgot-password/';
-  static String get apiEndpointResetPassword => dotenv.env['API_ENDPOINT_RESET_PASSWORD'] ?? '/o/auth/reset-password/';
-  static String get apiEndpointLogout => dotenv.env['API_ENDPOINT_LOGOUT'] ?? '/o/auth/logout/';
-  static String get apiEndpointRefreshToken => dotenv.env['API_ENDPOINT_REFRESH_TOKEN'] ?? '/o/auth/refresh-token/';
-  static String get apiEndpointVerifyToken => dotenv.env['API_ENDPOINT_VERIFY_TOKEN'] ?? '/o/auth/verify-token/';
+  static String get authRegisterUrl => dotenv.env['AUTH_REGISTER_URL'] ?? '/o/auth/register/';
+  static String get authForgotPasswordUrl => dotenv.env['AUTH_FORGOT_PASSWORD_URL'] ?? '/o/auth/forgot-password/';
+  static String get authResetPasswordUrl => dotenv.env['AUTH_RESET_PASSWORD_URL'] ?? '/o/auth/reset-password/';
+  static String get authLogoutUrl => dotenv.env['AUTH_LOGOUT_URL'] ?? '/o/auth/logout/';
+  static String get authRefreshTokenUrl => dotenv.env['AUTH_REFRESH_TOKEN_URL'] ?? '/o/auth/refresh-token/';
+  static String get authVerifyTokenUrl => dotenv.env['AUTH_VERIFY_TOKEN_URL'] ?? '/o/auth/verify-token/';
 
   // ============================================
   // SPLASH SCREEN
