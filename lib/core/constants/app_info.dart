@@ -194,7 +194,7 @@ class AppInfo {
   /// Required for google_sign_in v7.x on Android
   static String get googleServerClientId => dotenv.env['GOOGLE_CLIENT_ID'] ?? '';
 
-  static String get apiGoogleAuthVerification => dotenv.env['API_GOOGLE_AUTH_VERIFICATION'] ?? '';
+  static String get authGoogleVerificationUrl => dotenv.env['AUTH_GOOGLE_VERIFICATION_URL'] ?? '';
 
   // ============================================
   // NOTIFICATION CONFIGURATION

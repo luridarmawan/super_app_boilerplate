@@ -354,7 +354,7 @@ Authentication using Google OAuth. The app sends Google ID Token to backend for 
 
 ### Endpoint
 ```
-POST {API_GOOGLE_AUTH_VERIFICATION}
+POST {AUTH_GOOGLE_VERIFICATION_URL}
 ```
 
 ### Request
@@ -400,7 +400,7 @@ ENABLE_GOOGLE_LOGIN=true
 GOOGLE_CLIENT_ID=your_google_client_id
 
 # Endpoint for backend to verify Google ID Token
-API_GOOGLE_AUTH_VERIFICATION=https://api.yourdomain.com/v1/auth/google/verify
+AUTH_GOOGLE_VERIFICATION_URL=https://api.yourdomain.com/v1/auth/google/verify
 ```
 
 ### Steps to Get Google Client ID

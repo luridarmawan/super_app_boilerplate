@@ -352,7 +352,7 @@ class CustomApiAuthProvider implements BaseAuthService {
       debugPrint('[GAUTH] Token obtained (${idToken.length} chars)');
 
       // Send idToken to backend API for verification
-      final apiUrl = AppInfo.apiGoogleAuthVerification;
+      final apiUrl = AppInfo.authGoogleVerificationUrl;
       debugPrint('[GAUTH] POST $apiUrl');
 
       final dio = Dio();
