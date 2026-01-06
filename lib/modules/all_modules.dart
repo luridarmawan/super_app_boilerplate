@@ -8,7 +8,7 @@ import 'sample/sample_module.dart';
 class ModuleManifest {
   static void register() {
     ModuleRegistry.register(DemoModule());
-    ModuleRegistry.register(SampleModule());
     ModuleRegistry.register(NewsModule());
+    ModuleRegistry.register(SampleModule());
   }
 }
