@@ -106,13 +106,15 @@ class CustomApiAuthProvider implements BaseAuthService {
     required String password,
   }) async {
     try {
+      debugPrint('[AUTH] ============================================');
       debugPrint('[AUTH] >>> Starting Email/Password Login');
       debugPrint('[AUTH] Email: $email');
+      debugPrint('[AUTH] Password length: ${password.length}');
 
       // Get login URL directly from AppInfo
       final loginUrl = AppInfo.authLoginUrl;
       final contentType = AppInfo.authLoginContentType;
-      debugPrint('[AUTH] POST $loginUrl');
+      debugPrint('[AUTH] POST URL: $loginUrl');
       debugPrint('[AUTH] Content-Type: $contentType');
 
       // Prepare request data based on content type
@@ -132,7 +134,9 @@ class CustomApiAuthProvider implements BaseAuthService {
           'password': password,
         };
       }
+      debugPrint('[AUTH] Request data: $requestData');
 
+      debugPrint('[AUTH] Sending POST request...');
       final response = await dio.post(
         loginUrl,
         options: Options(
@@ -146,11 +150,19 @@ class CustomApiAuthProvider implements BaseAuthService {
         data: requestData,
       );
 
-      debugPrint('[AUTH] Response: ${response.statusCode} - ${response.data}');
+      debugPrint('[AUTH] ----------------------------------------');
+      debugPrint('[AUTH] Response Status Code: ${response.statusCode}');
+      debugPrint('[AUTH] Response Headers: ${response.headers}');
+      debugPrint('[AUTH] Raw Response Data Type: ${response.data.runtimeType}');
+      debugPrint('[AUTH] Raw Response Data: ${response.data}');
 
       // Handle error responses
       if (response.statusCode != 200) {
         final errorData = response.data;
+        debugPrint('[AUTH] ERROR: Non-200 status code received');
+        debugPrint('[AUTH] Error data type: ${errorData.runtimeType}');
+        debugPrint('[AUTH] Error data: $errorData');
+
         String errorMessage = 'Login failed';
 
         if (errorData is Map<String, dynamic>) {
@@ -161,14 +173,31 @@ class CustomApiAuthProvider implements BaseAuthService {
               errorData['error']?.toString() ??
               errorData['detail']?.toString() ??
               'Login failed: ${response.statusCode}';
+          debugPrint('[AUTH] Extracted error message: $errorMessage');
         }
 
-        debugPrint('[AUTH] ERROR: $errorMessage');
+        debugPrint('[AUTH] Returning failure: $errorMessage');
         return AuthResult.failure(errorMessage);
       }
 
       // Parse response data
+      debugPrint('[AUTH] ----------------------------------------');
+      debugPrint('[AUTH] Parsing response data...');
+
+      if (response.data == null) {
+        debugPrint('[AUTH] ERROR: response.data is null!');
+        return AuthResult.failure('Server response is null');
+      }
+
+      if (response.data is! Map<String, dynamic>) {
+        debugPrint('[AUTH] ERROR: response.data is not a Map!');
+        debugPrint('[AUTH] Actual type: ${response.data.runtimeType}');
+        debugPrint('[AUTH] Actual value: ${response.data}');
+        return AuthResult.failure('Invalid server response format');
+      }
+
       final responseData = response.data as Map<String, dynamic>;
+      debugPrint('[AUTH] Response keys: ${responseData.keys.toList()}');
 
       // Extract user data (adapt based on your API response structure)
       // Common response structures:
@@ -183,28 +212,42 @@ class CustomApiAuthProvider implements BaseAuthService {
       // check response data, jika json dan memiliki field "code", check value-nya
       // code 0 atau 200 artinya success
       if (responseData.containsKey('code')) {
+        debugPrint('[AUTH] Response contains "code" field: ${responseData['code']}');
         if (responseData['code'] != 0 && responseData['code'] != 200) {
           // Support both 'message' and 'msg' field names
           final errorMsg = responseData['message']?.toString() ??
               responseData['msg']?.toString() ??
               'Login failed';
+          debugPrint('[AUTH] Code indicates failure. Error: $errorMsg');
           return AuthResult.failure(errorMsg);
         }
+        debugPrint('[AUTH] Code indicates success');
       }
 
       // Handle different API response structures
+      debugPrint('[AUTH] Detecting API response structure...');
       if (responseData.containsKey('user')) {
+        debugPrint('[AUTH] Structure detected: { user: {...} }');
         userData = responseData['user'] as Map<String, dynamic>?;
         accessToken = responseData['token']?.toString() ?? 
                       responseData['access_token']?.toString();
         refreshToken = responseData['refresh_token']?.toString();
       } else if (responseData.containsKey('data')) {
-        final data = responseData['data'] as Map<String, dynamic>;
-        userData = data['user'] as Map<String, dynamic>? ?? data;
-        accessToken = data['token']?.toString() ?? 
-                      data['access_token']?.toString();
-        refreshToken = data['refresh_token']?.toString();
+        debugPrint('[AUTH] Structure detected: { data: {...} }');
+        final data = responseData['data'];
+        debugPrint('[AUTH] data type: ${data.runtimeType}');
+        debugPrint('[AUTH] data value: $data');
+        if (data is Map<String, dynamic>) {
+          userData = data['user'] as Map<String, dynamic>? ?? data;
+          accessToken = data['token']?.toString() ?? 
+                        data['access_token']?.toString();
+          refreshToken = data['refresh_token']?.toString();
+        } else {
+          debugPrint('[AUTH] WARNING: data is not a Map, treating response as user data');
+          userData = responseData;
+        }
       } else {
+        debugPrint('[AUTH] Structure detected: user data at root level');
         // Assume the response is the user data itself
         userData = responseData;
         accessToken = responseData['token']?.toString() ?? 
@@ -212,15 +255,23 @@ class CustomApiAuthProvider implements BaseAuthService {
         refreshToken = responseData['refresh_token']?.toString();
       }
 
+      debugPrint('[AUTH] Extracted userData: $userData');
+      debugPrint('[AUTH] Extracted accessToken: ${accessToken != null ? "(${accessToken!.length} chars)" : "null"}');
+      debugPrint('[AUTH] Extracted refreshToken: ${refreshToken != null ? "(${refreshToken!.length} chars)" : "null"}');
+
       // Build display name from available fields
+      debugPrint('[AUTH] ----------------------------------------');
+      debugPrint('[AUTH] Building display name...');
       String? displayName = userData?['name']?.toString() ?? 
                             userData?['display_name']?.toString() ??
                             userData?['full_name']?.toString();
+      debugPrint('[AUTH] Initial displayName: $displayName');
 
       // If no direct name field, try combining first_name and last_name
       if (displayName == null || displayName.isEmpty) {
         final firstName = userData?['first_name']?.toString() ?? '';
         final lastName = userData?['last_name']?.toString() ?? '';
+        debugPrint('[AUTH] firstName: "$firstName", lastName: "$lastName"');
         final combinedName = '$firstName $lastName'.trim();
         if (combinedName.isNotEmpty) {
           displayName = combinedName;
@@ -229,12 +280,18 @@ class CustomApiAuthProvider implements BaseAuthService {
 
       // Fallback to email prefix if no name found
       displayName ??= email.split('@').first;
+      debugPrint('[AUTH] Final displayName: $displayName');
+
+      // Build user ID
+      final uid = userData?['id']?.toString() ?? 
+                  userData?['uid']?.toString() ?? 
+                  'user_${DateTime.now().millisecondsSinceEpoch}';
+      debugPrint('[AUTH] User ID: $uid');
 
       // Create AuthUser from response
+      debugPrint('[AUTH] Creating AuthUser object...');
       _currentUser = AuthUser(
-        uid: userData?['id']?.toString() ?? 
-             userData?['uid']?.toString() ?? 
-             'user_${DateTime.now().millisecondsSinceEpoch}',
+        uid: uid,
         email: userData?['email']?.toString() ?? email,
         displayName: displayName,
         photoUrl: userData?['photo_url']?.toString() ?? 
@@ -245,7 +302,11 @@ class CustomApiAuthProvider implements BaseAuthService {
         isGoogleLogin: false,
       );
 
-      debugPrint('[AUTH] <<< Login Success: ${_currentUser!.email}, Name: ${_currentUser!.displayName}');
+      debugPrint('[AUTH] ============================================');
+      debugPrint('[AUTH] <<< LOGIN SUCCESS');
+      debugPrint('[AUTH] User email: ${_currentUser!.email}');
+      debugPrint('[AUTH] User name: ${_currentUser!.displayName}');
+      debugPrint('[AUTH] User uid: ${_currentUser!.uid}');
 
       // Save user after successful login
       await _saveUser(_currentUser!);
@@ -262,36 +323,85 @@ class CustomApiAuthProvider implements BaseAuthService {
 
       _authStateController.add(_currentUser);
       return AuthResult.success(_currentUser!);
-    } on DioException catch (e) {
-      debugPrint('[AUTH] DioException: ${e.type} - ${e.message}');
+    } on DioException catch (e, stackTrace) {
+      debugPrint('[AUTH] ============================================');
+      debugPrint('[AUTH] !!! DIO EXCEPTION !!!');
+      debugPrint('[AUTH] Exception Type: ${e.type}');
+      debugPrint('[AUTH] Exception Message: ${e.message}');
+      debugPrint('[AUTH] Request URL: ${e.requestOptions.uri}');
+      debugPrint('[AUTH] Request Method: ${e.requestOptions.method}');
+      debugPrint('[AUTH] Request Headers: ${e.requestOptions.headers}');
+      debugPrint('[AUTH] Request Data: ${e.requestOptions.data}');
+
+      if (e.response != null) {
+        debugPrint('[AUTH] ----------------------------------------');
+        debugPrint('[AUTH] Response Status Code: ${e.response?.statusCode}');
+        debugPrint('[AUTH] Response Status Message: ${e.response?.statusMessage}');
+        debugPrint('[AUTH] Response Headers: ${e.response?.headers}');
+        debugPrint('[AUTH] Response Data Type: ${e.response?.data.runtimeType}');
+        debugPrint('[AUTH] Response Data (RAW): ${e.response?.data}');
+      } else {
+        debugPrint('[AUTH] Response: NULL (no response received)');
+      }
+
+      debugPrint('[AUTH] StackTrace: $stackTrace');
+      debugPrint('[AUTH] ============================================');
 
       String errorMessage;
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout ||
           e.type == DioExceptionType.sendTimeout) {
         errorMessage = 'Koneksi timeout. Silakan coba lagi.';
+        debugPrint('[AUTH] Error Category: TIMEOUT');
       } else if (e.type == DioExceptionType.connectionError) {
         errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+        debugPrint('[AUTH] Error Category: CONNECTION_ERROR');
       } else if (e.response != null) {
+        debugPrint('[AUTH] Error Category: SERVER_RESPONSE_ERROR');
         // Try to extract error message from response
         final data = e.response?.data;
+        debugPrint('[AUTH] Extracting error message from response data...');
+        debugPrint('[AUTH] Data type: ${data.runtimeType}');
+
         if (data is Map<String, dynamic>) {
+          debugPrint('[AUTH] Data keys: ${data.keys.toList()}');
           // Support various field names: message, msg, error, detail
-          errorMessage = data['message']?.toString() ??
-              data['msg']?.toString() ??
-              data['error']?.toString() ??
-              data['detail']?.toString() ??
-              'Login gagal';
+          final msgFromMessage = data['message']?.toString();
+          final msgFromMsg = data['msg']?.toString();
+          final msgFromError = data['error']?.toString();
+          final msgFromDetail = data['detail']?.toString();
+
+          debugPrint('[AUTH] data["message"]: $msgFromMessage');
+          debugPrint('[AUTH] data["msg"]: $msgFromMsg');
+          debugPrint('[AUTH] data["error"]: $msgFromError');
+          debugPrint('[AUTH] data["detail"]: $msgFromDetail');
+
+          errorMessage = msgFromMessage ??
+              msgFromMsg ??
+              msgFromError ??
+              msgFromDetail ??
+              'Login failed';
+        } else if (data is String) {
+          debugPrint('[AUTH] Response is a String: $data');
+          errorMessage = data.isNotEmpty ? data : 'Login failed: ${e.response?.statusCode}';
         } else {
-          errorMessage = 'Login gagal: ${e.response?.statusCode}';
+          debugPrint('[AUTH] Response data is neither Map nor String');
+          errorMessage = 'Login failed: ${e.response?.statusCode}';
         }
       } else {
-        errorMessage = 'Login gagal: ${e.message}';
+        debugPrint('[AUTH] Error Category: UNKNOWN');
+        errorMessage = 'Login failed: ${e.message}';
       }
 
+      debugPrint('[AUTH] Final error message: $errorMessage');
       return AuthResult.failure(errorMessage);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('[AUTH] ============================================');
+      debugPrint('[AUTH] !!! GENERAL EXCEPTION !!!');
+      debugPrint('[AUTH] Exception Type: ${e.runtimeType}');
       debugPrint('[AUTH] Exception: $e');
+      debugPrint('[AUTH] StackTrace: $stackTrace');
+      debugPrint('[AUTH] ============================================');
       return AuthResult.failure('Login gagal: ${e.toString()}');
     }
   }

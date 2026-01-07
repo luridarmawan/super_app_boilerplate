@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config/app_config.dart';
 import '../../core/constants/app_info.dart';
+import '../../core/l10n/app_localizations.dart';
 
 /// Login Screen
 class LoginScreen extends ConsumerStatefulWidget {
@@ -258,37 +260,75 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
+    debugPrint('[LOGIN_SCREEN] >>> _handleLogin() called');
+    
+    if (!_formKey.currentState!.validate()) {
+      debugPrint('[LOGIN_SCREEN] Form validation failed');
+      return;
+    }
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    debugPrint('[LOGIN_SCREEN] Attempting login with email: $email');
+    debugPrint('[LOGIN_SCREEN] Password length: ${password.length}');
 
     setState(() => _isLoading = true);
 
     try {
+      debugPrint('[LOGIN_SCREEN] Getting authService from provider...');
       final authService = ref.read(authServiceProvider);
+      debugPrint('[LOGIN_SCREEN] authService type: ${authService.runtimeType}');
+      
+      debugPrint('[LOGIN_SCREEN] Calling signInWithEmailAndPassword...');
       final result = await authService.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
+        email: email,
+        password: password,
       );
+
+      debugPrint('[LOGIN_SCREEN] <<< Login result received:');
+      debugPrint('[LOGIN_SCREEN]   success: ${result.success}');
+      debugPrint('[LOGIN_SCREEN]   errorMessage: ${result.errorMessage}');
+      debugPrint('[LOGIN_SCREEN]   user: ${result.user?.email ?? "null"}');
 
       if (mounted) {
         setState(() => _isLoading = false);
 
         if (result.success) {
+          debugPrint('[LOGIN_SCREEN] Login SUCCESS, calling onLoginSuccess callback');
           widget.onLoginSuccess?.call();
         } else {
+          final errorMsg = result.errorMessage ?? 'Login failed';
+          debugPrint('[LOGIN_SCREEN] Login FAILED: $errorMsg');
+
+          // Use localized message in production, show detailed error only in debug
+          final l10n = AppLocalizations.of(context);
+          final displayMessage = kReleaseMode 
+              ? l10n.loginFailed 
+              : 'ERR: $errorMsg';
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result.errorMessage ?? 'Login failed'),
+              content: Text(displayMessage),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('[LOGIN_SCREEN] !!! EXCEPTION caught: $e');
+      debugPrint('[LOGIN_SCREEN] StackTrace: $stackTrace');
       if (mounted) {
         setState(() => _isLoading = false);
+
+        // Use localized message in production, show detailed error only in debug
+        final l10n = AppLocalizations.of(context);
+        final displayMessage = kReleaseMode 
+            ? l10n.loginFailed 
+            : '${l10n.loginFailed}: ${e.toString()}';
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: ${e.toString()}'),
+            content: Text(displayMessage),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
