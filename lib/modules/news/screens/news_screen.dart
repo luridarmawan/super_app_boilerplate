@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../../core/network/repository/article_repository.dart';
 import '../../../features/dashboard/widgets/article_list.dart';
 
@@ -50,7 +51,7 @@ class NewsScreen extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
                 child: Text(
-                  'Berita Terkini',
+                  AppLocalizations.of(context).latestNews,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -204,7 +205,7 @@ class _CoverStoryHeroBanner extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Gagal memuat cover story',
+            AppLocalizations.of(context).failedToLoadCoverStory,
             style: TextStyle(
               color: Theme.of(context).colorScheme.onErrorContainer,
             ),
@@ -213,7 +214,7 @@ class _CoverStoryHeroBanner extends ConsumerWidget {
           FilledButton.icon(
             onPressed: () => ref.read(coverStoryArticlesProvider.notifier).refresh(),
             icon: const Icon(Icons.refresh),
-            label: const Text('Coba Lagi'),
+            label: Text(AppLocalizations.of(context).tryAgain),
           ),
         ],
       ),
@@ -662,7 +663,7 @@ class _LatestNewsList extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Gagal memuat berita',
+            AppLocalizations.of(context).failedToLoadNews,
             style: TextStyle(
               color: Theme.of(context).colorScheme.onErrorContainer,
             ),
@@ -671,7 +672,7 @@ class _LatestNewsList extends ConsumerWidget {
           FilledButton.icon(
             onPressed: () => ref.read(articlesProvider.notifier).refresh(),
             icon: const Icon(Icons.refresh),
-            label: const Text('Coba Lagi'),
+            label: Text(AppLocalizations.of(context).tryAgain),
           ),
         ],
       ),
@@ -695,7 +696,7 @@ class _LatestNewsList extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Belum ada berita',
+            AppLocalizations.of(context).noNewsAvailable,
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),

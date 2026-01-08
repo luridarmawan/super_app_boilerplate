@@ -238,4 +238,10 @@ const Map<String, String> idStrings = {
   'locationUpdated': 'Lokasi diperbarui',
   'failedToGetLocation': 'Gagal mendapatkan lokasi',
   'accuracy': 'Akurasi',
+
+  // News Module
+  'failedToLoadCoverStory': 'Gagal memuat cover story',
+  'failedToLoadNews': 'Gagal memuat berita',
+  'noNewsAvailable': 'Belum ada berita',
+  'tryAgain': 'Coba Lagi',
 };

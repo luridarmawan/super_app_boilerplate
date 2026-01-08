@@ -238,4 +238,10 @@ const Map<String, String> enStrings = {
   'locationUpdated': 'Location updated',
   'failedToGetLocation': 'Failed to get location',
   'accuracy': 'Accuracy',
+
+  // News Module
+  'failedToLoadCoverStory': 'Failed to load cover story',
+  'failedToLoadNews': 'Failed to load news',
+  'noNewsAvailable': 'No news available',
+  'tryAgain': 'Try Again',
 };

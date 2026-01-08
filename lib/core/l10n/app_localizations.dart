@@ -319,6 +319,14 @@ class AppLocalizations {
   String get locationUpdated => translate('locationUpdated');
   String get failedToGetLocation => translate('failedToGetLocation');
   String get accuracy => translate('accuracy');
+
+  // ============================================
+  // NEWS MODULE STRINGS
+  // ============================================
+  String get failedToLoadCoverStory => translate('failedToLoadCoverStory');
+  String get failedToLoadNews => translate('failedToLoadNews');
+  String get noNewsAvailable => translate('noNewsAvailable');
+  String get tryAgain => translate('tryAgain');
 }
 
 
