@@ -256,8 +256,8 @@ class CustomApiAuthProvider implements BaseAuthService {
       }
 
       debugPrint('[AUTH] Extracted userData: $userData');
-      debugPrint('[AUTH] Extracted accessToken: ${accessToken != null ? "(${accessToken!.length} chars)" : "null"}');
-      debugPrint('[AUTH] Extracted refreshToken: ${refreshToken != null ? "(${refreshToken!.length} chars)" : "null"}');
+      debugPrint('[AUTH] Extracted accessToken: ${accessToken != null ? "(${accessToken.length} chars)" : "null"}');
+      debugPrint('[AUTH] Extracted refreshToken: ${refreshToken != null ? "(${refreshToken.length} chars)" : "null"}');
 
       // Build display name from available fields
       debugPrint('[AUTH] ----------------------------------------');
