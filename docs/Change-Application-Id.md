@@ -5,6 +5,7 @@ Tool untuk mengubah Application ID (Package Name / Bundle Identifier) di seluruh
 > **📚 Related Documents:**
 > - **[README.md](../README.md)** - Main project documentation
 > - **[SuperApp-Architecture.md](./SuperApp-Architecture.md)** - Architecture overview
+> - **[Auth.md](./Auth.md)** - Authentication documentation
 
 ## Table of Contents
 
@@ -14,6 +15,10 @@ Tool untuk mengubah Application ID (Package Name / Bundle Identifier) di seluruh
 - [Application ID Format](#application-id-format)
 - [Usage Examples](#usage-examples)
 - [Post-Change Steps](#post-change-steps)
+  - [Clean & Rebuild](#1-clean--rebuild)
+  - [Update Firebase](#2-update-firebase)
+  - [Update Google Sign-In](#3-update-google-sign-in-oauth)
+  - [Fix Google Sign-In Error](#fix-google-sign-in-error-after-app-id-change)
 - [Manual Change Guide](#manual-change-guide)
 - [Troubleshooting](#troubleshooting)
 
@@ -222,38 +227,179 @@ flutter pub get
 flutter run
 ```
 
-### 2. Update Firebase (Jika Menggunakan)
+### 2. Update Firebase
+
+> ⚠️ **WAJIB** jika menggunakan Firebase (FCM, Auth, Firestore, dll)
 
 1. Buka [Firebase Console](https://console.firebase.google.com)
 2. Pilih project Anda
-3. **Android:**
-   - Settings → Add app → Android
-   - Masukkan package name baru
-   - Download `google-services.json` baru
-   - Ganti file di `android/app/google-services.json`
-4. **iOS:**
-   - Settings → Add app → iOS
-   - Masukkan bundle ID baru
-   - Download `GoogleService-Info.plist` baru
-   - Ganti file di `ios/Runner/GoogleService-Info.plist`
+3. Klik ⚙️ **Settings** → **Project settings**
+4. Scroll ke **Your apps**
 
-### 3. Update Google Sign-In (Jika Menggunakan)
+#### Android:
+1. Klik **Add app** → **Android**
+2. Masukkan:
+   - **Package name**: `id.ihasa.app` (sesuai app ID baru)
+   - **App nickname**: (opsional)
+   - **Debug signing certificate SHA-1**: (lihat cara mendapatkan di bawah)
+3. Klik **Register app**
+4. Download **`google-services.json`**
+5. Ganti file di `android/app/google-services.json`
 
-1. Buka [Google Cloud Console](https://console.cloud.google.com)
-2. Pilih project Anda
-3. APIs & Services → Credentials
-4. Update OAuth 2.0 Client IDs dengan package name baru
-5. Tambahkan SHA-1 fingerprint untuk package baru:
+#### iOS:
+1. Klik **Add app** → **iOS**
+2. Masukkan:
+   - **Bundle ID**: `id.ihasa.app` (sesuai app ID baru)
+3. Download **`GoogleService-Info.plist`**
+4. Ganti file di `ios/Runner/GoogleService-Info.plist`
+
+### 3. Update Google Sign-In (OAuth)
+
+> ⚠️ **WAJIB** jika menggunakan Google Sign-In
+
+#### Langkah 1: Dapatkan SHA-1 Fingerprint
+
+Jalankan command ini di terminal:
 
 ```bash
-# Debug SHA-1
 cd android
-./gradlew signingReport
+call gradlew.bat signingReport
 ```
 
-### 4. Update Play Store & App Store (Jika Sudah Published)
+Cari bagian **debug** dan catat nilai **SHA1**:
 
-> ⚠️ **PENTING**: Application ID **TIDAK BISA DIUBAH** setelah app dipublish ke store. Jika perlu mengubah, Anda harus membuat app baru.
+```
+> Task :app:signingReport
+Variant: debug
+Config: debug
+Store: C:\Users\YourName\.android\debug.keystore
+Alias: AndroidDebugKey
+MD5:  XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX
+SHA1: XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX  ← COPY INI
+SHA-256: ...
+```
+
+#### Langkah 2: Update Firebase Console
+
+1. Buka [Firebase Console](https://console.firebase.google.com)
+2. Pilih project Anda
+3. Klik ⚙️ Settings → Project settings
+4. Scroll ke **Your apps** → Android app
+5. Di bagian **SHA certificate fingerprints**, klik **Add fingerprint**
+6. Paste SHA-1 dari langkah 1
+7. Download **`google-services.json`** baru
+8. Ganti file di `android/app/google-services.json`
+
+#### Langkah 3: Update Google Cloud Console
+
+1. Buka [Google Cloud Console](https://console.cloud.google.com)
+2. Pilih project yang sama dengan Firebase
+3. Navigasi ke **APIs & Services → Credentials**
+4. Di bagian **OAuth 2.0 Client IDs**, cari yang bertipe **Android**
+5. Jika belum ada untuk package baru, klik **+ CREATE CREDENTIALS → OAuth client ID**
+6. Pilih **Android**
+7. Isi:
+   - **Package name**: `id.ihasa.app`
+   - **SHA-1 certificate fingerprint**: (paste SHA-1 dari langkah 1)
+8. Klik **Create**
+
+#### Langkah 4: Rebuild Aplikasi
+
+```bash
+flutter clean
+flutter pub get
+flutter run
+```
+
+---
+
+## Fix Google Sign-In Error After App ID Change
+
+### Error Message
+
+Jika Anda melihat error seperti ini setelah mengubah Application ID:
+
+```
+I/PlayServicesImpl: No cancellationSignal found
+GoogleSignInException(code GoogleSignInExceptionCode.canceled, activity is cancelled by the user., null)
+```
+
+### Penyebab
+
+Error ini terjadi karena **Google Sign-In terikat dengan package name** yang didaftarkan di Google Cloud Console. Setelah mengubah Application ID, OAuth client tidak mengenali package name baru.
+
+### Solusi Step-by-Step
+
+#### Step 1: Dapatkan SHA-1 Fingerprint
+
+```bash
+cd android
+call gradlew.bat signingReport
+```
+
+Output:
+```
+Variant: debug
+Config: debug
+Store: C:\Users\YourName\.android\debug.keystore
+Alias: AndroidDebugKey
+SHA1: AB:CD:EF:12:34:56:78:90:AB:CD:EF:12:34:56:78:90:AB:CD:EF:12
+```
+
+**Catat nilai SHA1 tersebut!**
+
+#### Step 2: Update Firebase Console
+
+1. Buka [Firebase Console](https://console.firebase.google.com)
+2. Pilih project → ⚙️ Settings → Project settings
+3. Di **Your apps**, klik **Add app** → **Android**
+4. Masukkan:
+   | Field | Value |
+   |-------|-------|
+   | Package name | `id.ihasa.app` |
+   | SHA-1 certificate | (paste SHA-1 dari step 1) |
+5. Download `google-services.json`
+6. **Ganti** file di `android/app/google-services.json`
+
+#### Step 3: Update Google Cloud Console
+
+1. Buka [Google Cloud Console](https://console.cloud.google.com)
+2. Pilih project yang sama dengan Firebase
+3. **APIs & Services → Credentials**
+4. Di **OAuth 2.0 Client IDs**:
+   - Jika sudah ada Android client untuk package lama → Edit dan update package name
+   - Jika belum ada → Create baru dengan:
+     | Field | Value |
+     |-------|-------|
+     | Application type | Android |
+     | Package name | `id.ihasa.app` |
+     | SHA-1 fingerprint | (paste dari step 1) |
+
+#### Step 4: Rebuild
+
+```bash
+flutter clean
+flutter pub get
+flutter run
+```
+
+### Checklist Troubleshooting
+
+| ✅ | Item | Keterangan |
+|----|------|------------|
+| ☐ | Package name di Firebase Console | Harus `id.ihasa.app` |
+| ☐ | SHA-1 di Firebase Console | Harus sesuai dengan debug keystore |
+| ☐ | google-services.json diupdate | File baru setelah add app |
+| ☐ | OAuth Client di Google Cloud | Package name dan SHA-1 harus match |
+| ☐ | flutter clean | Wajib setelah update google-services.json |
+
+### Catatan Penting
+
+| Item | Keterangan |
+|------|------------|
+| **Debug vs Release** | SHA-1 untuk debug dan release **berbeda**. Untuk development, gunakan debug SHA-1. Untuk production, tambahkan juga release SHA-1. |
+| **Waktu Propagasi** | Perubahan di Google Cloud Console mungkin butuh **beberapa menit** untuk aktif |
+| **Web Client ID** | Tidak perlu diubah, tetap gunakan Web Client ID yang sama |
 
 ---
 
@@ -363,12 +509,16 @@ cd ..
 flutter run
 ```
 
-### Sign-In Tidak Berfungsi
+### Google Sign-In Error: "activity is cancelled by the user"
 
-Jika Google Sign-In error setelah perubahan:
-1. Pastikan SHA-1 didaftarkan di Firebase Console
-2. Pastikan OAuth Client ID terupdate di Google Cloud Console
-3. Download ulang `google-services.json`
+Lihat bagian [Fix Google Sign-In Error After App ID Change](#fix-google-sign-in-error-after-app-id-change).
+
+### Sign-In Masih Gagal Setelah Update
+
+1. Pastikan SHA-1 benar (bukan SHA-256)
+2. Tunggu beberapa menit untuk propagasi
+3. Coba uninstall app dari device dan install ulang
+4. Pastikan google-services.json sudah yang terbaru
 
 ---
 
@@ -393,10 +543,13 @@ Script tersedia di: `tool/change_app_id.dart`
 
 - **[README.md](../README.md)** - Main project documentation
 - **[SuperApp-Architecture.md](./SuperApp-Architecture.md)** - Architecture overview
+- **[Auth.md](./Auth.md)** - Authentication documentation
 - [Android App ID Guide](https://developer.android.com/studio/build/application-id)
 - [iOS Bundle ID Guide](https://developer.apple.com/documentation/bundleresources/information_property_list/cfbundleidentifier)
+- [Firebase Setup Guide](https://firebase.google.com/docs/flutter/setup)
+- [Google Sign-In Setup](https://pub.dev/packages/google_sign_in)
 
 ---
 
 *Updated: January 10, 2026*
-*Version: 1.0.0*
+*Version: 1.1.0*
