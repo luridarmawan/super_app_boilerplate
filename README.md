@@ -472,6 +472,7 @@ flutter run -d emulator-5554
 | [SplashScreen.md](docs/SplashScreen.md) | Splash screen configuration |
 | [QuickAction.md](docs/QuickAction.md) | Quick actions system |
 | [Permission Helper.md](docs/Permission%20Helper.md) | Permission management |
+| [Change-Application-Id.md](docs/Change-Application-Id.md) | Change app ID tool |
 
 ## 📋 TODO (Pengembangan Lanjut)
 
