@@ -1,6 +1,6 @@
 // Dart script untuk mengubah Application ID di seluruh project
 // Jalankan: dart run tool/change_app_id.dart <new_app_id>
-// Contoh: dart run tool/change_app_id.dart id.ihasa.app
+// Contoh: dart run tool/change_app_id.dart com.company.project
 
 // ignore_for_file: avoid_print
 
@@ -21,7 +21,6 @@ void main(List<String> args) {
     print('   dart run tool/change_app_id.dart <new_app_id>');
     print('');
     print('📝 Contoh:');
-    print('   dart run tool/change_app_id.dart id.ihasa.app');
     print('   dart run tool/change_app_id.dart com.example.myapp');
     print('');
     exit(1);
@@ -39,7 +38,6 @@ void main(List<String> args) {
     print('   - Hanya boleh mengandung huruf, angka, dan underscore');
     print('');
     print('📝 Contoh yang valid:');
-    print('   - id.ihasa.app');
     print('   - com.example.myapp');
     print('   - org.company.app_name');
     print('');
@@ -197,7 +195,7 @@ int _updateMainActivity(
     return 0;
   }
 
-  // Convert app ID to path (e.g., id.ihasa.app -> id/ihasa/app)
+  // Convert app ID to path (e.g., com.company.project -> com/company/project)
   final oldPath = oldAppId.replaceAll('.', '/');
   final newPath = newAppId.replaceAll('.', '/');
 

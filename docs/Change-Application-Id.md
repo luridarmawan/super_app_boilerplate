@@ -60,11 +60,11 @@ dart run tool/change_app_id.dart <new_app_id>
 ### Contoh Penggunaan
 
 ```bash
-# Ubah ke id.ihasa.app
-dart run tool/change_app_id.dart id.ihasa.app
-
 # Ubah ke com.example.myapp
 dart run tool/change_app_id.dart com.example.myapp
+
+# Ubah ke com.company.project
+dart run tool/change_app_id.dart com.company.project
 
 # Ubah ke org.company.appname
 dart run tool/change_app_id.dart org.company.appname
@@ -78,7 +78,7 @@ dart run tool/change_app_id.dart org.company.appname
 ╚══════════════════════════════════════════════════════════════╝
 
 📁 Project directory: D:\project\super_app
-🆔 New Application ID: id.ihasa.app
+🆔 New Application ID: com.example.myapp
 
 📌 Current Application ID: id.carik.superapp_demo
 
@@ -87,7 +87,7 @@ dart run tool/change_app_id.dart org.company.appname
 ═══════════════════════════════════════════════════════════════
 
 ✅ [OK] android/app/build.gradle.kts
-✅ [OK] android/app/src/main/kotlin/id/ihasa/app/MainActivity.kt (created)
+✅ [OK] android/app/src/main/kotlin/com/example/myapp/MainActivity.kt (created)
 🗑️  [DEL] android/app/src/main/kotlin/id/carik/ (deleted)
 ✅ [OK] ios/Runner.xcodeproj/project.pbxproj
 ✅ [OK] README.md
@@ -97,7 +97,7 @@ dart run tool/change_app_id.dart org.company.appname
 ═══════════════════════════════════════════════════════════════
 ✅ Application ID berhasil diubah!
    Dari: id.carik.superapp_demo
-   Ke:   id.ihasa.app
+   Ke:   com.example.myapp
 
 📊 Total file yang diubah: 6
 ═══════════════════════════════════════════════════════════════
@@ -150,7 +150,7 @@ Application ID harus mengikuti aturan berikut:
 |------|--------------|----------------|
 | Minimal 2 segmen | `com.app` | `myapp` |
 | Dipisahkan titik | `com.example.app` | `com-example-app` |
-| Dimulai dengan huruf | `id.ihasa.app` | `123.app.name` |
+| Dimulai dengan huruf | `com.example.myapp` | `123.app.name` |
 | Boleh underscore | `com.my_app` | `com.my-app` |
 | Huruf, angka, underscore | `com.app123` | `com.app@name` |
 
@@ -163,7 +163,7 @@ id.companyname.appname
 org.organization.appname
 
 # Contoh Spesifik
-id.ihasa.app
+com.example.myapp
 com.example.myflutterapp
 org.openstreetmap.osmand
 id.co.tokopedia.tkpd
@@ -193,8 +193,8 @@ dart run tool/change_app_id.dart
 ### Change to New ID
 
 ```bash
-# Dari id.carik.superapp_demo ke id.ihasa.app
-dart run tool/change_app_id.dart id.ihasa.app
+# Dari id.carik.superapp_demo ke com.example.myapp
+dart run tool/change_app_id.dart com.example.myapp
 ```
 
 ### Error Handling
@@ -209,8 +209,8 @@ dart run tool/change_app_id.dart 123.app.name
 # ❌ Error: Format Application ID tidak valid!
 
 # Same as current
-dart run tool/change_app_id.dart id.ihasa.app
-# ℹ️ Application ID sudah "id.ihasa.app". Tidak ada perubahan.
+dart run tool/change_app_id.dart com.example.myapp
+# ℹ️ Application ID sudah "com.example.myapp". Tidak ada perubahan.
 ```
 
 ---
@@ -239,7 +239,7 @@ flutter run
 #### Android:
 1. Klik **Add app** → **Android**
 2. Masukkan:
-   - **Package name**: `id.ihasa.app` (sesuai app ID baru)
+   - **Package name**: `com.example.myapp` (sesuai app ID baru)
    - **App nickname**: (opsional)
    - **Debug signing certificate SHA-1**: (lihat cara mendapatkan di bawah)
 3. Klik **Register app**
@@ -249,7 +249,7 @@ flutter run
 #### iOS:
 1. Klik **Add app** → **iOS**
 2. Masukkan:
-   - **Bundle ID**: `id.ihasa.app` (sesuai app ID baru)
+   - **Bundle ID**: `com.example.myapp` (sesuai app ID baru)
 3. Download **`GoogleService-Info.plist`**
 4. Ganti file di `ios/Runner/GoogleService-Info.plist`
 
@@ -299,7 +299,7 @@ SHA-256: ...
 5. Jika belum ada untuk package baru, klik **+ CREATE CREDENTIALS → OAuth client ID**
 6. Pilih **Android**
 7. Isi:
-   - **Package name**: `id.ihasa.app`
+   - **Package name**: `com.example.myapp`
    - **SHA-1 certificate fingerprint**: (paste SHA-1 dari langkah 1)
 8. Klik **Create**
 
@@ -356,7 +356,7 @@ SHA1: AB:CD:EF:12:34:56:78:90:AB:CD:EF:12:34:56:78:90:AB:CD:EF:12
 4. Masukkan:
    | Field | Value |
    |-------|-------|
-   | Package name | `id.ihasa.app` |
+   | Package name | `com.example.myapp` |
    | SHA-1 certificate | (paste SHA-1 dari step 1) |
 5. Download `google-services.json`
 6. **Ganti** file di `android/app/google-services.json`
@@ -372,7 +372,7 @@ SHA1: AB:CD:EF:12:34:56:78:90:AB:CD:EF:12:34:56:78:90:AB:CD:EF:12
      | Field | Value |
      |-------|-------|
      | Application type | Android |
-     | Package name | `id.ihasa.app` |
+     | Package name | `com.example.myapp` |
      | SHA-1 fingerprint | (paste dari step 1) |
 
 #### Step 4: Rebuild
@@ -387,7 +387,7 @@ flutter run
 
 | ✅ | Item | Keterangan |
 |----|------|------------|
-| ☐ | Package name di Firebase Console | Harus `id.ihasa.app` |
+| ☐ | Package name di Firebase Console | Harus `com.example.myapp` |
 | ☐ | SHA-1 di Firebase Console | Harus sesuai dengan debug keystore |
 | ☐ | google-services.json diupdate | File baru setelah add app |
 | ☐ | OAuth Client di Google Cloud | Package name dan SHA-1 harus match |
@@ -413,10 +413,10 @@ Jika Anda ingin mengubah Application ID secara manual:
 
 ```kotlin
 android {
-    namespace = "id.ihasa.app"  // Change this
+    namespace = "com.example.myapp"  // Change this
     
     defaultConfig {
-        applicationId = "id.ihasa.app"  // Change this
+        applicationId = "com.example.myapp"  // Change this
         // ...
     }
 }
@@ -429,14 +429,14 @@ android {
 android/app/src/main/kotlin/id/carik/superapp_demo/MainActivity.kt
 
 # New location
-android/app/src/main/kotlin/id/ihasa/app/MainActivity.kt
+android/app/src/main/kotlin/com/example/myapp/MainActivity.kt
 ```
 
 #### 3. Update Package Declaration
 
 ```kotlin
-// File: android/app/src/main/kotlin/id/ihasa/app/MainActivity.kt
-package id.ihasa.app
+// File: android/app/src/main/kotlin/com/example/myapp/MainActivity.kt
+package com.example.myapp
 
 import io.flutter.embedding.android.FlutterActivity
 
@@ -451,9 +451,9 @@ Cari dan ganti semua occurrence dari:
 - `PRODUCT_BUNDLE_IDENTIFIER = old.app.id;`
 
 Menjadi:
-- `PRODUCT_BUNDLE_IDENTIFIER = id.ihasa.app;`
+- `PRODUCT_BUNDLE_IDENTIFIER = com.example.myapp;`
 
-Atau buka di Xcode:
+Or buka di Xcode:
 1. Buka `ios/Runner.xcworkspace`
 2. Select Runner → Signing & Capabilities
 3. Update Bundle Identifier
@@ -478,7 +478,7 @@ flutter doctor
 # Solusi: Jalankan dari root project directory
 
 cd path/to/super_app
-dart run tool/change_app_id.dart id.ihasa.app
+dart run tool/change_app_id.dart com.example.myapp
 ```
 
 ### Build Error setelah perubahan
