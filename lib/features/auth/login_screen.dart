@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../core/config/app_config.dart';
 import '../../core/constants/app_info.dart';
 import '../../core/l10n/app_localizations.dart';
@@ -231,9 +232,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // Social Login Buttons
                   OutlinedButton.icon(
                     onPressed: _isLoading ? null : _handleGoogleLogin,
-                    icon: Icon(
-                      Icons.g_mobiledata,
-                      size: 24,
+                    icon: FaIcon(
+                      FontAwesomeIcons.google,
+                      size: 20,
                       color: colorScheme.primary,
                     ),
                     label: const Text('Login with Google'),
