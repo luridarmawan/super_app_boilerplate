@@ -71,6 +71,7 @@ class AppInfo {
   // ============================================
   // API ENDPOINT
   // ============================================
+  static bool get authLoginWithUsernameAndPasswordEnable => dotenv.env['AUTH_LOGIN_WITH_USERNAME_AND_PASSWORD_ENABLE']?.toLowerCase() == 'true';
 
   static String get authLoginUrl => dotenv.env['AUTH_LOGIN_URL'] ?? '';
   static String get authLoginContentType => dotenv.env['AUTH_LOGIN_CONTENT_TYPE'] ?? 'application/json';
