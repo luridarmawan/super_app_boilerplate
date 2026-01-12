@@ -132,7 +132,7 @@ keytool -list -v -alias YOUR_KEY_ALIAS -keystore path/to/release.keystore
 1. Buka [Google Cloud Console](https://console.cloud.google.com/)
 2. Pilih project > APIs & Services > Credentials
 3. Buat atau edit **OAuth 2.0 Client ID** untuk Android:
-   - Package name: `id.ihasa.app`
+   - Package name: `xxx.xxx.your_app_name`
    - SHA-1 certificate fingerprint: `XX:XX:XX:...`
 
 ### Konfigurasi di Aplikasi
@@ -192,11 +192,44 @@ flutter build appbundle
 
 ## Production Release
 
-### 1. Buat Release Keystore
+### 1. Siapkan key.properties
+
+Copy template yang sudah disediakan dan edit dengan password yang Anda inginkan:
 
 ```bash
-keytool -genkey -v -keystore release.keystore -alias app_release_key -keyalg RSA -keysize 2048 -validity 10000
+# Windows
+copy android\key.properties.example android\key.properties
+
+# Mac/Linux
+cp android/key.properties.example android/key.properties
 ```
+
+Edit `android/key.properties`:
+
+```properties
+storePassword=YOUR_SECURE_PASSWORD
+keyPassword=YOUR_SECURE_PASSWORD
+keyAlias=app_release_key
+storeFile=keystores/release.keystore
+```
+
+### 2. Generate Release Keystore
+
+**Opsi A: Menggunakan Script (Recommended)**
+
+```bash
+dart run tool/generate_release_keystore.dart
+```
+
+Script akan membaca `key.properties` dan membuat keystore secara otomatis.
+
+**Opsi B: Manual dengan keytool**
+
+```bash
+keytool -genkey -v -keystore android/keystores/release.keystore -alias app_release_key -keyalg RSA -keysize 2048 -validity 10000
+```
+
+> ⚠️ Jika menggunakan cara manual, pastikan password dan alias yang Anda masukkan **sama persis** dengan yang ada di `key.properties`!
 
 Simpan informasi berikut dengan aman:
 - File `release.keystore`
@@ -204,20 +237,9 @@ Simpan informasi berikut dengan aman:
 - Key alias
 - Key password
 
-### 2. Buat key.properties
+### 3. Pastikan .gitignore Sudah Benar
 
-Buat file `android/key.properties` (JANGAN commit ke repo):
-
-```properties
-storePassword=YOUR_STORE_PASSWORD
-keyPassword=YOUR_KEY_PASSWORD
-keyAlias=app_release_key
-storeFile=../keystores/release.keystore
-```
-
-### 3. Update .gitignore
-
-Pastikan file sensitif tidak masuk repository:
+File sensitif harus tidak masuk repository (sudah dikonfigurasi):
 
 ```gitignore
 # Keystore
@@ -228,7 +250,7 @@ android/keystores/release.keystore
 !android/keystores/debug.keystore
 ```
 
-### 4. Update build.gradle.kts
+### 4. Verifikasi build.gradle.kts
 
 ```kotlin
 import java.util.Properties
@@ -248,7 +270,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "id.ihasa.app"
+    namespace = "xxx.xxx.your_app_name"
     compileSdk = flutter.compileSdkVersion
     
     signingConfigs {
@@ -285,8 +307,10 @@ android {
 
 ### 5. Daftarkan SHA-1 Release di Google Cloud Console
 
+Jika menggunakan script, SHA-1 sudah ditampilkan otomatis. Atau jalankan manual:
+
 ```bash
-keytool -list -v -alias app_release_key -keystore release.keystore
+keytool -list -v -alias app_release_key -keystore android/keystores/release.keystore -storepass YOUR_PASSWORD
 ```
 
 Tambahkan SHA-1 ke:
@@ -322,7 +346,7 @@ GoogleSignInException(code GoogleSignInExceptionCode.canceled, activity is cance
 **Solusi:**
 1. Cek SHA-1: `keytool -list -v -alias androiddebugkey -keystore "%USERPROFILE%\.android\debug.keystore" -storepass android`
 2. Pastikan terdaftar di Google Cloud Console
-3. Pastikan package name sesuai (`id.ihasa.app`)
+3. Pastikan package name sesuai dengan aplikasi Anda
 4. Pastikan `GOOGLE_CLIENT_ID` di `.env` adalah Web Client ID (bukan Android Client ID)
 
 ### Error: APK tidak bisa diinstall
@@ -354,6 +378,7 @@ GoogleSignInException(code GoogleSignInExceptionCode.canceled, activity is cance
 |------|--------|-------------|
 | Debug Keystore (shared) | `android/keystores/debug.keystore` | ✅ Ya |
 | Release Keystore | Secure storage | ❌ Tidak |
+| key.properties.example | `android/key.properties.example` | ✅ Ya |
 | key.properties | `android/key.properties` | ❌ Tidak |
 | build.gradle.kts | `android/app/build.gradle.kts` | ✅ Ya |
 

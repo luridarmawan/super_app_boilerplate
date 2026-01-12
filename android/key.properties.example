@@ -1,0 +1,31 @@
+# Release Keystore Configuration
+# Copy this file to key.properties and fill in your values
+# IMPORTANT: Do NOT commit key.properties to version control!
+
+# Store password for the keystore file
+storePassword=YOUR_STORE_PASSWORD
+
+# Key password (usually same as store password)
+keyPassword=YOUR_KEY_PASSWORD
+
+# Key alias name used when creating the keystore
+keyAlias=app_release_key
+
+# Path to the keystore file (relative to android folder)
+storeFile=keystores/release.keystore
+
+# ============================================
+# HOW TO CREATE A RELEASE KEYSTORE
+# ============================================
+# Run this command to create a new keystore:
+#
+# keytool -genkey -v -keystore release.keystore -alias app_release_key -keyalg RSA -keysize 2048 -validity 10000
+#
+# Then move the keystore file to: android/keystores/release.keystore
+#
+# ============================================
+# IMPORTANT NOTES
+# ============================================
+# 1. Keep your keystore file and passwords safe!
+# 2. If you lose them, you won't be able to update your app on Play Store
+# 3. Store backups in a secure location (e.g., 1Password, HashiCorp Vault)

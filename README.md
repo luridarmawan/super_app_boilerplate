@@ -394,7 +394,44 @@ flutter build ios
 
 ---
 
-## � Menjalankan di Android Emulator
+## 📦 Release & Keystore
+
+Untuk build release APK yang siap didistribusikan atau diupload ke Play Store, Anda perlu mengkonfigurasi release keystore.
+
+### Quick Start
+
+```bash
+# 1. Copy template key.properties
+copy android\key.properties.example android\key.properties
+
+# 2. Edit android/key.properties dengan password Anda
+
+# 3. Generate release keystore
+dart run tool/generate_release_keystore.dart
+
+# 4. Build release APK
+flutter build apk --release
+
+# 5. Build App Bundle untuk Play Store
+flutter build appbundle
+```
+
+### File Penting
+
+| File | Deskripsi | Masuk Repo? |
+|------|-----------|-------------|
+| `android/key.properties.example` | Template konfigurasi keystore | ✅ Ya |
+| `android/key.properties` | Konfigurasi keystore (rahasia) | ❌ Tidak |
+| `android/keystores/release.keystore` | File keystore (rahasia) | ❌ Tidak |
+| `tool/generate_release_keystore.dart` | Script untuk generate keystore | ✅ Ya |
+
+> ⚠️ **PENTING:** Jangan pernah commit `key.properties` dan `release.keystore` ke repository!
+
+📚 **Dokumentasi lengkap:** [`docs/Release.md`](docs/Release.md)
+
+---
+
+## 📱 Menjalankan di Android Emulator
 
 ### Langkah 1: Cek Emulator yang Tersedia
 ```bash
@@ -473,6 +510,7 @@ flutter run -d emulator-5554
 | [QuickAction.md](docs/QuickAction.md) | Quick actions system |
 | [Permission Helper.md](docs/Permission%20Helper.md) | Permission management |
 | [Change-Application-Id.md](docs/Change-Application-Id.md) | Change app ID tool |
+| [Release.md](docs/Release.md) | Release keystore & signing guide |
 
 ## 📋 TODO (Pengembangan Lanjut)
 

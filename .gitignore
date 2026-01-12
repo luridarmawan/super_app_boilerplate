@@ -59,6 +59,9 @@ unlinked_spec.ds
 **/android/**/GeneratedPluginRegistrant.java
 **/android/key.properties
 *.jks
+*.keystore
+# Allow shared debug keystore for team consistency (optional)
+!**/android/keystores/debug.keystore
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
