@@ -14,6 +14,9 @@ class CustomApiAuthProvider implements BaseAuthService {
   final StreamController<AuthUser?> _authStateController = 
       StreamController<AuthUser?>.broadcast();
   
+  /// Get current JWT token
+  String? get token => _currentUser?.jwt;
+
   // Configuration
   final String? baseUrl;
   final Map<String, String>? headers;
@@ -300,6 +303,10 @@ class CustomApiAuthProvider implements BaseAuthService {
         isEmailVerified: userData?['email_verified'] == true || 
                          userData?['is_verified'] == true,
         isGoogleLogin: false,
+        jwt: responseData['jwt']?.toString() ??
+             responseData['token']?.toString() ??
+             responseData['access_token']?.toString() ??
+             (responseData['data'] is Map ? responseData['data']['token']?.toString() : null),
       );
 
       debugPrint('[AUTH] ============================================');
@@ -470,23 +477,36 @@ class CustomApiAuthProvider implements BaseAuthService {
         apiUrl,
         options: Options(
           headers: {
-            'Content-Type': 'application/json',
+            'Accept': 'application/json',
             ...?headers,
           },
+          // Set contentType in Options for better Dio compatibility
+          contentType: 'application/json',
         ),
-        data: {'token': idToken},
+        // Send both 'token' and 'id_token' for maximum compatibility with WP plugins
+        data: {
+          AppInfo.authTokenName: idToken,
+          'id_token': idToken,
+        },
       );
 
       debugPrint('[GAUTH] Response: ${response.statusCode} - ${response.data}');
 
       if (response.statusCode != 200) {
         debugPrint('[GAUTH] ERROR: Backend returned ${response.statusCode}');
-        return AuthResult.failure('Verifikasi token gagal: ${response.statusCode}');
+        return AuthResult.failure('Verifikasi token gagal: ${response.statusCode}. Mungkin user tidak terdaftar di sistem.');
       }
 
       // Parse user data from API response
       final responseData = response.data;
-      final userData = responseData['user'] as Map<String, dynamic>?;
+
+      // Some APIs return data directly, some wrap in 'data' or 'user'
+      Map<String, dynamic>? userData;
+      if (responseData is Map<String, dynamic>) {
+        userData = responseData['user'] as Map<String, dynamic>? ?? 
+                   responseData['data'] as Map<String, dynamic>? ??
+                   responseData;
+      }
 
       if (userData == null) {
         debugPrint('[GAUTH] ERROR: No user data in response');
@@ -495,12 +515,23 @@ class CustomApiAuthProvider implements BaseAuthService {
 
       // Create user from API response (more complete than googleUser)
       _currentUser = AuthUser(
-        uid: userData['id']?.toString() ?? googleUser.id,
-        email: userData['email']?.toString() ?? googleUser.email,
-        displayName: userData['name']?.toString() ?? googleUser.displayName,
-        photoUrl: userData['picture']?.toString() ?? googleUser.photoUrl,
-        isEmailVerified: userData['email_verified'] == true,
+        uid: userData['id']?.toString() ??
+             userData['uid']?.toString() ??
+             googleUser.id,
+        email: userData['email']?.toString() ??
+               userData['user_email']?.toString() ??
+               googleUser.email,
+        displayName: userData['name']?.toString() ??
+                     userData['display_name']?.toString() ??
+                     googleUser.displayName,
+        photoUrl: userData['picture']?.toString() ??
+                  userData['avatar']?.toString() ??
+                  googleUser.photoUrl,
+        isEmailVerified: userData['email_verified'] == true || userData['is_verified'] == true,
         isGoogleLogin: true,
+        jwt: responseData['jwt']?.toString() ??
+             responseData['token']?.toString() ??
+             (responseData['data'] is Map ? responseData['data']['token']?.toString() : null),
       );
 
       debugPrint('[GAUTH] <<< Success: ${_currentUser!.email}, Name: ${_currentUser!.displayName}');
@@ -510,6 +541,34 @@ class CustomApiAuthProvider implements BaseAuthService {
 
       _authStateController.add(_currentUser);
       return AuthResult.success(_currentUser!);
+    } on DioException catch (e, stackTrace) {
+      debugPrint('[GAUTH] ============================================');
+      debugPrint('[GAUTH] !!! DIO EXCEPTION !!!');
+      debugPrint('[GAUTH] Type: ${e.type}');
+      debugPrint('[GAUTH] Message: ${e.message}');
+      debugPrint('[GAUTH] URL: ${e.requestOptions.uri}');
+
+      if (e.response != null) {
+        debugPrint('[GAUTH] Status: ${e.response?.statusCode}');
+        debugPrint('[GAUTH] Data (RAW): ${e.response?.data}');
+
+        final responseData = e.response?.data;
+        String errorMessage = 'Verifikasi token gagal. Mungkin user tidak terdaftar di sistem. (${e.response?.statusCode})';
+
+        if (responseData is Map<String, dynamic>) {
+          errorMessage = responseData['message']?.toString() ??
+                         responseData['msg']?.toString() ??
+                         responseData['error']?.toString() ??
+                         errorMessage;
+        }
+
+        debugPrint('[GAUTH] Extracted Message: $errorMessage');
+        return AuthResult.failure(errorMessage);
+      }
+
+      debugPrint('[GAUTH] Stack: $stackTrace');
+      debugPrint('[GAUTH] ============================================');
+      return AuthResult.failure('Koneksi ke server gagal: ${e.message}');
     } catch (e, stackTrace) {
       debugPrint('[GAUTH] EXCEPTION: $e');
       debugPrint('[GAUTH] Stack: $stackTrace');

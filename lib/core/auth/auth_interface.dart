@@ -7,6 +7,8 @@ class AuthUser {
   final bool isEmailVerified;
   final bool isGoogleLogin;
 
+  final String? jwt;
+
   AuthUser({
     required this.uid,
     this.email,
@@ -14,6 +16,7 @@ class AuthUser {
     this.photoUrl,
     this.isEmailVerified = false,
     this.isGoogleLogin = false,
+    this.jwt,
   });
 
   factory AuthUser.empty() {
@@ -30,6 +33,7 @@ class AuthUser {
     String? photoUrl,
     bool? isEmailVerified,
     bool? isGoogleLogin,
+    String? jwt,
   }) {
     return AuthUser(
       uid: uid ?? this.uid,
@@ -38,6 +42,7 @@ class AuthUser {
       photoUrl: photoUrl ?? this.photoUrl,
       isEmailVerified: isEmailVerified ?? this.isEmailVerified,
       isGoogleLogin: isGoogleLogin ?? this.isGoogleLogin,
+      jwt: jwt ?? this.jwt,
     );
   }
 
@@ -50,6 +55,7 @@ class AuthUser {
       'photoUrl': photoUrl,
       'isEmailVerified': isEmailVerified,
       'isGoogleLogin': isGoogleLogin,
+      'jwt': jwt,
     };
   }
 
@@ -62,6 +68,7 @@ class AuthUser {
       photoUrl: json['photoUrl'] as String?,
       isEmailVerified: json['isEmailVerified'] as bool? ?? false,
       isGoogleLogin: json['isGoogleLogin'] as bool? ?? false,
+      jwt: json['jwt'] as String?,
     );
   }
 }
