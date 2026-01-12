@@ -74,6 +74,7 @@ class AppInfo {
 
   static String get authLoginUrl => dotenv.env['AUTH_LOGIN_URL'] ?? '';
   static String get authLoginContentType => dotenv.env['AUTH_LOGIN_CONTENT_TYPE'] ?? 'application/json';
+  static String get authTokenName => dotenv.env['AUTH_TOKEN_NAME'] ?? 'token';
 
   static String get authRegisterUrl => dotenv.env['AUTH_REGISTER_URL'] ?? '/o/auth/register/';
   static String get authForgotPasswordUrl => dotenv.env['AUTH_FORGOT_PASSWORD_URL'] ?? '/o/auth/forgot-password/';
