@@ -396,7 +396,16 @@ flutter build ios
 
 ## 📦 Release & Keystore
 
-Untuk build release APK yang siap didistribusikan atau diupload ke Play Store, Anda perlu mengkonfigurasi release keystore.
+Proyek ini menggunakan **custom keystore** untuk konsistensi signing di seluruh tim development.
+
+### Keystore Files
+
+| File | Deskripsi | Masuk Repo? |
+|------|-----------|-------------|
+| `android/keystores/debug.keystore` | Debug keystore untuk development | ✅ Ya |
+| `android/keystores/release.keystore` | Release keystore (rahasia) | ❌ Tidak |
+| `android/key.properties.example` | Template konfigurasi | ✅ Ya |
+| `android/key.properties` | Konfigurasi aktif (rahasia) | ❌ Tidak |
 
 ### Quick Start
 
@@ -404,28 +413,25 @@ Untuk build release APK yang siap didistribusikan atau diupload ke Play Store, A
 # 1. Copy template key.properties
 copy android\key.properties.example android\key.properties
 
-# 2. Edit android/key.properties dengan password Anda
+# 2. Edit android/key.properties dengan password release Anda
 
-# 3. Generate release keystore
+# 3. Generate debug keystore (jika belum ada)
+keytool -genkey -v -keystore android/keystores/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug,O=Android,C=US"
+
+# 4. Generate release keystore
 dart run tool/generate_release_keystore.dart
 
-# 4. Build release APK
-flutter build apk --release
+# 5. Build APK
+flutter build apk --debug    # Debug build
+flutter build apk --release  # Release build
 
-# 5. Build App Bundle untuk Play Store
+# 6. Build App Bundle untuk Play Store
 flutter build appbundle
 ```
 
-### File Penting
-
-| File | Deskripsi | Masuk Repo? |
-|------|-----------|-------------|
-| `android/key.properties.example` | Template konfigurasi keystore | ✅ Ya |
-| `android/key.properties` | Konfigurasi keystore (rahasia) | ❌ Tidak |
-| `android/keystores/release.keystore` | File keystore (rahasia) | ❌ Tidak |
-| `tool/generate_release_keystore.dart` | Script untuk generate keystore | ✅ Ya |
-
 > ⚠️ **PENTING:** Jangan pernah commit `key.properties` dan `release.keystore` ke repository!
+> 
+> ✅ **Debug keystore** (`debug.keystore`) AMAN untuk dicommit karena menggunakan password standar Android (`android`).
 
 📚 **Dokumentasi lengkap:** [`docs/Release.md`](docs/Release.md)
 

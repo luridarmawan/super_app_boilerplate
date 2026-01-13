@@ -28,6 +28,10 @@ Ada 2 jenis keystore yang digunakan:
 
 ### Debug Keystore
 
+Proyek ini mendukung **dua opsi** untuk debug keystore:
+
+#### Opsi 1: Default Android Debug Keystore
+
 | Property | Value |
 |----------|-------|
 | Location | `%USERPROFILE%\.android\debug.keystore` (Windows) |
@@ -37,18 +41,39 @@ Ada 2 jenis keystore yang digunakan:
 | Key Password | `android` |
 | Validity | Auto-generated, 30 years |
 
+#### Opsi 2: Custom Debug Keystore (Recommended untuk Team)
+
+| Property | Value |
+|----------|-------|
+| Location | `android/keystores/debug.keystore` |
+| Password | `android` |
+| Key Alias | `androiddebugkey` |
+| Key Password | `android` |
+| Validity | 10,000 days |
+
+**Keuntungan custom debug keystore:**
+- SHA-1 fingerprint konsisten di seluruh tim
+- Google Sign-In bekerja untuk semua developer
+- Tidak perlu daftarkan banyak SHA-1 di Google Cloud Console
+
+**Generate custom debug keystore:**
+
+```bash
+keytool -genkey -v -keystore android/keystores/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug,O=Android,C=US"
+```
+
 **Keamanan:** AMAN untuk dimasukkan ke repository karena:
 - Tidak bisa digunakan untuk publish ke Play Store
-- Password sudah diketahui publik
+- Password sudah diketahui publik (`android`)
 - Hanya untuk development/testing
 
 ### Release Keystore
 
 | Property | Value |
 |----------|-------|
-| Location | Disimpan secara aman (tidak di repo) |
+| Location | `android/keystores/release.keystore` (tidak masuk repo) |
 | Password | Rahasia |
-| Key Alias | Custom |
+| Key Alias | Custom (`app_release_key`) |
 | Key Password | Rahasia |
 | Validity | 25+ years (recommended) |
 
@@ -190,7 +215,7 @@ flutter build appbundle
 
 ---
 
-## Production Release
+## Konfigurasi Keystore
 
 ### 1. Siapkan key.properties
 
@@ -207,11 +232,29 @@ cp android/key.properties.example android/key.properties
 Edit `android/key.properties`:
 
 ```properties
+# ============================================
+# DEBUG KEYSTORE CONFIGURATION
+# ============================================
+# Debug keystore menggunakan file dari folder keystores
+# Ini opsional - jika tidak dikonfigurasi, akan fallback ke default Android debug keystore
+
+debugStorePassword=android
+debugKeyPassword=android
+debugKeyAlias=androiddebugkey
+debugStoreFile=keystores/debug.keystore
+
+# ============================================
+# RELEASE KEYSTORE CONFIGURATION
+# ============================================
+# Release keystore untuk production builds
+
 storePassword=YOUR_SECURE_PASSWORD
 keyPassword=YOUR_SECURE_PASSWORD
 keyAlias=app_release_key
 storeFile=keystores/release.keystore
 ```
+
+> **Note:** Konfigurasi debug keystore bersifat **opsional**. Jika `debugStoreFile` tidak ada di `key.properties`, Gradle akan menggunakan default Android debug keystore dari home directory user.
 
 ### 2. Generate Release Keystore
 
@@ -243,11 +286,11 @@ File sensitif harus tidak masuk repository (sudah dikonfigurasi):
 
 ```gitignore
 # Keystore
-android/key.properties
-android/keystores/release.keystore
+**/android/key.properties
 *.jks
 *.keystore
-!android/keystores/debug.keystore
+# Allow shared debug keystore for team consistency
+!**/android/keystores/debug.keystore
 ```
 
 ### 4. Verifikasi build.gradle.kts
@@ -274,8 +317,19 @@ android {
     compileSdk = flutter.compileSdkVersion
     
     signingConfigs {
+        // Debug signing - uses custom keystore if configured
+        getByName("debug") {
+            if (keystorePropertiesFile.exists() && keystoreProperties.containsKey("debugStoreFile")) {
+                keyAlias = keystoreProperties["debugKeyAlias"] as String
+                keyPassword = keystoreProperties["debugKeyPassword"] as String
+                storeFile = rootProject.file(keystoreProperties["debugStoreFile"] as String)
+                storePassword = keystoreProperties["debugStorePassword"] as String
+            }
+            // If not configured, fallback to default Android debug keystore
+        }
+        // Release signing
         create("release") {
-            if (keystorePropertiesFile.exists()) {
+            if (keystorePropertiesFile.exists() && keystoreProperties.containsKey("storeFile")) {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
                 storeFile = rootProject.file(keystoreProperties["storeFile"] as String)
@@ -289,7 +343,7 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
         release {
-            signingConfig = if (keystorePropertiesFile.exists()) {
+            signingConfig = if (keystorePropertiesFile.exists() && keystoreProperties.containsKey("storeFile")) {
                 signingConfigs.getByName("release")
             } else {
                 signingConfigs.getByName("debug")
@@ -304,6 +358,8 @@ android {
     }
 }
 ```
+
+> **Catatan:** Konfigurasi di atas mendukung custom debug keystore yang opsional. Jika properti `debugStoreFile` tidak ada, Gradle akan menggunakan default Android debug keystore.
 
 ### 5. Daftarkan SHA-1 Release di Google Cloud Console
 
