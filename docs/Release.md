@@ -444,6 +444,9 @@ GoogleSignInException(code GoogleSignInExceptionCode.canceled, activity is cance
 # Cek SHA-1 debug keystore
 keytool -list -v -alias androiddebugkey -keystore "%USERPROFILE%\.android\debug.keystore" -storepass android 2>&1 | findstr "SHA1"
 
+contoh:
+keytool -list -v -alias androiddebugkey -keystore "android\keystores\debug.keystore" -storepass android 2>&1 | findstr "SHA1"
+
 # Cek SHA-1 release keystore
 keytool -list -v -alias YOUR_ALIAS -keystore path/to/release.keystore 2>&1 | findstr "SHA1"
 
