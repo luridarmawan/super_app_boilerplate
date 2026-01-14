@@ -157,14 +157,14 @@ int _updateBuildGradleKts(
   var changed = false;
 
   // Update namespace
-  final namespaceRegex = RegExp(r'namespace\s*=\s*"' + RegExp.escape(oldAppId) + '"');
+  final namespaceRegex = RegExp('namespace\\s*=\\s*"${RegExp.escape(oldAppId)}"');
   if (namespaceRegex.hasMatch(content)) {
     content = content.replaceFirst(namespaceRegex, 'namespace = "$newAppId"');
     changed = true;
   }
 
   // Update applicationId
-  final appIdRegex = RegExp(r'applicationId\s*=\s*"' + RegExp.escape(oldAppId) + '"');
+  final appIdRegex = RegExp('applicationId\\s*=\\s*"${RegExp.escape(oldAppId)}"');
   if (appIdRegex.hasMatch(content)) {
     content = content.replaceFirst(appIdRegex, 'applicationId = "$newAppId"');
     changed = true;
