@@ -127,14 +127,14 @@ class CustomApiAuthProvider implements BaseAuthService {
       if (contentType == 'application/x-www-form-urlencoded') {
         // For form-urlencoded, use FormData or string format
         requestData = {
-          'username': email,
-          'password': password,
+          AppInfo.authUsernameFieldName: email,
+          AppInfo.authPasswordFieldName: password,
         };
       } else {
         // Default: application/json
         requestData = {
-          'username': email,
-          'password': password,
+          AppInfo.authUsernameFieldName: email,
+          AppInfo.authPasswordFieldName: password,
         };
       }
       debugPrint('[AUTH] Request data: $requestData');
