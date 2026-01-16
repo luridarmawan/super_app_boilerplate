@@ -165,6 +165,214 @@ final response = await dio.get(
 - ✅ Skip auth untuk public endpoints
 - ✅ Callback `onUnauthorized` untuk redirect ke login
 
+---
+
+## 🔐 JWT Authentication
+
+### Cara Kerja JWT di Aplikasi
+
+JWT (JSON Web Token) digunakan untuk autentikasi API. Token disimpan setelah login berhasil dan otomatis dikirim di setiap request API yang memerlukan autentikasi.
+
+#### Struktur Penyimpanan Token
+
+Token disimpan di `SharedPreferences` dengan key `app_saved_user`:
+
+```json
+{
+  "uid": "9",
+  "email": "user@example.com",
+  "displayName": "User Name",
+  "photoUrl": null,
+  "isEmailVerified": true,
+  "isGoogleLogin": true,
+  "jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+}
+```
+
+#### Response Login yang Didukung
+
+Aplikasi mendukung berbagai struktur response login:
+
+**1. JWT di root level:**
+```json
+{
+  "success": true,
+  "jwt": "eyJ0eX...",
+  "user": { "id": "1", "email": "user@example.com" }
+}
+```
+
+**2. JWT di dalam object `data`:**
+```json
+{
+  "success": true,
+  "data": {
+    "jwt": "eyJ0eX...",
+    "id": "1",
+    "email": "user@example.com"
+  }
+}
+```
+
+**3. Field `token` sebagai alternatif:**
+```json
+{
+  "success": true,
+  "token": "eyJ0eX...",
+  "data": { "id": "1", "email": "user@example.com" }
+}
+```
+
+#### Pengambilan JWT untuk API Request
+
+JWT diambil otomatis dari user yang tersimpan:
+
+```dart
+// Di module yang memerlukan JWT (contoh: equipment_repository.dart)
+Future<String?> _getJwtToken(Ref ref) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final savedUserJson = prefs.getString('app_saved_user');
+
+    if (savedUserJson != null && savedUserJson.isNotEmpty) {
+      final userMap = jsonDecode(savedUserJson) as Map<String, dynamic>;
+      final jwt = userMap['jwt'] as String?;
+      return jwt;
+    }
+
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+```
+
+#### Penggunaan JWT di Header Request
+
+```dart
+// JWT ditambahkan sebagai Bearer token
+final headers = <String, dynamic>{
+  'Authorization': 'Bearer $jwtToken',
+  'Accept': 'application/json',
+};
+
+final response = await dio.get(
+  'https://api.example.com/protected-endpoint',
+  options: Options(headers: headers),
+);
+```
+
+#### Debug Log untuk JWT
+
+Saat mode debug, log berikut akan muncul:
+
+```
+[GAUTH] Extracted JWT: (256 chars)
+[GAUTH] <<< Success: user@example.com, Name: User Name
+[GAUTH] JWT saved: (256 chars)
+```
+
+```
+[EquipmentRepository] JWT Token: (256 chars)
+[EquipmentRepository] Authorization header added
+```
+
+#### Error Handling JWT
+
+| Status Code | Penyebab | Penanganan |
+|-------------|----------|------------|
+| 401 | Token expired atau invalid | Redirect ke login screen |
+| 403 | User tidak memiliki permission | Tampilkan error message |
+
+```dart
+} on DioException catch (e) {
+  if (e.response?.statusCode == 401) {
+    _debugLog('ERROR: Unauthorized - JWT token may be invalid or expired');
+    // Redirect ke login
+  } else if (e.response?.statusCode == 403) {
+    _debugLog('ERROR: Forbidden - User may not have permission');
+  }
+}
+```
+
+---
+
+## 🌐 Browser User-Agent
+
+### Tujuan
+
+User-Agent browser-like digunakan untuk menghindari bot detection dari server yang memiliki proteksi seperti Cloudflare atau Imunify360.
+
+### Konfigurasi di Main App
+
+Di `lib/core/network/api_config.dart`:
+
+```dart
+class ApiConfig {
+  /// Browser-like User-Agent to avoid bot detection
+  /// Used for external API calls that may have bot protection
+  static const String browserUserAgent = 
+      'Mozilla/5.0 (Linux; Android 13; SM-G998B) AppleWebKit/537.36 '
+      '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36';
+}
+```
+
+### Penggunaan di Module
+
+Untuk module terpisah (seperti `arrow_sense`), definisikan konstanta lokal karena tidak bisa import langsung dari main app:
+
+```dart
+// Di module arrow_sense
+const String _browserUserAgent =
+    'Mozilla/5.0 (Linux; Android 13; SM-G998B) AppleWebKit/537.36 '
+    '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36';
+
+// Penggunaan di request
+final headers = <String, dynamic>{
+  'User-Agent': _browserUserAgent,
+  'Accept': 'application/json, text/plain, */*',
+  'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
+};
+```
+
+### Contoh Implementasi Lengkap
+
+```dart
+Future<List<EquipmentModel>> getEquipment() async {
+  try {
+    // Build headers dengan User-Agent dan JWT
+    final headers = <String, dynamic>{
+      'User-Agent': _browserUserAgent,
+      'Accept': 'application/json, text/plain, */*',
+      'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
+    };
+
+    // Add Authorization header if JWT token is available
+    if (_jwtToken != null && _jwtToken!.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $_jwtToken';
+    }
+
+    final response = await _dio.get(
+      _equipmentApiUrl,
+      options: Options(headers: headers),
+    );
+
+    // Parse response...
+  } catch (e) {
+    rethrow;
+  }
+}
+```
+
+### Kapan Menggunakan Browser User-Agent
+
+| Situasi | Gunakan Browser UA? |
+|---------|---------------------|
+| API internal (backend sendiri) | Opsional |
+| API eksternal dengan bot protection | ✅ Wajib |
+| Scraping atau crawling | ✅ Wajib |
+| API publik tanpa proteksi | Opsional |
+
 ### 2. LoggingInterceptor
 
 Mencatat semua request dan response untuk debugging.
@@ -905,5 +1113,5 @@ testWidgets('should display user profile', (tester) async {
 ---
 
 *Dibuat: 4 Mei 2025*
-*Diperbarui: 1 Januari 2026*
-*Versi: 1.3.0*
+*Diperbarui: 17 Januari 2026*
+*Versi: 1.4.0*

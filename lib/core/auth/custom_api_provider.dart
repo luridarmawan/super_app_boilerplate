@@ -514,6 +514,24 @@ class CustomApiAuthProvider implements BaseAuthService {
       }
 
       // Create user from API response (more complete than googleUser)
+      // Extract JWT token - check multiple possible locations
+      String? jwtToken;
+      if (responseData is Map<String, dynamic>) {
+        // Try root level first
+        jwtToken = responseData['jwt']?.toString() ??
+                   responseData['token']?.toString();
+
+        // Try inside 'data' object (common structure: {success: true, data: {jwt: ...}})
+        if (jwtToken == null && responseData['data'] is Map) {
+          final dataMap = responseData['data'] as Map<String, dynamic>;
+          jwtToken = dataMap['jwt']?.toString() ??
+                     dataMap['token']?.toString() ??
+                     dataMap['access_token']?.toString();
+        }
+      }
+
+      debugPrint('[GAUTH] Extracted JWT: ${jwtToken != null ? "(${jwtToken.length} chars)" : "null"}');
+
       _currentUser = AuthUser(
         uid: userData['id']?.toString() ??
              userData['uid']?.toString() ??
@@ -529,12 +547,11 @@ class CustomApiAuthProvider implements BaseAuthService {
                   googleUser.photoUrl,
         isEmailVerified: userData['email_verified'] == true || userData['is_verified'] == true,
         isGoogleLogin: true,
-        jwt: responseData['jwt']?.toString() ??
-             responseData['token']?.toString() ??
-             (responseData['data'] is Map ? responseData['data']['token']?.toString() : null),
+        jwt: jwtToken,
       );
 
       debugPrint('[GAUTH] <<< Success: ${_currentUser!.email}, Name: ${_currentUser!.displayName}');
+      debugPrint('[GAUTH] JWT saved: ${_currentUser!.jwt != null ? "(${_currentUser!.jwt!.length} chars)" : "null"}');
 
       // Simpan user setelah login Google berhasil
       await _saveUser(_currentUser!);
