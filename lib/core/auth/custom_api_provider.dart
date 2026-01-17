@@ -415,7 +415,7 @@ class CustomApiAuthProvider implements BaseAuthService {
       debugPrint('[AUTH] User email: ${_currentUser!.email}');
       debugPrint('[AUTH] User name: ${_currentUser!.displayName}');
       debugPrint('[AUTH] User uid: ${_currentUser!.uid}');
-      debugPrint('[AUTH] url: ${loginUrl}');
+      debugPrint('[AUTH] url: $loginUrl');
       debugPrint('[AUTH] User jwt: ${_currentUser!.jwt}');
       debugPrint(responseData.toString());
 
