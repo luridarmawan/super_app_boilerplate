@@ -39,7 +39,106 @@ class CustomApiAuthProvider implements BaseAuthService {
     // Memuat saved user saat inisialisasi
     _loadSavedUser();
   }
-  
+
+  /// Helper untuk mendeteksi apakah API menggunakan WordPress
+  /// Berdasarkan apakah URL login mengandung "/wp-json/"
+  bool _isWordPressApi(String url) {
+    return url.contains('/wp-json/');
+  }
+
+  /// Mendapatkan base URL dari login URL untuk WordPress API
+  /// Contoh: "https://example.com/wp-json/jwt-login/v1/auth" -> "https://example.com"
+  String _getWordPressBaseUrl(String loginUrl) {
+    final wpJsonIndex = loginUrl.indexOf('/wp-json/');
+    if (wpJsonIndex > 0) {
+      return loginUrl.substring(0, wpJsonIndex);
+    }
+    return loginUrl;
+  }
+
+  /// Fetch user profile dari WordPress REST API
+  /// Endpoint: /wp-json/wp/v2/users/me
+  /// Response fields: id, name, avatar_urls.48
+  Future<void> _fetchWordPressUserProfile(String jwt) async {
+    try {
+      final loginUrl = AppInfo.authLoginUrl;
+      final baseUrl = _getWordPressBaseUrl(loginUrl);
+      final userMeUrl = '$baseUrl/wp-json/wp/v2/users/me';
+
+      debugPrint('[AUTH-WP] ----------------------------------------');
+      debugPrint('[AUTH-WP] Fetching WordPress user profile...');
+      debugPrint('[AUTH-WP] URL: $userMeUrl');
+
+      final dio = Dio();
+      final response = await dio.get(
+        userMeUrl,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $jwt',
+            'Accept': 'application/json',
+            ...?headers,
+          },
+        ),
+      );
+
+      debugPrint('[AUTH-WP] Response Status: ${response.statusCode}');
+      debugPrint('[AUTH-WP] Response Data: ${response.data}');
+
+      if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
+        final wpData = response.data as Map<String, dynamic>;
+
+        // Extract data dari WordPress user profile
+        // Mapping:
+        // - id -> uid
+        // - name -> displayName
+        // - avatar_urls.48 -> photoUrl
+        final wpUserId = wpData['id']?.toString();
+        final wpDisplayName = wpData['name']?.toString();
+        String? wpAvatarUrl;
+
+        // Extract avatar URL dari avatar_urls.48
+        if (wpData['avatar_urls'] is Map<String, dynamic>) {
+          final avatarUrls = wpData['avatar_urls'] as Map<String, dynamic>;
+          wpAvatarUrl = avatarUrls['48']?.toString() ?? 
+                        avatarUrls['96']?.toString() ?? 
+                        avatarUrls['24']?.toString();
+        }
+
+        debugPrint('[AUTH-WP] WordPress User ID: $wpUserId');
+        debugPrint('[AUTH-WP] WordPress Display Name: $wpDisplayName');
+        debugPrint('[AUTH-WP] WordPress Avatar URL: $wpAvatarUrl');
+
+        // Update current user dengan data dari WordPress
+        if (_currentUser != null) {
+          _currentUser = _currentUser!.copyWith(
+            uid: wpUserId ?? _currentUser!.uid,
+            displayName: wpDisplayName ?? _currentUser!.displayName,
+            photoUrl: wpAvatarUrl ?? _currentUser!.photoUrl,
+          );
+
+          debugPrint('[AUTH-WP] Updated user with WordPress profile data');
+          debugPrint('[AUTH-WP] Final UID: ${_currentUser!.uid}');
+          debugPrint('[AUTH-WP] Final Name: ${_currentUser!.displayName}');
+          debugPrint('[AUTH-WP] Final Avatar: ${_currentUser!.photoUrl}');
+        }
+      } else {
+        debugPrint('[AUTH-WP] WARNING: Could not fetch WordPress user profile');
+      }
+    } on DioException catch (e) {
+      debugPrint('[AUTH-WP] DIO ERROR fetching WordPress user profile:');
+      debugPrint('[AUTH-WP] Type: ${e.type}');
+      debugPrint('[AUTH-WP] Message: ${e.message}');
+      if (e.response != null) {
+        debugPrint('[AUTH-WP] Status: ${e.response?.statusCode}');
+        debugPrint('[AUTH-WP] Data: ${e.response?.data}');
+      }
+      // Non-fatal error, jangan throw exception
+    } catch (e) {
+      debugPrint('[AUTH-WP] ERROR fetching WordPress user profile: $e');
+      // Non-fatal error, jangan throw exception
+    }
+  }
+
   Future<void> _initGoogleSignIn() async {
     if (_googleSignInInitialized) return;
     try {
@@ -306,7 +405,9 @@ class CustomApiAuthProvider implements BaseAuthService {
         jwt: responseData['jwt']?.toString() ??
              responseData['token']?.toString() ??
              responseData['access_token']?.toString() ??
-             (responseData['data'] is Map ? responseData['data']['token']?.toString() : null),
+             (responseData['data'] is Map ? responseData['data']['jwt']?.toString() : null) ??
+             (responseData['data'] is Map ? responseData['data']['token']?.toString() : null) ??
+             (responseData['data'] is Map ? responseData['data']['access_token']?.toString() : null),
       );
 
       debugPrint('[AUTH] ============================================');
@@ -314,19 +415,18 @@ class CustomApiAuthProvider implements BaseAuthService {
       debugPrint('[AUTH] User email: ${_currentUser!.email}');
       debugPrint('[AUTH] User name: ${_currentUser!.displayName}');
       debugPrint('[AUTH] User uid: ${_currentUser!.uid}');
+      debugPrint('[AUTH] url: ${loginUrl}');
+      debugPrint('[AUTH] User jwt: ${_currentUser!.jwt}');
+      debugPrint(responseData.toString());
 
-      // Save user after successful login
+      // Jika WordPress API terdeteksi, fetch user profile untuk data yang lebih lengkap
+      if (_isWordPressApi(loginUrl) && _currentUser!.jwt != null) {
+        debugPrint('[AUTH] WordPress API detected, fetching user profile...');
+        await _fetchWordPressUserProfile(_currentUser!.jwt!);
+      }
+
+      // Save user after successful login (dan setelah WordPress profile di-fetch jika applicable)
       await _saveUser(_currentUser!);
-
-      // TODO: If your API returns tokens, you can save them here
-      // Example:
-      // if (accessToken != null) {
-      //   final prefs = await SharedPreferences.getInstance();
-      //   await prefs.setString('access_token', accessToken);
-      //   if (refreshToken != null) {
-      //     await prefs.setString('refresh_token', refreshToken);
-      //   }
-      // }
 
       _authStateController.add(_currentUser);
       return AuthResult.success(_currentUser!);
@@ -553,7 +653,13 @@ class CustomApiAuthProvider implements BaseAuthService {
       debugPrint('[GAUTH] <<< Success: ${_currentUser!.email}, Name: ${_currentUser!.displayName}');
       debugPrint('[GAUTH] JWT saved: ${_currentUser!.jwt != null ? "(${_currentUser!.jwt!.length} chars)" : "null"}');
 
-      // Simpan user setelah login Google berhasil
+      // Jika WordPress API terdeteksi, fetch user profile untuk data yang lebih lengkap
+      if (_isWordPressApi(apiUrl) && _currentUser!.jwt != null) {
+        debugPrint('[GAUTH] WordPress API detected, fetching user profile...');
+        await _fetchWordPressUserProfile(_currentUser!.jwt!);
+      }
+
+      // Simpan user setelah login Google berhasil (dan setelah WordPress profile di-fetch jika applicable)
       await _saveUser(_currentUser!);
 
       _authStateController.add(_currentUser);
