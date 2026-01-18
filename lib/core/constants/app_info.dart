@@ -95,6 +95,10 @@ class AppInfo {
   /// If false, app will skip splash screen and go directly to login
   static bool get enableSplashScreen => dotenv.env['ENABLE_SPLASH_SCREEN']?.toLowerCase() == 'true';
 
+  /// Enable/disable splash tagline on app startup
+  /// If false, app will skip splash tagline and go directly to login
+  static bool get splashScreenShowTagline => dotenv.env['SPLASH_SHOW_TAGLINE']?.toLowerCase() == 'true';
+
   /// Duration of splash screen display (only applies if enableSplashScreen is true)
   static Duration get splashScreenDuration => Duration(seconds:int.tryParse(dotenv.env['SPLASH_DURATION'] ?? '5') ?? 5);
 
