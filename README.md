@@ -113,6 +113,7 @@ lib/
 | **Environment Config** | ✅ | Konfigurasi via `.env` file dengan `flutter_dotenv` |
 | **GPS & Location** | ✅ | Geolocator + URL launcher untuk integrasi maps |
 | **Google Sign-In** | ✅ | OAuth authentication dengan `google_sign_in` |
+| **WordPress API** | ✅ | Full support untuk WordPress REST API dengan JWT Auth (lihat [docs/API.md](docs/API.md)) |
 
 ---
 
@@ -248,7 +249,7 @@ class ProductRepository extends BaseRepository {
   Future<BaseResponse<Product>> getProduct(String id) async {
     return get<Product>('/products/$id', parser: Product.fromJson);
   }
-  
+
   Future<BaseResponse<Product>> createProduct(Product product) async {
     return post<Product>('/products', data: product.toJson(), parser: Product.fromJson);
   }
@@ -295,6 +296,19 @@ final response = await uploadFile<UploadResult>(
 ```
 
 📚 **Dokumentasi lengkap:** [`docs/API.md`](docs/API.md)
+
+## 🌐 WordPress API Support
+
+Boilerplate ini memiliki **dukungan penuh untuk WordPress REST API**, termasuk autentikasi dengan **JWT (JSON Web Token)**.
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| **Auto-Detection** | Otomatis mendeteksi backend WordPress via `/wp-json/` |
+| **JWT Authentication** | Login via WordPress JWT Auth plugin |
+| **User Profile Sync** | Otomatis fetch profil dari `/wp-json/wp/v2/users/me` |
+| **Avatar Support** | Mapping avatar URL dari WordPress Gravatar |
+
+📚 **Dokumentasi lengkap:** [`docs/WordPress.md`](docs/WordPress.md)
 
 ## 🔔 Push Notification (Multi-Provider)
 
@@ -430,7 +444,7 @@ flutter build appbundle
 ```
 
 > ⚠️ **PENTING:** Jangan pernah commit `key.properties` dan `release.keystore` ke repository!
-> 
+>
 > ✅ **Debug keystore** (`debug.keystore`) AMAN untuk dicommit karena menggunakan password standar Android (`android`).
 
 📚 **Dokumentasi lengkap:** [`docs/Release.md`](docs/Release.md)
@@ -507,6 +521,7 @@ flutter run -d emulator-5554
 |----------|-------------|
 | [SuperApp-Architecture.md](docs/SuperApp-Architecture.md) | Architecture overview & design |
 | [API.md](docs/API.md) | Network layer (Dio + Retrofit) |
+| [WordPress.md](docs/WordPress.md) | WordPress REST API & JWT Auth support |
 | [Modular.md](docs/Modular.md) | Modular architecture guide |
 | [SubModule.md](docs/SubModule.md) | External modules integration |
 | [Notification.md](docs/Notification.md) | Push notification system |
