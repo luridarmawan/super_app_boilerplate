@@ -127,6 +127,8 @@ app.*.symbols
 # Firebase
 **/google-services.json
 
+pubspec.yaml
+
 # External Modules (managed by tool/manage_external_modules.dart)
 modules/
 !lib/modules/
