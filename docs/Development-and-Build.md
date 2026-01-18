@@ -62,7 +62,15 @@ dependencies:
 
 ### 4️⃣ Konfigurasi External Modules (modules.yaml)
 
-Jika menggunakan external modules, edit `modules.yaml`:
+Aplikasi ini menggunakan **arsitektur modular** yang memungkinkan Anda menambah atau menghapus fitur tanpa mengubah kode utama. File `modules.yaml` digunakan untuk mendefinisikan modul eksternal dari repository Git terpisah.
+
+**Keuntungan arsitektur modular:**
+- 🔌 **Plug & Play** - Tambah/hapus fitur dengan mudah
+- 🔒 **Separation of Concerns** - Setiap modul self-contained
+- 👥 **Team Collaboration** - Tim berbeda dapat mengerjakan modul berbeda
+- 🔄 **Reusability** - Modul dapat digunakan ulang di proyek lain
+
+Contoh konfigurasi `modules.yaml`:
 
 ```yaml
 modules:
@@ -72,11 +80,13 @@ modules:
     enabled: true
 ```
 
-Kemudian jalankan:
+Kemudian jalankan untuk sync modul:
 
 ```bash
 dart run tool/sync_modules.dart
 ```
+
+📚 **Dokumentasi lengkap arsitektur modular:** [Modular.md](Modular.md)
 
 ### 5️⃣ Konfigurasi Keystore (key.properties)
 
