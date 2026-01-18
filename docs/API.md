@@ -311,7 +311,7 @@ Di `lib/core/network/api_config.dart`:
 class ApiConfig {
   /// Browser-like User-Agent to avoid bot detection
   /// Used for external API calls that may have bot protection
-  static const String browserUserAgent = 
+  static const String browserUserAgent =
       'Mozilla/5.0 (Linux; Android 13; SM-G998B) AppleWebKit/537.36 '
       '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36';
 }
@@ -319,10 +319,10 @@ class ApiConfig {
 
 ### Penggunaan di Module
 
-Untuk module terpisah (seperti `arrow_sense`), definisikan konstanta lokal karena tidak bisa import langsung dari main app:
+Untuk module terpisah (seperti `super_module`), definisikan konstanta lokal karena tidak bisa import langsung dari main app:
 
 ```dart
-// Di module arrow_sense
+// Di module super_module
 const String _browserUserAgent =
     'Mozilla/5.0 (Linux; Android 13; SM-G998B) AppleWebKit/537.36 '
     '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36';
@@ -551,25 +551,25 @@ Base class yang menyediakan method HTTP standar.
 abstract class BaseRepository {
   // GET request
   Future<BaseResponse<T>> get<T>(String endpoint, {...});
-  
+
   // POST request
   Future<BaseResponse<T>> post<T>(String endpoint, {...});
-  
+
   // PUT request
   Future<BaseResponse<T>> put<T>(String endpoint, {...});
-  
+
   // PATCH request
   Future<BaseResponse<T>> patch<T>(String endpoint, {...});
-  
+
   // DELETE request
   Future<BaseResponse<T>> delete<T>(String endpoint, {...});
-  
+
   // File upload
   Future<BaseResponse<T>> uploadFile<T>(String endpoint, {...});
-  
+
   // File download
   Future<void> downloadFile(String url, String savePath, {...});
-  
+
   // Bot protection detection & retry
   Future<Response> fetchWithCloudflareRetry(Future<Response> Function() fetchFunction, {...});
   bool isCloudflareResponse(Response response);
@@ -604,11 +604,11 @@ Future<List<Banner>> getBanners() async {
       maxRetries: 3,             // Default: 3
       retryDelayMs: 2000,        // Default: 2000ms
     );
-    
+
     // Parse response jika berhasil
     final data = response.data as List;
     return data.map((e) => Banner.fromJson(e)).toList();
-    
+
   } on DioException catch (e) {
     // Handle error - bisa gunakan fallback data
     debugPrint('Failed to fetch banners: ${e.message}');
@@ -680,7 +680,7 @@ class ProductRepository extends BaseRepository {
       '/products',
       queryParameters: {'page': page, 'limit': limit},
     );
-    
+
     if (response.success && response.data != null) {
       final items = (response.data!['items'] as List)
           .map((e) => Product.fromJson(e))
@@ -812,7 +812,7 @@ try {
   print('Message: ${e.message}');
   print('Status Code: ${e.statusCode}');
   print('Error Code: ${e.errorCode}');
-  
+
   if (e.isAuthError) {
     // Redirect ke login
   } else if (e.isNetworkError) {
@@ -989,7 +989,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureTokenStorage implements TokenStorage {
   final _storage = FlutterSecureStorage();
-  
+
   static const _accessTokenKey = 'access_token';
   static const _refreshTokenKey = 'refresh_token';
 

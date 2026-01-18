@@ -98,14 +98,11 @@ dependencies:
     path: packages/module_interface
 
   # External Modules (from modules/ folder) - Example
-  # super_module:
-  #   path: modules/super_module
+  super_module:
+    path: modules/super_module
 
   # crm:
   #   path: modules/crm
-
-  arrow_sense:
-    path: modules/arrow_sense
 
 dev_dependencies:
   flutter_test:
@@ -186,7 +183,7 @@ flutter:
 
 # Flutter Native Splash Configuration
 # Jalankan: dart run flutter_native_splash:create
-# 
+#
 # SMOOTH TRANSITION STRATEGY:
 # 1. Native splash tampil instan dengan warna solid
 # 2. Flutter splash muncul dengan fade-in dari warna yang sama
@@ -195,22 +192,22 @@ flutter:
 flutter_native_splash:
   # Warna background - sama dengan colorScheme.primary untuk seamless transition
   color: "#1565C0"
-  
+
   # Gambar logo di tengah splash screen
   image: assets/images/logo/carik_blue_logo.png
-  
+
   # Opsi untuk branding image di bagian bawah (opsional)
   # branding: assets/images/branding.png
   # branding_mode: bottom
-  
+
   # Background image full screen (opsional, jika ingin pakai gambar penuh)
   # Tidak digunakan karena kita pakai dynamic image dari Flutter splash
   # background_image: assets/images/splash_background.png
-  
+
   # Dark mode settings - matching dark theme primary color
   color_dark: "#0D47A1"
   image_dark: assets/images/logo/carik_blue_logo.png
-  
+
   # Android specific
   android: true
   android_12:
@@ -223,12 +220,12 @@ flutter_native_splash:
     # Icon background (opsional)
     # icon_background_color: "#FFFFFF"
     # icon_background_color_dark: "#1a1a2e"
-  
+
   # iOS specific
   ios: true
-  
+
   # Web specific
   web: true
-  
+
   # Full screen mode (hide status bar and navigation bar)
   fullscreen: false
