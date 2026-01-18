@@ -21,9 +21,11 @@ class AppInfo {
 
   /// Application name
   static String get name => dotenv.env['APP_NAME'] ?? 'Super X App';
+  static String get appName => dotenv.env['APP_NAME'] ?? 'Super X App';
 
   /// Application description
   static String get description => dotenv.env['APP_DESCRIPTION'] ?? 'A Super App Project.';
+  static String get appDescription => dotenv.env['APP_DESCRIPTION'] ?? 'A Super App Project.';
 
   /// Application tagline
   static String get tagline => dotenv.env['APP_TAGLINE'] ?? 'Your All-in-One Solution.';
@@ -188,6 +190,8 @@ class AppInfo {
 
   /// Enable/disable Quick Action Demo (Pay, Bills, Pulsa)
   static bool get enableQuickActionDemo => dotenv.env['ENABLE_QUICK_ACTION_DEMO']?.toLowerCase() == 'true';
+
+  static bool get enableSignUp => dotenv.env['ENABLE_SIGN_UP']?.toLowerCase() == 'true';
 
   // ============================================
   // AUTH CONFIGURATION

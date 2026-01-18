@@ -104,7 +104,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                 // Title
                 Text(
-                  'Welcome Back',
+                  AppInfo.appName,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -244,6 +244,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 32),
 
                 // Register Link
+                if (AppInfo.enableSignUp) ...[
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -257,6 +258,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ],
                 ),
+                ],
               ],
             ),
           ),
@@ -267,7 +269,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _handleLogin() async {
     debugPrint('[LOGIN_SCREEN] >>> _handleLogin() called');
-    
+
     if (!_formKey.currentState!.validate()) {
       debugPrint('[LOGIN_SCREEN] Form validation failed');
       return;
@@ -284,7 +286,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       debugPrint('[LOGIN_SCREEN] Getting authService from provider...');
       final authService = ref.read(authServiceProvider);
       debugPrint('[LOGIN_SCREEN] authService type: ${authService.runtimeType}');
-      
+
       debugPrint('[LOGIN_SCREEN] Calling signInWithEmailAndPassword...');
       final result = await authService.signInWithEmailAndPassword(
         email: email,
@@ -308,8 +310,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
           // Use localized message in production, show detailed error only in debug
           final l10n = AppLocalizations.of(context);
-          final displayMessage = kReleaseMode 
-              ? l10n.loginFailed 
+          final displayMessage = kReleaseMode
+              ? l10n.loginFailed
               : 'ERR: $errorMsg';
 
           ScaffoldMessenger.of(context).showSnackBar(
@@ -328,10 +330,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
         // Use localized message in production, show detailed error only in debug
         final l10n = AppLocalizations.of(context);
-        final displayMessage = kReleaseMode 
-            ? l10n.loginFailed 
+        final displayMessage = kReleaseMode
+            ? l10n.loginFailed
             : '${l10n.loginFailed}: ${e.toString()}';
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(displayMessage),
