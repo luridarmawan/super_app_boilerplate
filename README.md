@@ -390,6 +390,26 @@ File `lib/core/config/app_config.dart` mengontrol:
 
 ---
 
+## 🚀 Persiapan untuk build
+
+Sebelum menjalankan aplikasi, copy file konfigurasi berikut:
+
+```bash
+# Windows
+copy .env.example .env
+copy pubspec.yaml.example pubspec.yaml
+
+# Linux / macOS
+cp .env.example .env
+cp pubspec.yaml.example pubspec.yaml
+```
+
+Kemudian edit file `.env` dan `pubspec.yaml` sesuai kebutuhan proyek Anda.
+
+📚 **Dokumentasi lengkap:** [`docs/Development-and-Build.md`](docs/Development-and-Build.md)
+
+---
+
 ## 🚀 Cara Menjalankan
 
 ```bash
