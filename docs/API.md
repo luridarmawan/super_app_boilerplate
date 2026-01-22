@@ -167,6 +167,119 @@ final response = await dio.get(
 
 ---
 
+## 🍪 Cookie Management (Opsional)
+
+### Konfigurasi
+
+Cookie management dapat diaktifkan melalui environment variable:
+
+```ini
+# Di file .env
+AUTH_USE_COOKIE=true
+```
+
+Ketika diaktifkan:
+- Cookies akan otomatis disimpan saat server mengirim `Set-Cookie` header
+- Cookies akan otomatis dikirim di setiap request berikutnya
+- Cookies disimpan secara persisten (tetap ada setelah app di-restart)
+
+### Dependencies
+
+Pastikan dependencies berikut ada di `pubspec.yaml`:
+
+```yaml
+dependencies:
+  dio_cookie_manager: ^3.0.0
+  cookie_jar: ^4.0.8
+  path_provider: ^2.1.1
+```
+
+### Inisialisasi
+
+Cookie manager diinisialisasi otomatis di `main.dart` jika `AUTH_USE_COOKIE=true`:
+
+```dart
+// Otomatis dilakukan di main.dart
+if (AppInfo.authUseCookie) {
+  await CookieManager.instance.initialize(usePersistentCookies: true);
+}
+```
+
+### Penggunaan di Module
+
+Untuk modul yang memerlukan akses cookies, gunakan `CookieManager.instance`:
+
+```dart
+import 'package:super_app/core/network/cookie/cookie_manager.dart';
+
+// Ambil semua cookies untuk URL tertentu
+final cookies = await CookieManager.instance.getCookies(Uri.parse('https://api.example.com'));
+
+// Ambil cookie string (format: "name1=value1; name2=value2")
+final cookieString = await CookieManager.instance.getCookieString('https://api.example.com');
+
+// Ambil nilai cookie spesifik
+final sessionId = await CookieManager.instance.getCookieValue(
+  'https://api.example.com',
+  'session_id',
+);
+
+// Set cookie manual
+await CookieManager.instance.setCookie(
+  Uri.parse('https://api.example.com'),
+  Cookie('custom_cookie', 'value'),
+);
+
+// Clear semua cookies (saat logout)
+await CookieManager.instance.clearCookies();
+```
+
+### Penggunaan dengan Dio Instance Manual
+
+Jika modul membuat instance Dio sendiri, tambahkan cookie interceptor:
+
+```dart
+final dio = Dio();
+
+// Tambahkan cookie management ke Dio instance
+if (AppInfo.authUseCookie) {
+  dio.addCookieManager(); // Extension method
+}
+
+// Atau secara manual
+if (AppInfo.authUseCookie) {
+  final interceptor = CookieManager.instance.createInterceptor();
+  if (interceptor != null) {
+    dio.interceptors.add(interceptor);
+  }
+}
+```
+
+### Provider untuk Riverpod
+
+```dart
+// Akses via provider
+final cookieManager = ref.watch(cookieManagerProvider);
+final cookies = await cookieManager.getCookies(Uri.parse('https://api.example.com'));
+```
+
+### Kapan Menggunakan Cookies vs JWT
+
+| Aspek | Cookies | JWT |
+|-------|---------|-----|
+| **Server Control** | Server mengontrol via Set-Cookie | Aplikasi mengontrol storage |
+| **Auto-expiry** | Ya (via cookie attributes) | Harus handle manual |
+| **Cross-domain** | Perlu credentials: true | Mudah |
+| **Security** | HttpOnly, Secure flags | Rentan XSS jika tidak hati-hati |
+| **Use Case** | Session-based auth | Stateless API |
+
+Gunakan cookies jika:
+- Backend menggunakan session-based authentication
+- Server mengirim `Set-Cookie` header saat login
+- Perlu CSRF protection bawaan
+
+---
+
 ## 🔐 JWT Authentication
 
 ### Cara Kerja JWT di Aplikasi
@@ -1109,9 +1222,12 @@ testWidgets('should display user profile', (tester) async {
 - [Dio Documentation](https://pub.dev/packages/dio)
 - [Retrofit Documentation](https://pub.dev/packages/retrofit)
 - [Flutter Riverpod](https://riverpod.dev/)
+- [Dio Cookie Manager](https://pub.dev/packages/dio_cookie_manager)
+- [Cookie Jar](https://pub.dev/packages/cookie_jar)
 
 ---
 
 *Dibuat: 4 Mei 2025*
-*Diperbarui: 17 Januari 2026*
-*Versi: 1.4.0*
+*Diperbarui: 23 Januari 2026*
+*Versi: 1.5.0*
+

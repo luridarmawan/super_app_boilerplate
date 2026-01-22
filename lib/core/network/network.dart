@@ -5,6 +5,9 @@
 export 'api_config.dart';
 export 'api_client.dart';
 
+// Cookie Management
+export 'cookie/cookie_manager.dart';
+
 // Models
 export 'models/base_request.dart';
 export 'models/base_response.dart';
@@ -28,3 +31,4 @@ export 'services/api_service.dart';
 
 // Connectivity
 export 'connectivity/connectivity_provider.dart';
+

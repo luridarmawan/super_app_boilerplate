@@ -209,6 +209,10 @@ class AppInfo {
 
   static String get authGoogleVerificationUrl => dotenv.env['AUTH_GOOGLE_VERIFICATION_URL'] ?? '';
 
+  /// Enable/disable cookie-based authentication
+  /// When true, cookies will be stored and sent automatically with API requests
+  static bool get authUseCookie => dotenv.env['AUTH_USE_COOKIE']?.toLowerCase() == 'false';
+
   // ============================================
   // NOTIFICATION CONFIGURATION
   // ============================================

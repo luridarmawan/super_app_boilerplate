@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../constants/app_info.dart';
 import 'api_config.dart';
+import 'cookie/cookie_manager.dart';
 import 'interceptors/auth_interceptor.dart';
 import 'interceptors/logging_interceptor.dart';
 import 'interceptors/error_interceptor.dart';
@@ -50,13 +52,21 @@ class ApiClient {
     );
 
     // Add interceptors in order
-    // 1. Timing interceptor (records start time)
+    // 1. Cookie interceptor (if enabled via AUTH_USE_COOKIE=true)
+    if (AppInfo.authUseCookie) {
+      final cookieInterceptor = CookieManager.instance.createInterceptor();
+      if (cookieInterceptor != null) {
+        dio.interceptors.add(cookieInterceptor);
+      }
+    }
+
+    // 2. Timing interceptor (records start time)
     dio.interceptors.add(RequestTimingInterceptor());
 
-    // 2. Common headers interceptor
+    // 3. Common headers interceptor
     dio.interceptors.add(CommonHeadersInterceptor());
 
-    // 3. Auth interceptor
+    // 4. Auth interceptor
     dio.interceptors.add(
       AuthInterceptor(
         getToken: _tokenStorage.getAccessToken,
@@ -65,7 +75,7 @@ class ApiClient {
       ),
     );
 
-    // 4. Retry interceptor
+    // 5. Retry interceptor
     dio.interceptors.add(
       RetryInterceptor(
         dio: dio,
@@ -73,10 +83,10 @@ class ApiClient {
       ),
     );
 
-    // 5. Error interceptor
+    // 6. Error interceptor
     dio.interceptors.add(ErrorInterceptor());
 
-    // 6. Logging interceptor (should be last to capture final request/response)
+    // 7. Logging interceptor (should be last to capture final request/response)
     dio.interceptors.add(
       LoggingInterceptor(
         enableLogging: ApiConfig.enableLogging,
@@ -105,6 +115,13 @@ class ApiClient {
     await _tokenStorage.clearTokens();
   }
 
+  /// Clear all cookies (if cookie management is enabled)
+  Future<void> clearCookies() async {
+    if (AppInfo.authUseCookie) {
+      await CookieManager.instance.clearCookies();
+    }
+  }
+
   /// Cancel all pending requests
   void cancelAllRequests([CancelToken? cancelToken]) {
     cancelToken?.cancel('Cancelled by user');
@@ -128,3 +145,10 @@ final apiClientProvider = Provider<ApiClient>((ref) {
 final dioProvider = Provider<Dio>((ref) {
   return ref.watch(apiClientProvider).dio;
 });
+
+/// Cookie Manager Provider
+/// Access to cookie manager for modules that need cookie data
+final cookieManagerProvider = Provider<CookieManager>((ref) {
+  return CookieManager.instance;
+});
+
