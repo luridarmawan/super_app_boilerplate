@@ -206,6 +206,9 @@ lib/core/network/
 
 | Fitur | Deskripsi |
 |-------|-----------|
+| **REST Auth (JWT/Token)** | Autentikasi REST API dengan JWT atau token, dikonfigurasi via `.env` |
+| **WordPress wp-json Auth** | Dukungan WordPress REST API melalui plugin [simple-jwt-login](https://wordpress.org/plugins/simple-jwt-login/), dikonfigurasi via `.env` |
+| **Cookie Auth** | Autentikasi berbasis cookie untuk session management, dikonfigurasi via `.env` |
 | **Auto Auth Headers** | Token `Authorization: Bearer` ditambahkan otomatis |
 | **Token Refresh** | Otomatis refresh token saat 401 |
 | **Common Headers** | `X-Request-ID`, `X-Timestamp`, `X-Platform` selalu ditambahkan |
@@ -214,7 +217,7 @@ lib/core/network/
 | **Structured Logging** | Log request/response di debug mode |
 | **BaseRequest** | Field shared (deviceId, timestamp, locale) untuk semua request |
 | **BaseResponse** | Wrapper standar dengan support pagination |
-| **Connectivity Monitoring** | Deteksi status koneksi jaringan secara real-time |
+| **Connectivity Monitoring** | Deteksi status koneksi jaringan secara real-time. Dipersiapkan jika ada kebutuhan untuk "offline-first mode" |
 | **External Modules** | Integrasi modul eksternal tanpa mengubah repository utama (lihat [docs/SubModule.md](docs/SubModule.md)) |
 
 ### 🚫 Anti-Pattern yang Dihindari
