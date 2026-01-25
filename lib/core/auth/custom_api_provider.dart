@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:module_interface/module_interface.dart';
 import 'auth_interface.dart';
 import '../constants/app_info.dart';
 
@@ -24,9 +25,6 @@ class CustomApiAuthProvider implements BaseAuthService {
   // Google Sign-In instance (singleton in v7.x)
   GoogleSignIn get _googleSignIn => GoogleSignIn.instance;
   bool _googleSignInInitialized = false;
-
-  // Mutex flag for token refresh to prevent concurrent refresh attempts
-  bool _isRefreshing = false;
 
   // SharedPreferences keys
   static const String _savedUserKey = 'app_saved_user';
@@ -710,116 +708,28 @@ class CustomApiAuthProvider implements BaseAuthService {
   /// Refresh expired JWT token
   /// Uses AppInfo.authRefreshTokenUrl and AppInfo.authRefreshTokenMethod
   /// URL can contain {JWT} placeholder which will be replaced with current token
+  ///
+  /// This method delegates to TokenRefreshService for the actual refresh,
+  /// but handles updating the local user state.
   Future<String?> refreshToken() async {
-    // Mutex protection: prevent concurrent token refresh
-    if (_isRefreshing) {
-      debugPrint('[AUTH-REFRESH] Token refresh already in progress, skipping...');
-      return null;
+    // Delegate to TokenRefreshService
+    final currentJwt = _currentUser?.jwt;
+    final newJwt = await TokenRefreshService.instance.refreshToken(currentJwt: currentJwt);
+
+    if (newJwt != null && _currentUser != null) {
+      // Update current user with new JWT
+      _currentUser = _currentUser!.copyWith(jwt: newJwt);
+
+      // Save updated user to SharedPreferences
+      await _saveUser(_currentUser!);
+
+      // Notify listeners
+      _authStateController.add(_currentUser);
+
+      debugPrint('[AUTH-REFRESH] Local user state updated with new JWT');
     }
 
-    _isRefreshing = true;
-    debugPrint('[AUTH-REFRESH] ============================================');
-    debugPrint('[AUTH-REFRESH] >>> Starting Token Refresh');
-
-    try {
-      final currentJwt = _currentUser?.jwt;
-      if (currentJwt == null || currentJwt.isEmpty) {
-        debugPrint('[AUTH-REFRESH] ERROR: No current JWT token to refresh');
-        return null;
-      }
-
-      // Build URL - replace {JWT} placeholder with actual token
-      String refreshUrl = AppInfo.authRefreshTokenUrl;
-      refreshUrl = refreshUrl.replaceAll('{JWT}', currentJwt);
-
-      final method = AppInfo.authRefreshTokenMethod.toUpperCase();
-      debugPrint('[AUTH-REFRESH] URL: $refreshUrl');
-      debugPrint('[AUTH-REFRESH] Method: $method');
-
-      final dio = Dio();
-      Response response;
-
-      // Make request based on configured method
-      if (method == 'GET') {
-        response = await dio.get(
-          refreshUrl,
-          options: Options(
-            headers: {
-              'Authorization': 'Bearer $currentJwt',
-              'Accept': 'application/json',
-              ...?headers,
-            },
-          ),
-        );
-      } else {
-        // Default: POST
-        response = await dio.post(
-          refreshUrl,
-          options: Options(
-            headers: {
-              'Authorization': 'Bearer $currentJwt',
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-              ...?headers,
-            },
-          ),
-          data: {'jwt': currentJwt},
-        );
-      }
-
-      debugPrint('[AUTH-REFRESH] Response Status: ${response.statusCode}');
-      debugPrint('[AUTH-REFRESH] Response Data: ${response.data}');
-
-      if (response.statusCode == 200 && response.data != null) {
-        final responseData = response.data as Map<String, dynamic>;
-
-        // Extract new JWT from response
-        // Support various response structures
-        String? newJwt;
-        if (responseData.containsKey('data') && responseData['data'] is Map) {
-          final data = responseData['data'] as Map<String, dynamic>;
-          newJwt = data['jwt']?.toString() ??
-                   data['token']?.toString() ??
-                   data['access_token']?.toString();
-        }
-        newJwt ??= responseData['jwt']?.toString() ??
-                  responseData['token']?.toString() ??
-                  responseData['access_token']?.toString();
-
-        if (newJwt != null && newJwt.isNotEmpty) {
-          debugPrint('[AUTH-REFRESH] New JWT obtained (${newJwt.length} chars)');
-
-          // Update current user with new JWT
-          _currentUser = _currentUser!.copyWith(jwt: newJwt);
-
-          // Save updated user to SharedPreferences
-          await _saveUser(_currentUser!);
-
-          // Notify listeners
-          _authStateController.add(_currentUser);
-
-          debugPrint('[AUTH-REFRESH] <<< Token refresh SUCCESS');
-          debugPrint('[AUTH-REFRESH] ============================================');
-          return newJwt;
-        }
-      }
-
-      debugPrint('[AUTH-REFRESH] ERROR: Failed to extract new JWT from response');
-      return null;
-    } on DioException catch (e) {
-      debugPrint('[AUTH-REFRESH] DIO ERROR: ${e.type}');
-      debugPrint('[AUTH-REFRESH] Message: ${e.message}');
-      if (e.response != null) {
-        debugPrint('[AUTH-REFRESH] Status: ${e.response?.statusCode}');
-        debugPrint('[AUTH-REFRESH] Data: ${e.response?.data}');
-      }
-      return null;
-    } catch (e) {
-      debugPrint('[AUTH-REFRESH] ERROR: $e');
-      return null;
-    } finally {
-      _isRefreshing = false;
-    }
+    return newJwt;
   }
 
   @override
