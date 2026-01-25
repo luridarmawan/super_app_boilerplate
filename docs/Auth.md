@@ -97,7 +97,8 @@ API_BASE_URL_DEVELOPMENT=https://dev-api.yourdomain.com/
 AUTH_LOGIN_URL=https://api.yourdomain.com/o/auth/login/
 AUTH_LOGIN_CONTENT_TYPE="application/json"
 
-AUTH_REFRESH_TOKEN_URL=https://api.yourdomain.com/o/auth/token/
+AUTH_TOKEN_REFRESH_URL=https://api.yourdomain.com/o/auth/token/
+AUTH_TOKEN_REFRESH_METHOD="POST"
 AUTH_LOGOUT_URL=https://api.yourdomain.com/o/auth/logout/
 AUTH_REGISTER_URL=https://api.yourdomain.com/o/auth/register/
 AUTH_FORGOT_PASSWORD_URL=https://api.yourdomain.com/o/auth/forgot-password/
@@ -188,7 +189,7 @@ username=admin%40yourdomain.com&password=admin123
 | token | string | Access token for subsequent API calls |
 | elapsed_time | int | Request processing time (ms) |
 
-> **Alternative Response Structures:**  
+> **Alternative Response Structures:**
 > The app also supports these response structures:
 > - `{ user: {...}, token: "..." }`
 > - `{ data: { user: {...}, token: "..." } }`
@@ -317,7 +318,7 @@ Endpoint to refresh access token.
 
 ### Endpoint
 ```
-POST {AUTH_REFRESH_TOKEN_URL}
+POST {AUTH_TOKEN_REFRESH_URL}
 ```
 
 ### Request
@@ -521,7 +522,7 @@ class AuthUser {
 abstract class BaseAuthService {
   Stream<AuthUser?> get authStateChanges;
   AuthUser? get currentUser;
-  
+
   Future<AuthResult> signInWithEmailAndPassword({...});
   Future<AuthResult> createUserWithEmailAndPassword({...});
   Future<AuthResult> signInWithGoogle();

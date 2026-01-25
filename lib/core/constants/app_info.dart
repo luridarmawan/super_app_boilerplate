@@ -85,8 +85,8 @@ class AppInfo {
   static String get authForgotPasswordUrl => dotenv.env['AUTH_FORGOT_PASSWORD_URL'] ?? '/o/auth/forgot-password/';
   static String get authResetPasswordUrl => dotenv.env['AUTH_RESET_PASSWORD_URL'] ?? '/o/auth/reset-password/';
   static String get authLogoutUrl => dotenv.env['AUTH_LOGOUT_URL'] ?? '/o/auth/logout/';
-  static String get authRefreshTokenUrl => dotenv.env['AUTH_REFRESH_TOKEN_URL'] ?? '/o/auth/refresh-token/';
-  static String get authRefreshTokenMethod => dotenv.env['AUTH_REFRESH_TOKEN_METHOD'] ?? 'POST';
+  static String get authRefreshTokenUrl => dotenv.env['AUTH_TOKEN_REFRESH_URL'] ?? '/o/auth/refresh-token/';
+  static String get authRefreshTokenMethod => dotenv.env['AUTH_TOKEN_REFRESH_METHOD'] ?? 'POST';
   static String get authVerifyTokenUrl => dotenv.env['AUTH_VERIFY_TOKEN_URL'] ?? '/o/auth/verify-token/';
 
   // ============================================

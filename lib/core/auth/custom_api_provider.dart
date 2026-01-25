@@ -11,19 +11,22 @@ import '../constants/app_info.dart';
 /// Gunakan ini untuk backend custom (REST API, GraphQL, dll)
 class CustomApiAuthProvider implements BaseAuthService {
   AuthUser? _currentUser;
-  final StreamController<AuthUser?> _authStateController = 
+  final StreamController<AuthUser?> _authStateController =
       StreamController<AuthUser?>.broadcast();
-  
+
   /// Get current JWT token
   String? get token => _currentUser?.jwt;
 
   // Configuration
   final String? baseUrl;
   final Map<String, String>? headers;
-  
+
   // Google Sign-In instance (singleton in v7.x)
   GoogleSignIn get _googleSignIn => GoogleSignIn.instance;
   bool _googleSignInInitialized = false;
+
+  // Mutex flag for token refresh to prevent concurrent refresh attempts
+  bool _isRefreshing = false;
 
   // SharedPreferences keys
   static const String _savedUserKey = 'app_saved_user';
@@ -99,8 +102,8 @@ class CustomApiAuthProvider implements BaseAuthService {
         // Extract avatar URL dari avatar_urls.48
         if (wpData['avatar_urls'] is Map<String, dynamic>) {
           final avatarUrls = wpData['avatar_urls'] as Map<String, dynamic>;
-          wpAvatarUrl = avatarUrls['48']?.toString() ?? 
-                        avatarUrls['96']?.toString() ?? 
+          wpAvatarUrl = avatarUrls['48']?.toString() ??
+                        avatarUrls['96']?.toString() ??
                         avatarUrls['24']?.toString();
         }
 
@@ -306,7 +309,7 @@ class CustomApiAuthProvider implements BaseAuthService {
       // 1. { user: {...}, token: "..." }
       // 2. { data: { user: {...}, token: "..." } }
       // 3. { id: ..., email: ..., name: ..., token: "..." }
-      
+
       Map<String, dynamic>? userData;
       String? accessToken; // ignore: unused_local_variable
       String? refreshToken; // ignore: unused_local_variable
@@ -331,7 +334,7 @@ class CustomApiAuthProvider implements BaseAuthService {
       if (responseData.containsKey('user')) {
         debugPrint('[AUTH] Structure detected: { user: {...} }');
         userData = responseData['user'] as Map<String, dynamic>?;
-        accessToken = responseData['token']?.toString() ?? 
+        accessToken = responseData['token']?.toString() ??
                       responseData['access_token']?.toString();
         refreshToken = responseData['refresh_token']?.toString();
       } else if (responseData.containsKey('data')) {
@@ -341,7 +344,7 @@ class CustomApiAuthProvider implements BaseAuthService {
         debugPrint('[AUTH] data value: $data');
         if (data is Map<String, dynamic>) {
           userData = data['user'] as Map<String, dynamic>? ?? data;
-          accessToken = data['token']?.toString() ?? 
+          accessToken = data['token']?.toString() ??
                         data['access_token']?.toString();
           refreshToken = data['refresh_token']?.toString();
         } else {
@@ -352,7 +355,7 @@ class CustomApiAuthProvider implements BaseAuthService {
         debugPrint('[AUTH] Structure detected: user data at root level');
         // Assume the response is the user data itself
         userData = responseData;
-        accessToken = responseData['token']?.toString() ?? 
+        accessToken = responseData['token']?.toString() ??
                       responseData['access_token']?.toString();
         refreshToken = responseData['refresh_token']?.toString();
       }
@@ -364,7 +367,7 @@ class CustomApiAuthProvider implements BaseAuthService {
       // Build display name from available fields
       debugPrint('[AUTH] ----------------------------------------');
       debugPrint('[AUTH] Building display name...');
-      String? displayName = userData?['name']?.toString() ?? 
+      String? displayName = userData?['name']?.toString() ??
                             userData?['display_name']?.toString() ??
                             userData?['full_name']?.toString();
       debugPrint('[AUTH] Initial displayName: $displayName');
@@ -385,8 +388,8 @@ class CustomApiAuthProvider implements BaseAuthService {
       debugPrint('[AUTH] Final displayName: $displayName');
 
       // Build user ID
-      final uid = userData?['id']?.toString() ?? 
-                  userData?['uid']?.toString() ?? 
+      final uid = userData?['id']?.toString() ??
+                  userData?['uid']?.toString() ??
                   'user_${DateTime.now().millisecondsSinceEpoch}';
       debugPrint('[AUTH] User ID: $uid');
 
@@ -396,10 +399,10 @@ class CustomApiAuthProvider implements BaseAuthService {
         uid: uid,
         email: userData?['email']?.toString() ?? email,
         displayName: displayName,
-        photoUrl: userData?['photo_url']?.toString() ?? 
+        photoUrl: userData?['photo_url']?.toString() ??
                   userData?['avatar']?.toString() ??
                   userData?['picture']?.toString(),
-        isEmailVerified: userData?['email_verified'] == true || 
+        isEmailVerified: userData?['email_verified'] == true ||
                          userData?['is_verified'] == true,
         isGoogleLogin: false,
         jwt: responseData['jwt']?.toString() ??
@@ -522,14 +525,14 @@ class CustomApiAuthProvider implements BaseAuthService {
     try {
       // TODO: Implementasi dengan HTTP client
       await Future.delayed(const Duration(seconds: 1));
-      
+
       _currentUser = AuthUser(
         uid: 'api_user_${DateTime.now().millisecondsSinceEpoch}',
         email: email,
         displayName: displayName ?? email.split('@').first,
         isEmailVerified: false,
       );
-      
+
       // Simpan user setelah registrasi berhasil
       await _saveUser(_currentUser!);
 
@@ -547,13 +550,13 @@ class CustomApiAuthProvider implements BaseAuthService {
 
       // Ensure Google Sign-In is initialized
       await _initGoogleSignIn();
-      
+
       // Check if authenticate is supported
       if (!_googleSignIn.supportsAuthenticate()) {
         debugPrint('[GAUTH] ERROR: Not supported on this platform');
         return AuthResult.failure('Google Sign-In tidak didukung di platform ini');
       }
-      
+
       // Trigger Google Sign-In flow (v7.x API)
       final googleUser = await _googleSignIn.authenticate();
       debugPrint('[GAUTH] User: ${googleUser.email}');
@@ -603,7 +606,7 @@ class CustomApiAuthProvider implements BaseAuthService {
       // Some APIs return data directly, some wrap in 'data' or 'user'
       Map<String, dynamic>? userData;
       if (responseData is Map<String, dynamic>) {
-        userData = responseData['user'] as Map<String, dynamic>? ?? 
+        userData = responseData['user'] as Map<String, dynamic>? ??
                    responseData['data'] as Map<String, dynamic>? ??
                    responseData;
       }
@@ -708,15 +711,22 @@ class CustomApiAuthProvider implements BaseAuthService {
   /// Uses AppInfo.authRefreshTokenUrl and AppInfo.authRefreshTokenMethod
   /// URL can contain {JWT} placeholder which will be replaced with current token
   Future<String?> refreshToken() async {
+    // Mutex protection: prevent concurrent token refresh
+    if (_isRefreshing) {
+      debugPrint('[AUTH-REFRESH] Token refresh already in progress, skipping...');
+      return null;
+    }
+
+    _isRefreshing = true;
+    debugPrint('[AUTH-REFRESH] ============================================');
+    debugPrint('[AUTH-REFRESH] >>> Starting Token Refresh');
+
     try {
       final currentJwt = _currentUser?.jwt;
       if (currentJwt == null || currentJwt.isEmpty) {
         debugPrint('[AUTH-REFRESH] ERROR: No current JWT token to refresh');
         return null;
       }
-
-      debugPrint('[AUTH-REFRESH] ============================================');
-      debugPrint('[AUTH-REFRESH] >>> Starting Token Refresh');
 
       // Build URL - replace {JWT} placeholder with actual token
       String refreshUrl = AppInfo.authRefreshTokenUrl;
@@ -768,11 +778,11 @@ class CustomApiAuthProvider implements BaseAuthService {
         String? newJwt;
         if (responseData.containsKey('data') && responseData['data'] is Map) {
           final data = responseData['data'] as Map<String, dynamic>;
-          newJwt = data['jwt']?.toString() ?? 
+          newJwt = data['jwt']?.toString() ??
                    data['token']?.toString() ??
                    data['access_token']?.toString();
         }
-        newJwt ??= responseData['jwt']?.toString() ?? 
+        newJwt ??= responseData['jwt']?.toString() ??
                   responseData['token']?.toString() ??
                   responseData['access_token']?.toString();
 
@@ -807,6 +817,8 @@ class CustomApiAuthProvider implements BaseAuthService {
     } catch (e) {
       debugPrint('[AUTH-REFRESH] ERROR: $e');
       return null;
+    } finally {
+      _isRefreshing = false;
     }
   }
 
