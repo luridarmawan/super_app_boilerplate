@@ -42,9 +42,11 @@ class CustomApiAuthProvider implements BaseAuthService {
   }
 
   /// Helper untuk mendeteksi apakah API menggunakan WordPress
-  /// Berdasarkan apakah URL login mengandung "/wp-json/"
+  /// Berdasarkan apakah URL mengandung "/wp-json/" atau "rest_route=/jwt-login" atau "rest_route=/simple-jwt-login"
   bool _isWordPressApi(String url) {
-    return url.contains('/wp-json/');
+    return url.contains('/wp-json/') ||
+           url.contains('rest_route=/jwt-login') ||
+           url.contains('rest_route=/simple-jwt-login');
   }
 
   /// Mendapatkan base URL dari login URL untuk WordPress API
@@ -541,6 +543,217 @@ class CustomApiAuthProvider implements BaseAuthService {
     }
   }
 
+  /// Register user baru via Simple JWT Login Register API
+  /// Digunakan untuk auto-create user saat Google Sign-In jika user belum terdaftar
+  /// Endpoint: AppInfo.authRegisterUrl (AUTH_REGISTER_URL di .env)
+  /// Docs: https://simplejwtlogin.com/docs/register-user
+  ///
+  /// Returns JWT token jika registrasi berhasil dan plugin di-setting "Force login after register"
+  /// Returns null jika registrasi gagal
+  Future<String?> _registerUserForGoogle({
+    required String email,
+    String? displayName,
+    String? firstName,
+    String? lastName,
+    String? photoUrl,
+  }) async {
+    try {
+      final registerUrl = AppInfo.authRegisterUrl;
+      if (registerUrl.isEmpty) {
+        debugPrint('[GAUTH-REG] ERROR: AUTH_REGISTER_URL is empty');
+        return null;
+      }
+
+      debugPrint('[GAUTH-REG] ============================================');
+      debugPrint('[GAUTH-REG] >>> Auto-registering new user...');
+      debugPrint('[GAUTH-REG] URL: $registerUrl');
+      debugPrint('[GAUTH-REG] Email: $email');
+      debugPrint('[GAUTH-REG] Display Name: $displayName');
+
+      // Generate a random secure password for Google OAuth users
+      // User login via Google OAuth, so password is not used directly
+      final randomPassword = 'G00gl3_${DateTime.now().millisecondsSinceEpoch}_${email.hashCode.abs()}';
+
+      // Build request payload sesuai dokumentasi Simple JWT Login
+      // Required: email, password
+      // Optional: display_name, first_name, last_name, nickname, user_login
+      final Map<String, dynamic> payload = {
+        'email': email,
+        'password': randomPassword,
+        'AUTH_CODE': AppInfo.authKey,
+      };
+
+      // Tambahkan optional fields jika tersedia
+      if (displayName != null && displayName.isNotEmpty) {
+        payload['display_name'] = displayName;
+        payload['nickname'] = displayName;
+      }
+
+      // Parse first_name dan last_name dari displayName jika tidak diberikan
+      final effectiveFirstName = firstName ?? (displayName?.split(' ').first);
+      final effectiveLastName = lastName ?? (displayName != null && displayName.contains(' ')
+          ? displayName.split(' ').skip(1).join(' ')
+          : null);
+
+      if (effectiveFirstName != null && effectiveFirstName.isNotEmpty) {
+        payload['first_name'] = effectiveFirstName;
+      }
+      if (effectiveLastName != null && effectiveLastName.isNotEmpty) {
+        payload['last_name'] = effectiveLastName;
+      }
+
+      // User login menggunakan bagian sebelum @ dari email
+      payload['user_login'] = email.split('@').first;
+
+      debugPrint('[GAUTH-REG] Payload: $payload');
+
+      final dio = Dio();
+      final response = await dio.post(
+        registerUrl,
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            ...?headers,
+          },
+          contentType: 'application/json',
+          // Don't throw on non-2xx status codes, handle manually
+          validateStatus: (status) => status != null && status < 500,
+        ),
+        data: payload,
+      );
+
+      debugPrint('[GAUTH-REG] Response Status: ${response.statusCode}');
+      debugPrint('[GAUTH-REG] Response Data: ${response.data}');
+
+      if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
+        final responseData = response.data as Map<String, dynamic>;
+
+        // Check if registration was successful
+        // Response format: { success: true, id: ..., message: "...", user: {...}, jwt: "..." }
+        if (responseData['success'] == true) {
+          debugPrint('[GAUTH-REG] <<< User registered successfully!');
+          debugPrint('[GAUTH-REG] User ID: ${responseData['id']}');
+          debugPrint('[GAUTH-REG] Message: ${responseData['message']}');
+
+          // Return JWT jika tersedia (jika plugin di-set "Force login after register")
+          final jwt = responseData['jwt']?.toString();
+          if (jwt != null && jwt.isNotEmpty) {
+            debugPrint('[GAUTH-REG] JWT received: (${jwt.length} chars)');
+          }
+          return jwt;
+        } else {
+          final errorMsg = responseData['message']?.toString() ??
+              (responseData['data'] is Map ? responseData['data']['message']?.toString() : null) ??
+              'Registration failed';
+          debugPrint('[GAUTH-REG] ERROR: $errorMsg');
+          return null;
+        }
+      } else {
+        debugPrint('[GAUTH-REG] ERROR: Unexpected response status ${response.statusCode}');
+        if (response.data is Map<String, dynamic>) {
+          final data = response.data as Map<String, dynamic>;
+          final errorMsg = data['message']?.toString() ??
+              (data['data'] is Map ? data['data']['message']?.toString() : null) ??
+              'Registration failed';
+          debugPrint('[GAUTH-REG] Error message: $errorMsg');
+        }
+        return null;
+      }
+    } on DioException catch (e) {
+      debugPrint('[GAUTH-REG] DIO ERROR: ${e.type} - ${e.message}');
+      if (e.response != null) {
+        debugPrint('[GAUTH-REG] Status: ${e.response?.statusCode}');
+        debugPrint('[GAUTH-REG] Data: ${e.response?.data}');
+      }
+      return null;
+    } catch (e) {
+      debugPrint('[GAUTH-REG] ERROR: $e');
+      return null;
+    }
+  }
+
+  /// Verifikasi Google ID token ke backend
+  /// Dipisah dari signInWithGoogle agar bisa di-retry setelah auto-register
+  Future<Response> _verifyGoogleToken({
+    required String idToken,
+    required String apiUrl,
+  }) async {
+    final dio = Dio();
+    return await dio.post(
+      apiUrl,
+      options: Options(
+        headers: {
+          'Accept': 'application/json',
+          ...?headers,
+        },
+        contentType: 'application/json',
+      ),
+      // Send both 'token' and 'id_token' for maximum compatibility with WP plugins
+      data: {
+        AppInfo.authTokenName: idToken,
+        'id_token': idToken,
+      },
+    );
+  }
+
+  /// Parse response data dari Google OAuth verification dan buat AuthUser
+  AuthResult _parseGoogleAuthResponse({
+    required dynamic responseData,
+    required GoogleSignInAccount googleUser,
+  }) {
+    // Some APIs return data directly, some wrap in 'data' or 'user'
+    Map<String, dynamic>? userData;
+    if (responseData is Map<String, dynamic>) {
+      userData = responseData['user'] as Map<String, dynamic>? ??
+                 responseData['data'] as Map<String, dynamic>? ??
+                 responseData;
+    }
+
+    if (userData == null) {
+      debugPrint('[GAUTH] ERROR: No user data in response');
+      return AuthResult.failure('Data user tidak ditemukan dalam response');
+    }
+
+    // Extract JWT token - check multiple possible locations
+    String? jwtToken;
+    if (responseData is Map<String, dynamic>) {
+      // Try root level first
+      jwtToken = responseData['jwt']?.toString() ??
+                 responseData['token']?.toString();
+
+      // Try inside 'data' object (common structure: {success: true, data: {jwt: ...}})
+      if (jwtToken == null && responseData['data'] is Map) {
+        final dataMap = responseData['data'] as Map<String, dynamic>;
+        jwtToken = dataMap['jwt']?.toString() ??
+                   dataMap['token']?.toString() ??
+                   dataMap['access_token']?.toString();
+      }
+    }
+
+    debugPrint('[GAUTH] Extracted JWT: ${jwtToken != null ? "(${jwtToken.length} chars)" : "null"}');
+
+    _currentUser = AuthUser(
+      uid: userData['id']?.toString() ??
+           userData['uid']?.toString() ??
+           googleUser.id,
+      email: userData['email']?.toString() ??
+             userData['user_email']?.toString() ??
+             googleUser.email,
+      displayName: userData['name']?.toString() ??
+                   userData['display_name']?.toString() ??
+                   googleUser.displayName,
+      photoUrl: userData['picture']?.toString() ??
+                userData['avatar']?.toString() ??
+                googleUser.photoUrl,
+      isEmailVerified: userData['email_verified'] == true || userData['is_verified'] == true,
+      isGoogleLogin: true,
+      jwt: jwtToken,
+    );
+
+    return AuthResult.success(_currentUser!);
+  }
+
   @override
   Future<AuthResult> signInWithGoogle() async {
     try {
@@ -573,83 +786,97 @@ class CustomApiAuthProvider implements BaseAuthService {
       final apiUrl = AppInfo.authGoogleVerificationUrl;
       debugPrint('[GAUTH] POST $apiUrl');
 
-      final dio = Dio();
-      final response = await dio.post(
-        apiUrl,
-        options: Options(
-          headers: {
-            'Accept': 'application/json',
-            ...?headers,
-          },
-          // Set contentType in Options for better Dio compatibility
-          contentType: 'application/json',
-        ),
-        // Send both 'token' and 'id_token' for maximum compatibility with WP plugins
-        data: {
-          AppInfo.authTokenName: idToken,
-          'id_token': idToken,
-        },
-      );
+      Response response;
+      bool isRetryAfterRegister = false;
 
-      debugPrint('[GAUTH] Response: ${response.statusCode} - ${response.data}');
+      try {
+        // Attempt 1: Verify Google token (user might already exist)
+        response = await _verifyGoogleToken(idToken: idToken, apiUrl: apiUrl);
+      } on DioException catch (e) {
+        // Jika error karena user tidak terdaftar, coba auto-register
+        debugPrint('[GAUTH] First attempt failed: ${e.response?.statusCode} - ${e.response?.data}');
 
-      if (response.statusCode != 200) {
-        debugPrint('[GAUTH] ERROR: Backend returned ${response.statusCode}');
-        return AuthResult.failure('Verifikasi token gagal: ${response.statusCode}. Mungkin user tidak terdaftar di sistem.');
-      }
+        // Cek apakah error ini menunjukkan user belum terdaftar
+        // Biasanya status 403, 404, atau 400 dengan pesan terkait user tidak ditemukan
+        final shouldAutoRegister = _shouldAttemptAutoRegister(e);
 
-      // Parse user data from API response
-      final responseData = response.data;
+        if (!shouldAutoRegister) {
+          // Re-throw jika bukan masalah user tidak terdaftar
+          rethrow;
+        }
 
-      // Some APIs return data directly, some wrap in 'data' or 'user'
-      Map<String, dynamic>? userData;
-      if (responseData is Map<String, dynamic>) {
-        userData = responseData['user'] as Map<String, dynamic>? ??
-                   responseData['data'] as Map<String, dynamic>? ??
-                   responseData;
-      }
+        debugPrint('[GAUTH] User not found, attempting auto-registration...');
 
-      if (userData == null) {
-        debugPrint('[GAUTH] ERROR: No user data in response');
-        return AuthResult.failure('Data user tidak ditemukan dalam response');
-      }
+        // Auto-register user
+        final regJwt = await _registerUserForGoogle(
+          email: googleUser.email,
+          displayName: googleUser.displayName,
+          photoUrl: googleUser.photoUrl,
+        );
 
-      // Create user from API response (more complete than googleUser)
-      // Extract JWT token - check multiple possible locations
-      String? jwtToken;
-      if (responseData is Map<String, dynamic>) {
-        // Try root level first
-        jwtToken = responseData['jwt']?.toString() ??
-                   responseData['token']?.toString();
+        if (regJwt != null) {
+          debugPrint('[GAUTH] Registration returned JWT, using it directly');
+          // Jika registrasi langsung memberikan JWT, bisa langsung login
+          // Tapi tetap retry verify untuk mendapatkan response format yang konsisten
+        }
 
-        // Try inside 'data' object (common structure: {success: true, data: {jwt: ...}})
-        if (jwtToken == null && responseData['data'] is Map) {
-          final dataMap = responseData['data'] as Map<String, dynamic>;
-          jwtToken = dataMap['jwt']?.toString() ??
-                     dataMap['token']?.toString() ??
-                     dataMap['access_token']?.toString();
+        debugPrint('[GAUTH] Retrying Google token verification after registration...');
+
+        // Attempt 2: Retry verification setelah user di-register
+        try {
+          response = await _verifyGoogleToken(idToken: idToken, apiUrl: apiUrl);
+          isRetryAfterRegister = true;
+        } on DioException catch (retryError) {
+          debugPrint('[GAUTH] Retry also failed: ${retryError.response?.statusCode}');
+
+          // Jika retry juga gagal tapi kita punya JWT dari registrasi, gunakan itu
+          if (regJwt != null) {
+            debugPrint('[GAUTH] Using JWT from registration response');
+            _currentUser = AuthUser(
+              uid: 'user_${DateTime.now().millisecondsSinceEpoch}',
+              email: googleUser.email,
+              displayName: googleUser.displayName,
+              photoUrl: googleUser.photoUrl,
+              isEmailVerified: true,
+              isGoogleLogin: true,
+              jwt: regJwt,
+            );
+
+            // Fetch WordPress profile if applicable
+            if (_isWordPressApi(apiUrl) && _currentUser!.jwt != null) {
+              debugPrint('[GAUTH] WordPress API detected, fetching user profile...');
+              await _fetchWordPressUserProfile(_currentUser!.jwt!);
+            }
+
+            await _saveUser(_currentUser!);
+            _authStateController.add(_currentUser);
+            return AuthResult.success(_currentUser!);
+          }
+
+          // Jika tidak ada JWT dari registrasi dan retry gagal, throw error
+          rethrow;
         }
       }
 
-      debugPrint('[GAUTH] Extracted JWT: ${jwtToken != null ? "(${jwtToken.length} chars)" : "null"}');
+      debugPrint('[GAUTH] Response: ${response.statusCode} - ${response.data}');
+      if (isRetryAfterRegister) {
+        debugPrint('[GAUTH] (This was after auto-registration)');
+      }
 
-      _currentUser = AuthUser(
-        uid: userData['id']?.toString() ??
-             userData['uid']?.toString() ??
-             googleUser.id,
-        email: userData['email']?.toString() ??
-               userData['user_email']?.toString() ??
-               googleUser.email,
-        displayName: userData['name']?.toString() ??
-                     userData['display_name']?.toString() ??
-                     googleUser.displayName,
-        photoUrl: userData['picture']?.toString() ??
-                  userData['avatar']?.toString() ??
-                  googleUser.photoUrl,
-        isEmailVerified: userData['email_verified'] == true || userData['is_verified'] == true,
-        isGoogleLogin: true,
-        jwt: jwtToken,
+      if (response.statusCode != 200) {
+        debugPrint('[GAUTH] ERROR: Backend returned ${response.statusCode}');
+        return AuthResult.failure('Verifikasi token gagal: ${response.statusCode}.');
+      }
+
+      // Parse response dan buat AuthUser
+      final result = _parseGoogleAuthResponse(
+        responseData: response.data,
+        googleUser: googleUser,
       );
+
+      if (!result.success) {
+        return result;
+      }
 
       debugPrint('[GAUTH] <<< Success: ${_currentUser!.email}, Name: ${_currentUser!.displayName}');
       debugPrint('[GAUTH] JWT saved: ${_currentUser!.jwt != null ? "(${_currentUser!.jwt!.length} chars)" : "null"}');
@@ -677,7 +904,7 @@ class CustomApiAuthProvider implements BaseAuthService {
         debugPrint('[GAUTH] Data (RAW): ${e.response?.data}');
 
         final responseData = e.response?.data;
-        String errorMessage = 'Verifikasi token gagal. Mungkin user tidak terdaftar di sistem. (${e.response?.statusCode})';
+        String errorMessage = 'Verifikasi token gagal. (${e.response?.statusCode})';
 
         if (responseData is Map<String, dynamic>) {
           errorMessage = responseData['message']?.toString() ??
@@ -703,6 +930,98 @@ class CustomApiAuthProvider implements BaseAuthService {
       }
       return AuthResult.failure('Login Google gagal: ${e.toString()}');
     }
+  }
+
+  /// Menentukan apakah error dari OAuth verification menunjukkan user belum terdaftar
+  /// sehingga perlu auto-register
+  ///
+  /// Simple JWT Login response format ketika gagal:
+  /// { "success": false, "data": { "message": "Wrong user credentials.", "errorCode": 74 } }
+  bool _shouldAttemptAutoRegister(DioException e) {
+    final statusCode = e.response?.statusCode;
+    final responseData = e.response?.data;
+
+    debugPrint('[GAUTH] Checking if auto-register should be attempted...');
+    debugPrint('[GAUTH] Status code: $statusCode');
+
+    // Status codes yang menunjukkan user tidak ditemukan
+    // 403: Forbidden (user not found in WP)
+    // 404: Not found
+    // 400: Bad request (bisa berarti user tidak ada)
+    if (statusCode == null) return false;
+
+    // Jika status code 5xx, jangan coba register (server error)
+    if (statusCode >= 500) return false;
+
+    // Cek pesan error untuk memastikan ini masalah user tidak ditemukan
+    if (responseData is Map<String, dynamic>) {
+      // Extract error message - handle nested Simple JWT Login format
+      // Format: { success: false, data: { message: "...", errorCode: N } }
+      String message = '';
+      int? errorCode;
+
+      // Cek nested data.message (format Simple JWT Login)
+      if (responseData['data'] is Map<String, dynamic>) {
+        final dataMap = responseData['data'] as Map<String, dynamic>;
+        message = dataMap['message']?.toString().toLowerCase() ?? '';
+        errorCode = dataMap['errorCode'] is int
+            ? dataMap['errorCode'] as int
+            : int.tryParse(dataMap['errorCode']?.toString() ?? '');
+      }
+
+      // Fallback ke root level message jika nested message kosong
+      if (message.isEmpty) {
+        message = (responseData['message']?.toString() ??
+                   responseData['msg']?.toString() ??
+                   responseData['error']?.toString() ??
+                   '')
+            .toLowerCase();
+      }
+
+      debugPrint('[GAUTH] Error message: $message');
+      debugPrint('[GAUTH] Error code: $errorCode');
+
+      // Simple JWT Login errorCode 74 = "Wrong user credentials"
+      // Ini terjadi ketika user tidak ditemukan di WordPress saat OAuth
+      if (errorCode == 74) {
+        debugPrint('[GAUTH] Matched errorCode 74 (Wrong user credentials) → will attempt auto-register');
+        return true;
+      }
+
+      // Keyword yang menunjukkan user tidak terdaftar
+      final userNotFoundKeywords = [
+        'wrong user credentials',
+        'user not found',
+        'user_not_found',
+        'user does not exist',
+        'user not exist',
+        'no user',
+        'not registered',
+        'tidak terdaftar',
+        'tidak ditemukan',
+        'invalid user',
+        'user is not registered',
+        'could not find user',
+        'unable to find user',
+      ];
+
+      for (final keyword in userNotFoundKeywords) {
+        if (message.contains(keyword)) {
+          debugPrint('[GAUTH] Matched keyword: "$keyword" → will attempt auto-register');
+          return true;
+        }
+      }
+    }
+
+    // Untuk status 403 dan 404, coba register meskipun pesan tidak cocok
+    // karena ini umumnya menunjukkan user tidak ada
+    if (statusCode == 403 || statusCode == 404) {
+      debugPrint('[GAUTH] Status $statusCode suggests user not found → will attempt auto-register');
+      return true;
+    }
+
+    debugPrint('[GAUTH] No auto-register indicators found');
+    return false;
   }
 
   /// Refresh expired JWT token

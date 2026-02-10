@@ -81,6 +81,9 @@ class AppInfo {
   static String get authUsernameFieldName => dotenv.env['AUTH_USERNAME_FIELD_NAME'] ?? 'username';
   static String get authPasswordFieldName => dotenv.env['AUTH_PASSWORD_FIELD_NAME'] ?? 'password';
 
+  static String get authKey => dotenv.env['AUTH_KEY'] ?? '';
+  static bool get authAutoCreateUser => dotenv.env['AUTH_AUTO_CREATE_USER']?.toLowerCase() == 'true';
+
   static String get authRegisterUrl => dotenv.env['AUTH_REGISTER_URL'] ?? '/o/auth/register/';
   static String get authForgotPasswordUrl => dotenv.env['AUTH_FORGOT_PASSWORD_URL'] ?? '/o/auth/forgot-password/';
   static String get authResetPasswordUrl => dotenv.env['AUTH_RESET_PASSWORD_URL'] ?? '/o/auth/reset-password/';
