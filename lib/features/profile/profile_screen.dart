@@ -23,7 +23,7 @@ class ProfileScreen extends ConsumerWidget {
     final l10n = context.l10n;
 
     // Check if user logged in with Google (from property or detect from photoUrl)
-    final isGoogleUser = user?.isGoogleLogin == true || 
+    final isGoogleUser = user?.isGoogleLogin == true ||
         (user?.photoUrl?.contains('googleusercontent.com') ?? false);
 
     return Scaffold(
@@ -101,11 +101,20 @@ class ProfileScreen extends ConsumerWidget {
                                 ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        user?.email ?? l10n.notLoggedIn,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onPrimaryContainer,
+                      SizedBox(
+                        width: double.infinity,
+                        child: Center(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Text(
+                              user?.email ?? l10n.notLoggedIn,
+                              maxLines: 1,
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: colorScheme.onPrimaryContainer,
+                                  ),
                             ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -279,18 +288,25 @@ class ProfileScreen extends ConsumerWidget {
     return ListTile(
       leading: Icon(icon),
       title: Text(title),
-      trailing: Text(
-        value,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: valueColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+      trailing: Flexible(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          reverse: true,
+          child: Text(
+            value,
+            maxLines: 1,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: valueColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+          ),
+        ),
       ),
     );
   }
 
   void _showDeleteAccountDialog(BuildContext context, AppLocalizations l10n) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -408,11 +424,20 @@ class EmbeddedProfileContent extends ConsumerWidget {
                       ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  user?.email ?? l10n.notLoggedIn,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onPrimaryContainer,
+                SizedBox(
+                  width: double.infinity,
+                  child: Center(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Text(
+                        user?.email ?? l10n.notLoggedIn,
+                        maxLines: 1,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onPrimaryContainer,
+                            ),
                       ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -549,11 +574,18 @@ class EmbeddedProfileContent extends ConsumerWidget {
     return ListTile(
       leading: Icon(icon),
       title: Text(title),
-      trailing: Text(
-        value,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: valueColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+      trailing: Flexible(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          reverse: true,
+          child: Text(
+            value,
+            maxLines: 1,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: valueColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+          ),
+        ),
       ),
     );
   }

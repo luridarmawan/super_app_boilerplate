@@ -113,10 +113,23 @@ class CustomApiAuthProvider implements BaseAuthService {
 
         // Update current user dengan data dari WordPress
         if (_currentUser != null) {
+          // Jika user login via Google dan sudah punya photo URL dari Google,
+          // jangan overwrite dengan WordPress Gravatar avatar
+          final shouldKeepGooglePhoto = _currentUser!.isGoogleLogin &&
+              _currentUser!.photoUrl != null &&
+              _currentUser!.photoUrl!.isNotEmpty;
+
+          final finalPhotoUrl = shouldKeepGooglePhoto
+              ? _currentUser!.photoUrl  // Keep Google profile photo
+              : (wpAvatarUrl ?? _currentUser!.photoUrl);  // Use WP avatar
+
+          debugPrint('[AUTH-WP] isGoogleLogin: ${_currentUser!.isGoogleLogin}');
+          debugPrint('[AUTH-WP] Keeping Google photo: $shouldKeepGooglePhoto');
+
           _currentUser = _currentUser!.copyWith(
             uid: wpUserId ?? _currentUser!.uid,
             displayName: wpDisplayName ?? _currentUser!.displayName,
-            photoUrl: wpAvatarUrl ?? _currentUser!.photoUrl,
+            photoUrl: finalPhotoUrl,
           );
 
           debugPrint('[AUTH-WP] Updated user with WordPress profile data');
@@ -743,9 +756,11 @@ class CustomApiAuthProvider implements BaseAuthService {
       displayName: userData['name']?.toString() ??
                    userData['display_name']?.toString() ??
                    googleUser.displayName,
-      photoUrl: userData['picture']?.toString() ??
-                userData['avatar']?.toString() ??
-                googleUser.photoUrl,
+      // Untuk Google login, prioritaskan foto dari Google profile
+      // karena lebih relevan daripada Gravatar/WordPress avatar
+      photoUrl: googleUser.photoUrl ??
+                userData['picture']?.toString() ??
+                userData['avatar']?.toString(),
       isEmailVerified: userData['email_verified'] == true || userData['is_verified'] == true,
       isGoogleLogin: true,
       jwt: jwtToken,

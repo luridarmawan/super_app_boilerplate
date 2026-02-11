@@ -29,19 +29,19 @@ class CustomSidebar extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final user = ref.watch(currentUserProvider);
     final l10n = context.l10n;
-    
+
     return NavigationDrawer(
       selectedIndex: null,
       onDestinationSelected: (index) => _handleNavigation(context, index, l10n),
       children: [
         // Header dengan profil user
         _buildDrawerHeader(context, user, colorScheme),
-        
+
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Divider(),
         ),
-        
+
         // Menu items
         Padding(
           padding: const EdgeInsets.fromLTRB(28, 16, 16, 8),
@@ -53,30 +53,30 @@ class CustomSidebar extends ConsumerWidget {
             ),
           ),
         ),
-        
+
         NavigationDrawerDestination(
           icon: const Icon(Icons.home_outlined),
           selectedIcon: const Icon(Icons.home),
           label: Text(l10n.dashboard),
         ),
-        
+
         // NavigationDrawerDestination(
         //   icon: const Icon(Icons.person_outline),
         //   selectedIcon: const Icon(Icons.person),
         //   label: Text(l10n.profile),
         // ),
-        
+
         NavigationDrawerDestination(
           icon: const Icon(Icons.notifications_outlined),
           selectedIcon: const Icon(Icons.notifications),
           label: Text(l10n.notifications),
         ),
-        
+
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Divider(),
         ),
-        
+
         Padding(
           padding: const EdgeInsets.fromLTRB(28, 16, 16, 8),
           child: Text(
@@ -87,26 +87,26 @@ class CustomSidebar extends ConsumerWidget {
             ),
           ),
         ),
-        
+
         NavigationDrawerDestination(
           icon: const Icon(Icons.history_outlined),
           selectedIcon: const Icon(Icons.history),
           label: Text(l10n.history),
         ),
-        
+
         NavigationDrawerDestination(
           icon: const Icon(Icons.favorite_outline),
           selectedIcon: const Icon(Icons.favorite),
           label: Text(l10n.favorites),
         ),
-        
 
-        
+
+
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Divider(),
         ),
-        
+
         Padding(
           padding: const EdgeInsets.fromLTRB(28, 16, 16, 8),
           child: Text(
@@ -117,19 +117,19 @@ class CustomSidebar extends ConsumerWidget {
             ),
           ),
         ),
-        
+
         NavigationDrawerDestination(
           icon: const Icon(Icons.settings_outlined),
           selectedIcon: const Icon(Icons.settings),
           label: Text(l10n.settings),
         ),
-        
+
         NavigationDrawerDestination(
           icon: const Icon(Icons.help_outline),
           selectedIcon: const Icon(Icons.help),
           label: Text(l10n.helpAndSupport),
         ),
-        
+
         // Notification Test (only when notification enabled AND mock provider)
         if (AppInfo.enableNotification &&
             (AppInfo.notificationProvider.toLowerCase() == 'mock' ||
@@ -139,9 +139,9 @@ class CustomSidebar extends ConsumerWidget {
             selectedIcon: Icon(Icons.bug_report),
             label: Text('Notification Test'),
           ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Logout button
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -155,7 +155,7 @@ class CustomSidebar extends ConsumerWidget {
             ),
           ),
         ),
-        
+
         const SizedBox(height: 24),
       ],
     );
@@ -220,9 +220,9 @@ class CustomSidebar extends ConsumerWidget {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Name
           Text(
             user?.displayName ?? context.l10n.guestUser,
@@ -232,19 +232,27 @@ class CustomSidebar extends ConsumerWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          
+
           // Email
           if (user?.email != null)
-            Text(
-              user!.email!,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onPrimaryContainer,
+            SizedBox(
+              width: double.infinity,
+              child: Center(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Text(
+                    user!.email!,
+                    maxLines: 1,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                ),
               ),
             ),
-          
+
           const SizedBox(height: 8),
-          
+
           // View Profile button
           TextButton.icon(
             onPressed: onProfileTap,
@@ -274,7 +282,7 @@ class CustomSidebar extends ConsumerWidget {
 
   void _handleNavigation(BuildContext context, int index, AppLocalizations l10n) {
     Navigator.of(context).pop(); // Close drawer
-    
+
     switch (index) {
       case 0: // Dashboard
         onDashboardTap?.call();
