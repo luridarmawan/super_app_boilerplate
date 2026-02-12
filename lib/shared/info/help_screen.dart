@@ -441,6 +441,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
   }) async {
     final l10n = context.l10n;
     final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final errorColor = Theme.of(context).colorScheme.error;
 
     // Show sending indicator
     scaffoldMessenger.showSnackBar(
@@ -497,7 +498,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
           SnackBar(
             content: Text(l10n.feedbackSendFailed),
             behavior: SnackBarBehavior.floating,
-            backgroundColor: Theme.of(context).colorScheme.error,
+            backgroundColor: errorColor,
           ),
         );
       }
@@ -510,7 +511,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
         SnackBar(
           content: Text(l10n.feedbackSendFailed),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: Theme.of(context).colorScheme.error,
+          backgroundColor: errorColor,
         ),
       );
     } catch (e) {
@@ -521,7 +522,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
         SnackBar(
           content: Text(l10n.feedbackSendFailed),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: Theme.of(context).colorScheme.error,
+          backgroundColor: errorColor,
         ),
       );
     }
