@@ -191,6 +191,8 @@ class AppInfo {
   static bool get enableGps => dotenv.env['ENABLE_GPS']?.toLowerCase() == 'true';
   static String get gpsReverseGeoUrl => dotenv.env['GPS_REVERSE_GEO_URL'] ?? '';
 
+  static bool get enableQuickAction => dotenv.env['ENABLE_QUICK_ACTION']?.toLowerCase() == 'true';
+
   /// Enable/disable Quick Action Demo (Pay, Bills, Pulsa)
   static bool get enableQuickActionDemo => dotenv.env['ENABLE_QUICK_ACTION_DEMO']?.toLowerCase() == 'true';
 

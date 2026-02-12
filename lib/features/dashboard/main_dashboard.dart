@@ -56,7 +56,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
     super.initState();
     // Set system UI for edge-to-edge
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    
+
     // Initialize notifications after the first frame is built
     // This prevents "Tried to modify a provider while the widget tree was building" error
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -71,7 +71,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
     // Initialize and request permission
     await ref.read(notificationProvider.notifier).initialize();
     await ref.read(notificationProvider.notifier).requestPermission();
-    
+
     // Check for initial message (app opened from notification)
     final initialMessage = await ref.read(notificationProvider.notifier).getInitialMessage();
     if (initialMessage != null && mounted) {
@@ -88,7 +88,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
       // You can customize this based on your app's requirements
       debugPrint('Notification tapped: ${message.title}');
     }
-    
+
     // Show snackbar for demonstration
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -199,7 +199,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
         onNotificationTap: () {
           // Clear unread count when user taps notification
           ref.read(notificationProvider.notifier).clearUnreadCount();
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.noNewNotifications),
@@ -353,22 +353,23 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
 
             const SizedBox(height: 24),
 
-            // Quick Actions
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                context.l10n.quickActions,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+            // Quick Actions (only shown if ENABLE_QUICK_ACTION=true)
+            if (AppInfo.enableQuickAction) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  context.l10n.quickActions,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            const QuickActionGrid(
-              maxItems: 7,
-            ),
-
-            const SizedBox(height: 24),
+              const SizedBox(height: 12),
+              const QuickActionGrid(
+                maxItems: 7,
+              ),
+              const SizedBox(height: 24),
+            ],
 
             // Module Dashboard Slots
             // Displays widgets from all active modules
