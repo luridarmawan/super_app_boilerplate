@@ -39,40 +39,42 @@ class HelpScreen extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Quick Help
-          Text(
-            'Quick Help',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-          const SizedBox(height: 12),
+          if (AppInfo.supportQuickHelpEnable) ...[
+            Text(
+              'Quick Help',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            const SizedBox(height: 12),
 
-          _buildHelpCategory(
-            context,
-            icon: Icons.account_circle_outlined,
-            title: 'Account & Profile',
-            subtitle: 'Manage your account settings',
-          ),
-          _buildHelpCategory(
-            context,
-            icon: Icons.payment_outlined,
-            title: 'Payments & Transactions',
-            subtitle: 'Payment methods, history, refunds',
-          ),
-          _buildHelpCategory(
-            context,
-            icon: Icons.security_outlined,
-            title: 'Security & Privacy',
-            subtitle: 'Account security, privacy settings',
-          ),
-          _buildHelpCategory(
-            context,
-            icon: Icons.apps_outlined,
-            title: 'Using the App',
-            subtitle: 'Features, navigation, tips',
-          ),
+            _buildHelpCategory(
+              context,
+              icon: Icons.account_circle_outlined,
+              title: 'Account & Profile',
+              subtitle: 'Manage your account settings',
+            ),
+            _buildHelpCategory(
+              context,
+              icon: Icons.payment_outlined,
+              title: 'Payments & Transactions',
+              subtitle: 'Payment methods, history, refunds',
+            ),
+            _buildHelpCategory(
+              context,
+              icon: Icons.security_outlined,
+              title: 'Security & Privacy',
+              subtitle: 'Account security, privacy settings',
+            ),
+            _buildHelpCategory(
+              context,
+              icon: Icons.apps_outlined,
+              title: 'Using the App',
+              subtitle: 'Features, navigation, tips',
+            ),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
+          ],
 
           // Contact Us
           Text(
@@ -86,25 +88,27 @@ class HelpScreen extends StatelessWidget {
           Card(
             child: Column(
               children: [
-                ListTile(
-                  leading: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(8),
+                if (AppInfo.supportLiveChatEnable) ...[
+                  ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.chat_outlined,
+                        color: colorScheme.onPrimaryContainer,
+                      ),
                     ),
-                    child: Icon(
-                      Icons.chat_outlined,
-                      color: colorScheme.onPrimaryContainer,
-                    ),
+                    title: const Text('Live Chat'),
+                    subtitle: const Text('Chat with our support team'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showContactDialog(context, 'Live Chat'),
                   ),
-                  title: const Text('Live Chat'),
-                  subtitle: const Text('Chat with our support team'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _showContactDialog(context, 'Live Chat'),
-                ),
-                const Divider(height: 1),
+                  const Divider(height: 1),
+                ],
                 ListTile(
                   leading: Container(
                     width: 40,
@@ -123,25 +127,27 @@ class HelpScreen extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _showContactDialog(context, 'Email'),
                 ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(8),
+                if (AppInfo.supportCallCenterEnable) ...[
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.phone_outlined,
+                        color: colorScheme.onPrimaryContainer,
+                      ),
                     ),
-                    child: Icon(
-                      Icons.phone_outlined,
-                      color: colorScheme.onPrimaryContainer,
-                    ),
+                    title: const Text('Call Center'),
+                    subtitle: Text('${AppInfo.phoneSupport} (24 hours)'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showContactDialog(context, 'Phone'),
                   ),
-                  title: const Text('Call Center'),
-                  subtitle: Text('${AppInfo.phoneSupport} (24 hours)'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _showContactDialog(context, 'Phone'),
-                ),
+                ],
               ],
             ),
           ),
@@ -215,7 +221,7 @@ class HelpScreen extends StatelessWidget {
                 'You can reach us through Live Chat, Email, or Call Center. Check the "Contact Us" section above for details.',
           ),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 64),
         ],
       ),
     );

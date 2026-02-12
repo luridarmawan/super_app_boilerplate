@@ -204,6 +204,19 @@ class AppInfo {
   static bool get sidebarActivityEnable => dotenv.env['SIDEBAR_ACTIVITY_ENABLE']?.toLowerCase() == 'true';
 
   // ============================================
+  // SUPPORT FLAGS
+  // ============================================
+
+  /// Enable/disable Quick Help section in Help screen
+  static bool get supportQuickHelpEnable => dotenv.env['SUPPORT_QUICK_HELP_ENABLE']?.toLowerCase() == 'true';
+
+  /// Enable/disable Live Chat in Help screen
+  static bool get supportLiveChatEnable => dotenv.env['SUPPORT_LIVE_CHAT_ENABLE']?.toLowerCase() == 'true';
+
+  /// Enable/disable Call Center in Help screen
+  static bool get supportCallCenterEnable => dotenv.env['SUPPORT_CALL_CENTER_ENABLE']?.toLowerCase() == 'true';
+
+  // ============================================
   // AUTH CONFIGURATION
   // ============================================
 
