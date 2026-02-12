@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:super_app/core/constants/app_info.dart';
+import 'package:super_app/core/l10n/app_localizations.dart';
 
 /// Help & Report Screen
 class HelpScreen extends StatelessWidget {
@@ -13,10 +14,11 @@ class HelpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Help & Support'),
+        title: Text(l10n.helpAndSupport),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: onBackTap ?? () => Navigator.of(context).pop(),
@@ -28,7 +30,7 @@ class HelpScreen extends StatelessWidget {
           // Search Box
           TextField(
             decoration: InputDecoration(
-              hintText: 'Search help articles...',
+              hintText: l10n.searchHelpArticles,
               prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -41,7 +43,7 @@ class HelpScreen extends StatelessWidget {
           // Quick Help
           if (AppInfo.supportQuickHelpEnable) ...[
             Text(
-              'Quick Help',
+              l10n.quickHelp,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -51,26 +53,26 @@ class HelpScreen extends StatelessWidget {
             _buildHelpCategory(
               context,
               icon: Icons.account_circle_outlined,
-              title: 'Account & Profile',
-              subtitle: 'Manage your account settings',
+              title: l10n.accountAndProfile,
+              subtitle: l10n.manageAccountSettings,
             ),
             _buildHelpCategory(
               context,
               icon: Icons.payment_outlined,
-              title: 'Payments & Transactions',
-              subtitle: 'Payment methods, history, refunds',
+              title: l10n.paymentsAndTransactions,
+              subtitle: l10n.paymentMethodsHistory,
             ),
             _buildHelpCategory(
               context,
               icon: Icons.security_outlined,
-              title: 'Security & Privacy',
-              subtitle: 'Account security, privacy settings',
+              title: l10n.securityAndPrivacy,
+              subtitle: l10n.accountSecurityPrivacy,
             ),
             _buildHelpCategory(
               context,
               icon: Icons.apps_outlined,
-              title: 'Using the App',
-              subtitle: 'Features, navigation, tips',
+              title: l10n.usingTheApp,
+              subtitle: l10n.featuresNavigationTips,
             ),
 
             const SizedBox(height: 24),
@@ -78,7 +80,7 @@ class HelpScreen extends StatelessWidget {
 
           // Contact Us
           Text(
-            'Contact Us',
+            l10n.contactUs,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -102,10 +104,10 @@ class HelpScreen extends StatelessWidget {
                         color: colorScheme.onPrimaryContainer,
                       ),
                     ),
-                    title: const Text('Live Chat'),
-                    subtitle: const Text('Chat with our support team'),
+                    title: Text(l10n.liveChat),
+                    subtitle: Text(l10n.chatWithSupport),
                     trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _showContactDialog(context, 'Live Chat'),
+                    onTap: () => _showContactDialog(context, l10n.liveChat),
                   ),
                   const Divider(height: 1),
                 ],
@@ -122,10 +124,10 @@ class HelpScreen extends StatelessWidget {
                       color: colorScheme.onPrimaryContainer,
                     ),
                   ),
-                  title: const Text('Email Support'),
+                  title: Text(l10n.emailSupport),
                   subtitle: Text(AppInfo.emailSupport),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _showContactDialog(context, 'Email'),
+                  onTap: () => _showContactDialog(context, l10n.emailSupport),
                 ),
                 if (AppInfo.supportCallCenterEnable) ...[
                   const Divider(height: 1),
@@ -142,10 +144,10 @@ class HelpScreen extends StatelessWidget {
                         color: colorScheme.onPrimaryContainer,
                       ),
                     ),
-                    title: const Text('Call Center'),
-                    subtitle: Text('${AppInfo.phoneSupport} (24 hours)'),
+                    title: Text(l10n.callCenter),
+                    subtitle: Text('${AppInfo.phoneSupport} (${l10n.twentyFourHours})'),
                     trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _showContactDialog(context, 'Phone'),
+                    onTap: () => _showContactDialog(context, l10n.callCenter),
                   ),
                 ],
               ],
@@ -154,9 +156,9 @@ class HelpScreen extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // Report Issue
+          // Feedback & Ideas
           Text(
-            'Report an Issue',
+            l10n.feedbackAndIdeas,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -170,12 +172,12 @@ class HelpScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Having trouble?',
+                    l10n.weLoveToHearFromYou,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Let us know about any issues you experience. We\'ll get back to you as soon as possible.',
+                    l10n.feedbackDesc,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
@@ -183,8 +185,8 @@ class HelpScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   FilledButton.icon(
                     onPressed: () => _showReportDialog(context),
-                    icon: const Icon(Icons.bug_report_outlined),
-                    label: const Text('Report an Issue'),
+                    icon: const Icon(Icons.feedback_outlined),
+                    label: Text(l10n.sendFeedback),
                   ),
                 ],
               ),
@@ -195,7 +197,7 @@ class HelpScreen extends StatelessWidget {
 
           // FAQ
           Text(
-            'Frequently Asked Questions',
+            l10n.faq,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -204,21 +206,18 @@ class HelpScreen extends StatelessWidget {
 
           _buildFaqItem(
             context,
-            question: 'How do I reset my password?',
-            answer:
-                'You can reset your password by going to Settings > Account > Change Password, or use the "Forgot Password" option on the login screen.',
+            question: l10n.howToResetPassword,
+            answer: l10n.resetPasswordAnswer,
           ),
           _buildFaqItem(
             context,
-            question: 'How do I update my profile?',
-            answer:
-                'Go to Profile > Edit Profile to update your personal information, profile picture, and other details.',
+            question: l10n.howToUpdateProfile,
+            answer: l10n.updateProfileAnswer,
           ),
           _buildFaqItem(
             context,
-            question: 'How do I contact customer support?',
-            answer:
-                'You can reach us through Live Chat, Email, or Call Center. Check the "Contact Us" section above for details.',
+            question: l10n.howToContactSupport,
+            answer: l10n.contactSupportAnswer,
           ),
 
           const SizedBox(height: 64),
@@ -234,6 +233,7 @@ class HelpScreen extends StatelessWidget {
     required String subtitle,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -256,7 +256,7 @@ class HelpScreen extends StatelessWidget {
         onTap: () {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Opening $title...'),
+              content: Text('${l10n.opening} $title...'),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -293,26 +293,28 @@ class HelpScreen extends StatelessWidget {
   }
 
   void _showContactDialog(BuildContext context, String method) {
+    final l10n = context.l10n;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Opening $method...'),
+        content: Text('${l10n.opening} $method...'),
         behavior: SnackBarBehavior.floating,
       ),
     );
   }
 
   void _showReportDialog(BuildContext context) {
+    final l10n = context.l10n;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Report an Issue'),
+        title: Text(l10n.sendFeedback),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               maxLines: 4,
               decoration: InputDecoration(
-                hintText: 'Describe the issue you\'re experiencing...',
+                hintText: l10n.feedbackHint,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -323,19 +325,19 @@ class HelpScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () {
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Report submitted. Thank you!'),
+                SnackBar(
+                  content: Text(l10n.feedbackSubmittedThankYou),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
             },
-            child: const Text('Submit'),
+            child: Text(l10n.submit),
           ),
         ],
       ),

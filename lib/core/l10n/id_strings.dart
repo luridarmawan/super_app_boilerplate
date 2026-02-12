@@ -155,6 +155,13 @@ const Map<String, String> idStrings = {
   'chatWithSupport': 'Chat dengan tim support kami',
   'emailSupport': 'Dukungan Email',
   'callCenter': 'Call Center',
+  '24hours': '24 jam',
+  'feedbackAndIdeas': 'Masukan & Ide',
+  'weLoveToHearFromYou': 'Kami ingin mendengar dari Anda!',
+  'feedbackDesc': 'Punya masalah, saran, atau ide baru? Bagikan masukan Anda kepada kami \u2014 baik itu laporan bug, permintaan fitur, atau masukan apapun untuk membantu kami berkembang.',
+  'sendFeedback': 'Kirim Masukan',
+  'feedbackHint': 'Bagikan masukan, laporkan masalah, atau sarankan ide baru...',
+  'feedbackSubmittedThankYou': 'Masukan terkirim. Terima kasih!',
   'reportAnIssue': 'Laporkan Masalah',
   'havingTrouble': 'Mengalami masalah?',
   'reportIssueDesc': 'Beritahu kami tentang masalah yang Anda alami. Kami akan menghubungi Anda sesegera mungkin.',
@@ -168,6 +175,7 @@ const Map<String, String> idStrings = {
   'describeYourIssue': 'Jelaskan masalah yang Anda alami...',
   'submit': 'Kirim',
   'reportSubmittedThankYou': 'Laporan terkirim. Terima kasih!',
+  'opening': 'Membuka',
 
   // Sidebar
   'menuLabel': 'Menu',

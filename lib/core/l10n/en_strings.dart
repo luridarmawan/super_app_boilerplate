@@ -155,6 +155,13 @@ const Map<String, String> enStrings = {
   'chatWithSupport': 'Chat with our support team',
   'emailSupport': 'Email Support',
   'callCenter': 'Call Center',
+  '24hours': '24 hours',
+  'feedbackAndIdeas': 'Feedback & Ideas',
+  'weLoveToHearFromYou': "We'd love to hear from you!",
+  'feedbackDesc': "Have a problem, suggestion, or a great idea? Share your feedback with us \u2014 whether it's a bug report, feature request, or any input to help us improve.",
+  'sendFeedback': 'Send Feedback',
+  'feedbackHint': 'Share your feedback, report an issue, or suggest a new idea...',
+  'feedbackSubmittedThankYou': 'Feedback submitted. Thank you!',
   'reportAnIssue': 'Report an Issue',
   'havingTrouble': 'Having trouble?',
   'reportIssueDesc': "Let us know about any issues you experience. We'll get back to you as soon as possible.",
@@ -168,6 +175,7 @@ const Map<String, String> enStrings = {
   'describeYourIssue': "Describe the issue you're experiencing...",
   'submit': 'Submit',
   'reportSubmittedThankYou': 'Report submitted. Thank you!',
+  'opening': 'Opening',
 
   // Sidebar
   'menuLabel': 'Menu',

@@ -224,6 +224,13 @@ class AppLocalizations {
   String get chatWithSupport => translate('chatWithSupport');
   String get emailSupport => translate('emailSupport');
   String get callCenter => translate('callCenter');
+  String get twentyFourHours => translate('24hours');
+  String get feedbackAndIdeas => translate('feedbackAndIdeas');
+  String get weLoveToHearFromYou => translate('weLoveToHearFromYou');
+  String get feedbackDesc => translate('feedbackDesc');
+  String get sendFeedback => translate('sendFeedback');
+  String get feedbackHint => translate('feedbackHint');
+  String get feedbackSubmittedThankYou => translate('feedbackSubmittedThankYou');
   String get reportAnIssue => translate('reportAnIssue');
   String get havingTrouble => translate('havingTrouble');
   String get reportIssueDesc => translate('reportIssueDesc');
@@ -237,6 +244,7 @@ class AppLocalizations {
   String get describeYourIssue => translate('describeYourIssue');
   String get submit => translate('submit');
   String get reportSubmittedThankYou => translate('reportSubmittedThankYou');
+  String get opening => translate('opening');
 
   // ============================================
   // SIDEBAR MENU STRINGS
