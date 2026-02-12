@@ -216,6 +216,9 @@ class AppInfo {
   /// Enable/disable Call Center in Help screen
   static bool get supportCallCenterEnable => dotenv.env['SUPPORT_CALL_CENTER_ENABLE']?.toLowerCase() == 'true';
 
+  /// Feedback submission URL (POST endpoint)
+  static String get supportFeedbackUrl => dotenv.env['SUPPORT_FEEDBACK_URL'] ?? '';
+
   // ============================================
   // AUTH CONFIGURATION
   // ============================================

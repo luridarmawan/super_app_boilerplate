@@ -231,6 +231,12 @@ class AppLocalizations {
   String get sendFeedback => translate('sendFeedback');
   String get feedbackHint => translate('feedbackHint');
   String get feedbackSubmittedThankYou => translate('feedbackSubmittedThankYou');
+  String get feedbackUrlNotConfigured => translate('feedbackUrlNotConfigured');
+  String get feedbackMessageRequired => translate('feedbackMessageRequired');
+  String get feedbackMessageTooShort => translate('feedbackMessageTooShort');
+  String get feedbackMessageInvalid => translate('feedbackMessageInvalid');
+  String get feedbackSending => translate('feedbackSending');
+  String get feedbackSendFailed => translate('feedbackSendFailed');
   String get reportAnIssue => translate('reportAnIssue');
   String get havingTrouble => translate('havingTrouble');
   String get reportIssueDesc => translate('reportIssueDesc');

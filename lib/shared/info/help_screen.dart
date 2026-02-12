@@ -1,9 +1,13 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:super_app/core/constants/app_info.dart';
 import 'package:super_app/core/l10n/app_localizations.dart';
+import 'package:super_app/core/config/app_config.dart';
+import 'package:super_app/core/network/api_client.dart';
 
 /// Help & Report Screen
-class HelpScreen extends StatelessWidget {
+class HelpScreen extends ConsumerStatefulWidget {
   final VoidCallback? onBackTap;
 
   const HelpScreen({
@@ -11,6 +15,11 @@ class HelpScreen extends StatelessWidget {
     this.onBackTap,
   });
 
+  @override
+  ConsumerState<HelpScreen> createState() => _HelpScreenState();
+}
+
+class _HelpScreenState extends ConsumerState<HelpScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -21,7 +30,7 @@ class HelpScreen extends StatelessWidget {
         title: Text(l10n.helpAndSupport),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: onBackTap ?? () => Navigator.of(context).pop(),
+          onPressed: widget.onBackTap ?? () => Navigator.of(context).pop(),
         ),
       ),
       body: ListView(
@@ -184,7 +193,7 @@ class HelpScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   FilledButton.icon(
-                    onPressed: () => _showReportDialog(context),
+                    onPressed: () => _showFeedbackDialog(context),
                     icon: const Icon(Icons.feedback_outlined),
                     label: Text(l10n.sendFeedback),
                   ),
@@ -302,45 +311,219 @@ class HelpScreen extends StatelessWidget {
     );
   }
 
-  void _showReportDialog(BuildContext context) {
+  /// Validates the feedback message for suspicious or dangerous content.
+  /// Returns null if valid, or an error message string if invalid.
+  String? _validateFeedbackMessage(String message, AppLocalizations l10n) {
+    final trimmed = message.trim();
+
+    // Check empty
+    if (trimmed.isEmpty) {
+      return l10n.feedbackMessageRequired;
+    }
+
+    // Check minimum length
+    if (trimmed.length < 10) {
+      return l10n.feedbackMessageTooShort;
+    }
+
+    // Check for suspicious/dangerous patterns
+    // - Script injection: <script>, javascript:, on[event]=
+    // - SQL injection: common patterns like DROP TABLE, UNION SELECT, etc.
+    // - Command injection: shell commands
+    // - Excessive special characters
+    final dangerousPatterns = [
+      RegExp(r'<\s*script', caseSensitive: false),
+      RegExp(r'javascript\s*:', caseSensitive: false),
+      RegExp(r'on\w+\s*=', caseSensitive: false),
+      RegExp(r'<\s*iframe', caseSensitive: false),
+      RegExp(r'<\s*object', caseSensitive: false),
+      RegExp(r'<\s*embed', caseSensitive: false),
+      RegExp(r'<\s*form', caseSensitive: false),
+      RegExp(r'<\s*img\s+[^>]*onerror', caseSensitive: false),
+      RegExp(r"(DROP|DELETE|INSERT|UPDATE|ALTER)\s+(TABLE|DATABASE|INTO)", caseSensitive: false),
+      RegExp(r"UNION\s+(ALL\s+)?SELECT", caseSensitive: false),
+      RegExp(r";\s*(DROP|DELETE|INSERT|UPDATE|ALTER)\b", caseSensitive: false),
+      RegExp(r'(--|/\*|\*/)', caseSensitive: false),
+      RegExp(r'(\bexec\b|\beval\b)\s*\(', caseSensitive: false),
+      RegExp(r'(\brm\s+-rf\b|\bsudo\b|\bchmod\b|\bchown\b)', caseSensitive: false),
+      RegExp(r'(\\x[0-9a-fA-F]{2}|\\u[0-9a-fA-F]{4})', caseSensitive: false),
+      RegExp(r'data\s*:\s*text/html', caseSensitive: false),
+    ];
+
+    for (final pattern in dangerousPatterns) {
+      if (pattern.hasMatch(trimmed)) {
+        return l10n.feedbackMessageInvalid;
+      }
+    }
+
+    return null; // valid
+  }
+
+  void _showFeedbackDialog(BuildContext context) {
     final l10n = context.l10n;
+    final feedbackUrl = AppInfo.supportFeedbackUrl;
+
+    // Check if feedback URL is configured
+    if (feedbackUrl.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.feedbackUrlNotConfigured),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
+
+    final messageController = TextEditingController();
+    String? errorText;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.sendFeedback),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              maxLines: 4,
-              decoration: InputDecoration(
-                hintText: l10n.feedbackHint,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: Text(l10n.sendFeedback),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: messageController,
+                maxLines: 4,
+                maxLength: 1000,
+                decoration: InputDecoration(
+                  hintText: l10n.feedbackHint,
+                  errorText: errorText,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                // Validate message
+                final validationError = _validateFeedbackMessage(
+                  messageController.text,
+                  l10n,
+                );
+
+                if (validationError != null) {
+                  setDialogState(() {
+                    errorText = validationError;
+                  });
+                  return;
+                }
+
+                // Close dialog and submit
+                Navigator.of(dialogContext).pop();
+                _submitFeedback(
+                  context,
+                  message: messageController.text.trim(),
+                );
+              },
+              child: Text(l10n.submit),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.feedbackSubmittedThankYou),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            child: Text(l10n.submit),
-          ),
-        ],
       ),
     );
+  }
+
+  Future<void> _submitFeedback(
+    BuildContext context, {
+    required String message,
+  }) async {
+    final l10n = context.l10n;
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    // Show sending indicator
+    scaffoldMessenger.showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: 16),
+            Text(l10n.feedbackSending),
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 30),
+      ),
+    );
+
+    try {
+      final user = ref.read(currentUserProvider);
+      final dio = ref.read(dioProvider);
+
+      final response = await dio.post(
+        AppInfo.supportFeedbackUrl,
+        data: {
+          'name': user?.displayName ?? '',
+          'email': user?.email ?? '',
+          'message': message,
+        },
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      debugPrint('[Feedback] Response status: ${response.statusCode}');
+      debugPrint('[Feedback] Response data: ${response.data}');
+
+      // Dismiss sending snackbar and show success
+      scaffoldMessenger.hideCurrentSnackBar();
+
+      if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.feedbackSubmittedThankYou),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.feedbackSendFailed),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } on DioException catch (e) {
+      debugPrint('[Feedback] DioException: ${e.message}');
+      debugPrint('[Feedback] Response: ${e.response?.data}');
+
+      scaffoldMessenger.hideCurrentSnackBar();
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.feedbackSendFailed),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } catch (e) {
+      debugPrint('[Feedback] Error: $e');
+
+      scaffoldMessenger.hideCurrentSnackBar();
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.feedbackSendFailed),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
   }
 }
