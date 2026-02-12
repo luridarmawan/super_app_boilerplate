@@ -197,6 +197,13 @@ class AppInfo {
   static bool get enableSignUp => dotenv.env['ENABLE_SIGN_UP']?.toLowerCase() == 'true';
 
   // ============================================
+  // SIDEBAR FLAGS
+  // ============================================
+
+  /// Enable/disable Activity section in sidebar (History, Favorites)
+  static bool get sidebarActivityEnable => dotenv.env['SIDEBAR_ACTIVITY_ENABLE']?.toLowerCase() == 'true';
+
+  // ============================================
   // AUTH CONFIGURATION
   // ============================================
 

@@ -72,33 +72,35 @@ class CustomSidebar extends ConsumerWidget {
           label: Text(l10n.notifications),
         ),
 
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Divider(),
-        ),
+        if (AppInfo.sidebarActivityEnable) ...[
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Divider(),
+          ),
 
-        Padding(
-          padding: const EdgeInsets.fromLTRB(28, 16, 16, 8),
-          child: Text(
-            l10n.activityLabel,
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 12,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(28, 16, 16, 8),
+            child: Text(
+              l10n.activityLabel,
+              style: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+              ),
             ),
           ),
-        ),
 
-        NavigationDrawerDestination(
-          icon: const Icon(Icons.history_outlined),
-          selectedIcon: const Icon(Icons.history),
-          label: Text(l10n.history),
-        ),
+          NavigationDrawerDestination(
+            icon: const Icon(Icons.history_outlined),
+            selectedIcon: const Icon(Icons.history),
+            label: Text(l10n.history),
+          ),
 
-        NavigationDrawerDestination(
-          icon: const Icon(Icons.favorite_outline),
-          selectedIcon: const Icon(Icons.favorite),
-          label: Text(l10n.favorites),
-        ),
+          NavigationDrawerDestination(
+            icon: const Icon(Icons.favorite_outline),
+            selectedIcon: const Icon(Icons.favorite),
+            label: Text(l10n.favorites),
+          ),
+        ],
 
 
 
@@ -283,43 +285,50 @@ class CustomSidebar extends ConsumerWidget {
   void _handleNavigation(BuildContext context, int index, AppLocalizations l10n) {
     Navigator.of(context).pop(); // Close drawer
 
-    switch (index) {
-      case 0: // Dashboard
-        onDashboardTap?.call();
-        break;
-      // case 1: // Profile
-      //   onProfileTap?.call();
-      //   break;
-      case 1: // Notifications
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.notifications)),
+    // Activity section offset: 2 items (History, Favorites) when enabled
+    final activityOffset = AppInfo.sidebarActivityEnable ? 2 : 0;
+
+    // Index mapping:
+    // 0 = Dashboard
+    // 1 = Notifications
+    // (if activity enabled) 2 = History, 3 = Favorites
+    // 2+offset = Settings
+    // 3+offset = Help
+    // 4+offset = Notification Test (conditional)
+
+    if (index == 0) {
+      // Dashboard
+      onDashboardTap?.call();
+    } else if (index == 1) {
+      // Notifications
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.notifications)),
+      );
+    } else if (AppInfo.sidebarActivityEnable && index == 2) {
+      // History
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.history)),
+      );
+    } else if (AppInfo.sidebarActivityEnable && index == 3) {
+      // Favorites
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.favorites)),
+      );
+    } else if (index == 2 + activityOffset) {
+      // Settings
+      onSettingsTap?.call();
+    } else if (index == 3 + activityOffset) {
+      // Help
+      onHelpTap?.call();
+    } else if (index == 4 + activityOffset) {
+      // Notification Test (only if shown)
+      if (AppInfo.enableNotification &&
+          (AppInfo.notificationProvider.toLowerCase() == 'mock' ||
+           AppInfo.notificationProvider.toLowerCase() == 'test')) {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const NotificationTestPanel()),
         );
-        break;
-      case 2: // History
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.history)),
-        );
-        break;
-      case 3: // Favorites
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.favorites)),
-        );
-        break;
-      case 4: // Settings
-        onSettingsTap?.call();
-        break;
-      case 5: // Help
-        onHelpTap?.call();
-        break;
-      case 6: // Notification Test (only if shown)
-        if (AppInfo.enableNotification &&
-            (AppInfo.notificationProvider.toLowerCase() == 'mock' ||
-             AppInfo.notificationProvider.toLowerCase() == 'test')) {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const NotificationTestPanel()),
-          );
-        }
-        break;
+      }
     }
   }
 }
