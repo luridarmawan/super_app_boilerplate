@@ -288,7 +288,10 @@ class ProfileScreen extends ConsumerWidget {
     return ListTile(
       leading: Icon(icon),
       title: Text(title),
-      trailing: Flexible(
+      trailing: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.45,
+        ),
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           reverse: true,
@@ -574,7 +577,10 @@ class EmbeddedProfileContent extends ConsumerWidget {
     return ListTile(
       leading: Icon(icon),
       title: Text(title),
-      trailing: Flexible(
+      trailing: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.45,
+        ),
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           reverse: true,
