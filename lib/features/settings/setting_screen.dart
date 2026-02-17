@@ -36,7 +36,7 @@ class SettingScreen extends ConsumerWidget {
           // Appearance Section
           _buildSectionHeader(context, l10n.appearance),
           const SizedBox(height: 8),
-          
+
           // Theme Template
           Card(
             child: Column(
@@ -89,7 +89,7 @@ class SettingScreen extends ConsumerWidget {
           // Language Section
           _buildSectionHeader(context, l10n.languageAndRegion),
           const SizedBox(height: 8),
-          
+
           Card(
             child: ListTile(
               leading: Container(
@@ -116,7 +116,7 @@ class SettingScreen extends ConsumerWidget {
           // Layout Section
           _buildSectionHeader(context, l10n.layout),
           const SizedBox(height: 8),
-          
+
           Card(
             child: Column(
               children: [
@@ -140,32 +140,10 @@ class SettingScreen extends ConsumerWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _showSidebarPositionDialog(context, ref, l10n),
                 ),
-                const Divider(height: 1),
-                SwitchListTile(
-                  secondary: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.flash_on_outlined,
-                      color: colorScheme.onPrimaryContainer,
-                    ),
-                  ),
-                  title: Text(l10n.showQuickActionsLabel),
-                  subtitle: Text(l10n.showQuickActionsDesc),
-                  value: config.showQuickActions,
-                  onChanged: (value) {
-                    ref.read(appConfigProvider.notifier).setShowQuickActions(value);
-                  },
-                ),
-                // Show Quick Action Manager when enabled
-                if (config.showQuickActions) ...[
+                if (AppInfo.enableQuickAction) ...[
                   const Divider(height: 1),
-                  ListTile(
-                    leading: Container(
+                  SwitchListTile(
+                    secondary: Container(
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
@@ -173,15 +151,39 @@ class SettingScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
-                        Icons.tune_outlined,
+                        Icons.flash_on_outlined,
                         color: colorScheme.onPrimaryContainer,
                       ),
                     ),
-                    title: Text(l10n.quickActionsManager),
-                    subtitle: Text(l10n.quickActionsManagerDesc),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context.push('/quick-actions'),
+                    title: Text(l10n.showQuickActionsLabel),
+                    subtitle: Text(l10n.showQuickActionsDesc),
+                    value: config.showQuickActions,
+                    onChanged: (value) {
+                      ref.read(appConfigProvider.notifier).setShowQuickActions(value);
+                    },
                   ),
+                  // Show Quick Action Manager when enabled
+                  if (config.showQuickActions) ...[
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.tune_outlined,
+                          color: colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                      title: Text(l10n.quickActionsManager),
+                      subtitle: Text(l10n.quickActionsManagerDesc),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push('/quick-actions'),
+                    ),
+                  ],
                 ],
               ],
             ),
@@ -192,7 +194,7 @@ class SettingScreen extends ConsumerWidget {
           // About Section
           _buildSectionHeader(context, l10n.about),
           const SizedBox(height: 8),
-          
+
           Card(
             child: Column(
               children: [
@@ -278,7 +280,7 @@ class SettingScreen extends ConsumerWidget {
 
   void _showTemplateDialog(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     final config = ref.read(appConfigProvider);
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -307,7 +309,7 @@ class SettingScreen extends ConsumerWidget {
 
   void _showLanguageDialog(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     final config = ref.read(appConfigProvider);
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -340,7 +342,7 @@ class SettingScreen extends ConsumerWidget {
 
   void _showSidebarPositionDialog(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     final config = ref.read(appConfigProvider);
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
