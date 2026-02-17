@@ -206,6 +206,13 @@ class AppInfo {
   static bool get sidebarActivityEnable => dotenv.env['SIDEBAR_ACTIVITY_ENABLE']?.toLowerCase() == 'true';
 
   // ============================================
+  // FOOTER FLAGS
+  // ============================================
+  static bool get footerEnable => dotenv.env['FOOTER_ENABLE']?.toLowerCase() == 'true';
+
+  static bool get fabChatEnable => dotenv.env['FAB_CHAT_ENABLE']?.toLowerCase() == 'true';
+
+  // ============================================
   // SUPPORT FLAGS
   // ============================================
 

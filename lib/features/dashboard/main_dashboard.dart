@@ -234,14 +234,16 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
             )
           : null,
       body: _buildBody(currentIndex),
-      bottomNavigationBar: CustomFooter(
-        selectedIndex: currentIndex,
-        onDestinationSelected: (index) {
-          ref.read(currentNavIndexProvider.notifier).state = index;
-        },
-        items: CustomFooter.defaultItems,
-        onCenterButtonTap: () => _showScanDialog(context),
-      ),
+      bottomNavigationBar: AppInfo.footerEnable
+          ? CustomFooter(
+              selectedIndex: currentIndex,
+              onDestinationSelected: (index) {
+                ref.read(currentNavIndexProvider.notifier).state = index;
+              },
+              items: CustomFooter.defaultItems,
+              onCenterButtonTap: () => _showScanDialog(context),
+            )
+          : null,
       // Additional Floating Action Buttons
       floatingActionButton: currentIndex == 0
           ? Column(
@@ -266,19 +268,20 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
                       child: const Icon(Icons.bug_report),
                     ),
                   ),
-                // Chat Button
-                FloatingActionButton.small(
-                  heroTag: 'fab_chat',
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(l10n.chatSupport),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                  child: const Icon(Icons.chat_outlined),
-                ),
+                // Chat Button (only when FAB_CHAT_ENABLE=true)
+                if (AppInfo.fabChatEnable)
+                  FloatingActionButton.small(
+                    heroTag: 'fab_chat',
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(l10n.chatSupport),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                    child: const Icon(Icons.chat_outlined),
+                  ),
               ],
             )
           : null,
