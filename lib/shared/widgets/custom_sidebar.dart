@@ -66,11 +66,12 @@ class CustomSidebar extends ConsumerWidget {
         //   label: Text(l10n.profile),
         // ),
 
-        NavigationDrawerDestination(
-          icon: const Icon(Icons.notifications_outlined),
-          selectedIcon: const Icon(Icons.notifications),
-          label: Text(l10n.notifications),
-        ),
+        if (AppInfo.enableNotification)
+          NavigationDrawerDestination(
+            icon: const Icon(Icons.notifications_outlined),
+            selectedIcon: const Icon(Icons.notifications),
+            label: Text(l10n.notifications),
+          ),
 
         if (AppInfo.sidebarActivityEnable) ...[
           const Padding(
@@ -285,42 +286,72 @@ class CustomSidebar extends ConsumerWidget {
   void _handleNavigation(BuildContext context, int index, AppLocalizations l10n) {
     Navigator.of(context).pop(); // Close drawer
 
-    // Activity section offset: 2 items (History, Favorites) when enabled
+    // Offset calculations for conditional menu items
+    final notificationOffset = AppInfo.enableNotification ? 1 : 0;
     final activityOffset = AppInfo.sidebarActivityEnable ? 2 : 0;
 
     // Index mapping:
     // 0 = Dashboard
-    // 1 = Notifications
-    // (if activity enabled) 2 = History, 3 = Favorites
-    // 2+offset = Settings
-    // 3+offset = Help
-    // 4+offset = Notification Test (conditional)
+    // (if notification enabled) 1 = Notifications
+    // (if activity enabled) next 2 = History, Favorites
+    // next = Settings
+    // next = Help
+    // next = Notification Test (conditional)
 
-    if (index == 0) {
+    int currentIndex = 0;
+
+    if (index == currentIndex) {
       // Dashboard
       onDashboardTap?.call();
-    } else if (index == 1) {
-      // Notifications
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.notifications)),
-      );
-    } else if (AppInfo.sidebarActivityEnable && index == 2) {
-      // History
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.history)),
-      );
-    } else if (AppInfo.sidebarActivityEnable && index == 3) {
-      // Favorites
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.favorites)),
-      );
-    } else if (index == 2 + activityOffset) {
+      return;
+    }
+
+    if (AppInfo.enableNotification) {
+      currentIndex++;
+      if (index == currentIndex) {
+        // Notifications
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.notifications)),
+        );
+        return;
+      }
+    }
+
+    if (AppInfo.sidebarActivityEnable) {
+      currentIndex++;
+      if (index == currentIndex) {
+        // History
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.history)),
+        );
+        return;
+      }
+      currentIndex++;
+      if (index == currentIndex) {
+        // Favorites
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.favorites)),
+        );
+        return;
+      }
+    }
+
+    currentIndex++;
+    if (index == currentIndex) {
       // Settings
       onSettingsTap?.call();
-    } else if (index == 3 + activityOffset) {
+      return;
+    }
+
+    currentIndex++;
+    if (index == currentIndex) {
       // Help
       onHelpTap?.call();
-    } else if (index == 4 + activityOffset) {
+      return;
+    }
+
+    currentIndex++;
+    if (index == currentIndex) {
       // Notification Test (only if shown)
       if (AppInfo.enableNotification &&
           (AppInfo.notificationProvider.toLowerCase() == 'mock' ||
@@ -329,6 +360,7 @@ class CustomSidebar extends ConsumerWidget {
           MaterialPageRoute(builder: (_) => const NotificationTestPanel()),
         );
       }
+      return;
     }
   }
 }

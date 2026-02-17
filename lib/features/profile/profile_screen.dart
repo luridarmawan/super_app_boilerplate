@@ -189,20 +189,22 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                           const Divider(height: 1),
                         ],
-                        ListTile(
-                          leading: const Icon(Icons.notifications_outlined),
-                          title: Text(l10n.notificationSettings),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(l10n.notificationSettings),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          },
-                        ),
-                        const Divider(height: 1),
+                        if (AppInfo.enableNotification) ...[
+                          ListTile(
+                            leading: const Icon(Icons.notifications_outlined),
+                            title: Text(l10n.notificationSettings),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(l10n.notificationSettings),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            },
+                          ),
+                          const Divider(height: 1),
+                        ],
                         ListTile(
                           leading: const Icon(Icons.security_outlined),
                           title: Text(l10n.privacyAndSecurity),
