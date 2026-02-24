@@ -286,10 +286,6 @@ class CustomSidebar extends ConsumerWidget {
   void _handleNavigation(BuildContext context, int index, AppLocalizations l10n) {
     Navigator.of(context).pop(); // Close drawer
 
-    // Offset calculations for conditional menu items
-    final notificationOffset = AppInfo.enableNotification ? 1 : 0;
-    final activityOffset = AppInfo.sidebarActivityEnable ? 2 : 0;
-
     // Index mapping:
     // 0 = Dashboard
     // (if notification enabled) 1 = Notifications
