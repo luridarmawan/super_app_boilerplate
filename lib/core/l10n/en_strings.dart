@@ -215,7 +215,7 @@ const Map<String, String> enStrings = {
   // TOS & Privacy
   'tosTitle': 'Terms of Service',
   'tosLastUpdated': 'Last updated',
-  'tosIntro': 'Welcome to Super App. By using this application, you agree to comply with the following terms.',
+  'tosIntro': 'By using this application, you agree to comply with the following terms.',
   'privacyTitle': 'Privacy Policy',
   'privacyLastUpdated': 'Last updated',
   'privacyIntro': 'Your privacy is important to us. This policy explains how we collect and use your data.',

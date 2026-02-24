@@ -215,7 +215,7 @@ const Map<String, String> idStrings = {
   // TOS & Privacy
   'tosTitle': 'Ketentuan Layanan',
   'tosLastUpdated': 'Terakhir diperbarui',
-  'tosIntro': 'Selamat datang di Super App. Dengan menggunakan aplikasi ini, Anda setuju untuk mematuhi ketentuan berikut.',
+  'tosIntro': 'Dengan menggunakan aplikasi ini, Anda setuju untuk mematuhi ketentuan berikut.',
   'privacyTitle': 'Kebijakan Privasi',
   'privacyLastUpdated': 'Terakhir diperbarui',
   'privacyIntro': 'Privasi Anda penting bagi kami. Kebijakan ini menjelaskan bagaimana kami mengumpulkan dan menggunakan data Anda.',

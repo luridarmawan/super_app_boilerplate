@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:super_app/core/constants/app_info.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:super_app/core/l10n/app_localizations.dart';
 import 'package:super_app/core/config/app_config.dart';
 import 'package:super_app/core/network/api_client.dart';
@@ -227,6 +228,48 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
             context,
             question: l10n.howToContactSupport,
             answer: l10n.contactSupportAnswer,
+          ),
+
+          // Privacy Policy
+          Card(
+            child: ListTile(
+              leading: Icon(
+                Icons.privacy_tip_outlined,
+                color: colorScheme.primary,
+              ),
+              title: Text(l10n.privacyPolicy),
+              subtitle: Text(l10n.privacyIntro),
+              trailing: const Icon(Icons.open_in_new, size: 20),
+              onTap: () async {
+                final url = Uri.parse(AppInfo.privacyUrl);
+                try {
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                } catch (e) {
+                  debugPrint('Could not launch ${AppInfo.privacyUrl}: $e');
+                }
+              },
+            ),
+          ),
+
+          // TOS - Term of Service
+          Card(
+            child: ListTile(
+              leading: Icon(
+                Icons.description_outlined,
+                color: colorScheme.primary,
+              ),
+              title: Text(l10n.termsOfService),
+              subtitle: Text(l10n.tosIntro),
+              trailing: const Icon(Icons.open_in_new, size: 20),
+              onTap: () async {
+                final url = Uri.parse(AppInfo.termsUrl);
+                try {
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                } catch (e) {
+                  debugPrint('Could not launch ${AppInfo.termsUrl}: $e');
+                }
+              },
+            ),
           ),
 
           const SizedBox(height: 64),

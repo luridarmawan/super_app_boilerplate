@@ -104,11 +104,7 @@ class PrivacyScreen extends StatelessWidget {
               context,
               title: 'Data Sharing',
               content:
-                  'We may share your information with:\n\n'
-                  '• Service providers who assist in our operations\n'
-                  '• Business partners for joint offerings\n'
-                  '• Law enforcement when required by law\n'
-                  '• Third parties with your consent',
+                  'We not share your information with others.',
             ),
 
             _buildSection(
