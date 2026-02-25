@@ -203,6 +203,7 @@ class AppInfo {
   // ============================================
 
   static bool get widgetLocationEnable => dotenv.env['WIDGET_LOCATION_ENABLE']?.toLowerCase() == 'true';
+  static bool get workspaceWidgetNewsEnable => dotenv.env['WORKSPACE_WIDGET_NEWS_ENABLE']?.toLowerCase() == 'true';
 
   // ============================================
   // SIDEBAR FLAGS

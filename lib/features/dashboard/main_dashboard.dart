@@ -391,14 +391,6 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
               title: context.l10n.latestNews,
               seeAllText: context.l10n.seeAll,
               isHorizontal: true,
-              onSeeAllTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(context.l10n.seeAll),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
               onArticleTap: (article) {
                 if (article.slug != null) {
                   context.push('/article/${article.slug}');
