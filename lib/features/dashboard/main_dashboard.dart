@@ -343,8 +343,8 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
 
             const SizedBox(height: 24),
 
-            // GPS Location Widget (only shown if ENABLE_GPS=true)
-            if (AppInfo.enableGps)
+            // GPS Location Widget (only shown if WIDGET_LOCATION_ENABLE=true)
+            if (AppInfo.widgetLocationEnable)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: LocationDisplayWidget(
