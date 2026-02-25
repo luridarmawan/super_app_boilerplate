@@ -1094,10 +1094,77 @@ class CustomApiAuthProvider implements BaseAuthService {
   @override
   Future<AuthResult> sendPasswordResetEmail(String email) async {
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
-      return AuthResult(success: true);
+      debugPrint('[AUTH] ============================================');
+      debugPrint('[AUTH] >>> Starting Password Reset Request');
+      debugPrint('[AUTH] Email: $email');
+
+      final forgotPasswordUrl = AppInfo.authForgotPasswordUrl;
+      debugPrint('[AUTH] POST URL: $forgotPasswordUrl');
+
+      final dio = Dio();
+      final Map<String, dynamic> payload = {
+        'email': email,
+        'AUTH_CODE': AppInfo.authKey,
+      };
+      debugPrint('[AUTH] Request payload: $payload');
+
+      final response = await dio.post(
+        forgotPasswordUrl,
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            ...?headers,
+          },
+          contentType: 'application/json',
+        ),
+        data: payload,
+      );
+
+      debugPrint('[AUTH] ----------------------------------------');
+      debugPrint('[AUTH] Response Status: ${response.statusCode}');
+      debugPrint('[AUTH] Response Data: ${response.data}');
+
+      if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
+        final responseData = response.data as Map<String, dynamic>;
+
+        // Handle success based on 'success' flag or 'code'
+        bool isSuccess = responseData['success'] == true ||
+                        responseData['code'] == 0 ||
+                        responseData['code'] == 200;
+
+        if (isSuccess) {
+          debugPrint('[AUTH] <<< PASSWORD RESET REQUEST SUCCESS');
+          return AuthResult(success: true);
+        } else {
+          final errorMessage = responseData['message']?.toString() ??
+                             responseData['msg']?.toString() ??
+                             'Gagal mengirim email reset password';
+          debugPrint('[AUTH] <<< PASSWORD RESET REQUEST FAILED: $errorMessage');
+          return AuthResult.failure(errorMessage);
+        }
+      } else {
+        debugPrint('[AUTH] ERROR: Unexpected response status ${response.statusCode}');
+        return AuthResult.failure('Gagal mengirim email reset password (Status: ${response.statusCode})');
+      }
+    } on DioException catch (e) {
+      debugPrint('[AUTH] !!! DIO EXCEPTION in sendPasswordResetEmail !!!');
+      debugPrint('[AUTH] Message: ${e.message}');
+      if (e.response != null) {
+        debugPrint('[AUTH] Status: ${e.response?.statusCode}');
+        debugPrint('[AUTH] Data: ${e.response?.data}');
+      }
+
+      String errorMessage = 'Gagal mengirim email reset password';
+      if (e.response?.data is Map<String, dynamic>) {
+        errorMessage = e.response?.data['message']?.toString() ??
+                       e.response?.data['msg']?.toString() ??
+                       errorMessage;
+      }
+      return AuthResult.failure(errorMessage);
     } catch (e) {
-      return AuthResult.failure('Gagal mengirim email reset password');
+      debugPrint('[AUTH] !!! GENERAL EXCEPTION in sendPasswordResetEmail: $e');
+      return AuthResult.failure('Gagal mengirim email reset password: ${e.toString()}');
     }
   }
 
