@@ -87,6 +87,9 @@ class AppLocalizations {
   String get confirmPassword => translate('confirmPassword');
   String get fullName => translate('fullName');
   String get forgotPassword => translate('forgotPassword');
+  String get forgotPasswordDesc => translate('forgotPasswordDesc');
+  String get resetPassword => translate('resetPassword');
+  String get resetEmailSent => translate('resetEmailSent');
   String get signIn => translate('signIn');
   String get signUp => translate('signUp');
   String get signOut => translate('signOut');
