@@ -52,21 +52,47 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 20),
-                // Icon Header
+
+                // Logo
                 Center(
                   child: Container(
-                    padding: const EdgeInsets.all(24),
+                    width: 100,
+                    height: 100,
                     decoration: BoxDecoration(
-                      color: colorScheme.primary.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          colorScheme.primary,
+                          colorScheme.primaryContainer,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colorScheme.primary.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
                     ),
-                    child: Icon(
-                      Icons.lock_reset_rounded,
-                      size: 64,
-                      color: colorScheme.primary,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.asset(
+                        AppInfo.launcherIcon,
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.apps_rounded,
+                          size: 56,
+                          color: colorScheme.onPrimary,
+                        ),
+                      ),
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 32),
 
                 // Description
