@@ -1169,6 +1169,102 @@ class CustomApiAuthProvider implements BaseAuthService {
   }
 
   @override
+  Future<AuthResult> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      debugPrint('[AUTH] ============================================');
+      debugPrint('[AUTH] >>> Starting Change Password');
+
+      final changePasswordUrl = AppInfo.authResetPasswordUrl;
+      if (changePasswordUrl.isEmpty) {
+        debugPrint('[AUTH] ERROR: AUTH_RESET_PASSWORD_URL is empty');
+        return AuthResult.failure('URL ubah password belum dikonfigurasi');
+      }
+      debugPrint('[AUTH] POST URL: $changePasswordUrl');
+
+      final email = _currentUser?.email ?? '';
+      final jwt = _currentUser?.jwt;
+
+      final Map<String, dynamic> payload = {
+        'email': email,
+        'current_password': currentPassword,
+        AppInfo.authPasswordFieldName: newPassword,
+        'new_password': newPassword,
+        'AUTH_CODE': AppInfo.authKey,
+      };
+      debugPrint('[AUTH] Request payload keys: ${payload.keys.toList()}');
+
+      final dio = Dio();
+      final response = await dio.post(
+        changePasswordUrl,
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            if (jwt != null && jwt.isNotEmpty) 'Authorization': 'Bearer $jwt',
+            ...?headers,
+          },
+          contentType: 'application/json',
+        ),
+        data: payload,
+      );
+
+      debugPrint('[AUTH] ----------------------------------------');
+      debugPrint('[AUTH] Response Status: ${response.statusCode}');
+      debugPrint('[AUTH] Response Data: ${response.data}');
+
+      if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
+        final responseData = response.data as Map<String, dynamic>;
+
+        final isSuccess = responseData['success'] == true ||
+            responseData['code'] == 0 ||
+            responseData['code'] == 200;
+
+        if (isSuccess) {
+          debugPrint('[AUTH] <<< CHANGE PASSWORD SUCCESS');
+          return AuthResult(success: true);
+        } else {
+          final errorMessage = responseData['message']?.toString() ??
+              responseData['msg']?.toString() ??
+              'Gagal mengubah kata sandi';
+          debugPrint('[AUTH] <<< CHANGE PASSWORD FAILED: $errorMessage');
+          return AuthResult.failure(errorMessage);
+        }
+      } else {
+        debugPrint('[AUTH] ERROR: Unexpected response status ${response.statusCode}');
+        return AuthResult.failure(
+            'Gagal mengubah kata sandi (Status: ${response.statusCode})');
+      }
+    } on DioException catch (e) {
+      debugPrint('[AUTH] !!! DIO EXCEPTION in changePassword !!!');
+      debugPrint('[AUTH] Message: ${e.message}');
+      if (e.response != null) {
+        debugPrint('[AUTH] Status: ${e.response?.statusCode}');
+        debugPrint('[AUTH] Data: ${e.response?.data}');
+      }
+
+      String errorMessage = 'Gagal mengubah kata sandi';
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        errorMessage = 'Koneksi timeout. Silakan coba lagi.';
+      } else if (e.type == DioExceptionType.connectionError) {
+        errorMessage = 'Tidak dapat terhubung ke server.';
+      } else if (e.response?.data is Map<String, dynamic>) {
+        errorMessage = e.response?.data['message']?.toString() ??
+            e.response?.data['msg']?.toString() ??
+            errorMessage;
+      }
+      return AuthResult.failure(errorMessage);
+    } catch (e) {
+      debugPrint('[AUTH] !!! GENERAL EXCEPTION in changePassword: $e');
+      return AuthResult.failure('Gagal mengubah kata sandi: ${e.toString()}');
+    }
+  }
+
+  @override
   Future<AuthResult> updateProfile({
     String? displayName,
     String? photoUrl,

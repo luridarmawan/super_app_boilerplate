@@ -128,6 +128,12 @@ abstract class BaseAuthService {
   /// Kirim email reset password
   Future<AuthResult> sendPasswordResetEmail(String email);
 
+  /// Ubah password user yang sedang login
+  Future<AuthResult> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
+
   /// Update profil user
   Future<AuthResult> updateProfile({
     String? displayName,

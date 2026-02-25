@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/config/app_config.dart';
 import '../../core/constants/app_info.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../auth/change_password_screen.dart';
 
 /// Profile Screen - User profile details
 class ProfileScreen extends ConsumerWidget {
@@ -179,10 +180,11 @@ class ProfileScreen extends ConsumerWidget {
                             title: Text(l10n.changePassword),
                             trailing: const Icon(Icons.chevron_right),
                             onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(l10n.changePassword),
-                                  behavior: SnackBarBehavior.floating,
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => ChangePasswordScreen(
+                                    onBackTap: () => Navigator.of(context).pop(),
+                                  ),
                                 ),
                               );
                             },

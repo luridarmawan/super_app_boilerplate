@@ -90,6 +90,12 @@ class AppLocalizations {
   String get forgotPasswordDesc => translate('forgotPasswordDesc');
   String get resetPassword => translate('resetPassword');
   String get resetEmailSent => translate('resetEmailSent');
+  String get currentPassword => translate('currentPassword');
+  String get newPassword => translate('newPassword');
+  String get changePasswordDesc => translate('changePasswordDesc');
+  String get changePasswordSuccess => translate('changePasswordSuccess');
+  String get pleaseEnterCurrentPassword => translate('pleaseEnterCurrentPassword');
+  String get pleaseEnterNewPassword => translate('pleaseEnterNewPassword');
   String get signIn => translate('signIn');
   String get signUp => translate('signUp');
   String get signOut => translate('signOut');
