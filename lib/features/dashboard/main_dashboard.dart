@@ -383,7 +383,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
               childAspectRatio: 1.5,
             ),
 
-            const SizedBox(height: 24),
+            // const SizedBox(height: 12),
 
             // Articles from API (Horizontal)
             // Using ArticleListFromApi that fetches from https://api.carik.id/dummy/article.json

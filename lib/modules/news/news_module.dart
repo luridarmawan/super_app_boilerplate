@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/constants/app_info.dart';
 import '../module_base.dart';
 import '../navigation_item.dart';
 import '../quick_action_item.dart';
@@ -39,7 +40,8 @@ class NewsModule extends BaseModule {
   ];
 
   @override
-  Widget? get dashboardWidget => const NewsDashboardCard();
+  Widget? get dashboardWidget =>
+      AppInfo.workspaceWidgetNewsEnable ? const NewsDashboardCard() : null;
 
   @override
   DashboardWidgetConfig get dashboardConfig => const DashboardWidgetConfig(
