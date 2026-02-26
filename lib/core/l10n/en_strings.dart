@@ -99,6 +99,7 @@ const Map<String, String> enStrings = {
   'pleaseLoginToContinue': 'Please login to continue',
   'editProfile': 'Edit Profile',
   'workspace': 'Workspace',
+  'security': 'Security',
 
   // Scan & Photo
   'scanAndPhoto': 'Scan & Photo',

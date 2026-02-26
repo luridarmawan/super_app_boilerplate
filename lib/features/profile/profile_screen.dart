@@ -167,8 +167,8 @@ class ProfileScreen extends ConsumerWidget {
 
                   const SizedBox(height: 24),
 
-                  // Quick Actions
-                  _buildSectionHeader(context, l10n.quickActions),
+                  // Quick Actions - Security
+                  _buildSectionHeader(context, l10n.security),
                   const SizedBox(height: 8),
                   Card(
                     child: Column(
@@ -207,19 +207,19 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                           const Divider(height: 1),
                         ],
-                        ListTile(
-                          leading: const Icon(Icons.security_outlined),
-                          title: Text(l10n.privacyAndSecurity),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(l10n.privacyAndSecurity),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          },
-                        ),
+                        // ListTile(
+                        //   leading: const Icon(Icons.security_outlined),
+                        //   title: Text(l10n.privacyAndSecurity),
+                        //   trailing: const Icon(Icons.chevron_right),
+                        //   onTap: () {
+                        //     ScaffoldMessenger.of(context).showSnackBar(
+                        //       SnackBar(
+                        //         content: Text(l10n.privacyAndSecurity),
+                        //         behavior: SnackBarBehavior.floating,
+                        //       ),
+                        //     );
+                        //   },
+                        // ),
                       ],
                     ),
                   ),

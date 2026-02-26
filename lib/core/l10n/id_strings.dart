@@ -99,6 +99,7 @@ const Map<String, String> idStrings = {
   'pleaseLoginToContinue': 'Silakan masuk untuk melanjutkan',
   'editProfile': 'Edit Profil',
   'workspace': 'Workspace',
+  'security': 'Keamanan',
 
   // Scan & Photo
   'scanAndPhoto': 'Scan & Foto',

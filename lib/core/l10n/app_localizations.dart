@@ -160,6 +160,7 @@ class AppLocalizations {
   String get pleaseLoginToContinue => translate('pleaseLoginToContinue');
   String get editProfile => translate('editProfile');
   String get workspace => translate('workspace');
+  String get security => translate('security');
 
   // ============================================
   // SCAN & PHOTO STRINGS
