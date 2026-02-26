@@ -35,6 +35,7 @@ class AppInfo {
 
   /// Application copyright
   static String get copyright => dotenv.env['APP_COPYRIGHT'] ?? '- Developed by CARIK.id -';
+  static String get companySite => dotenv.env['APP_COMPANY_SITE'] ?? 'https://carik.id/?utm=superapp';
 
   /// Application version (from pubspec.yaml via package_info_plus)
   static String _version = '1.0.0';

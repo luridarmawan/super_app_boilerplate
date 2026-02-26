@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/config/app_config.dart';
 import '../../core/constants/app_info.dart';
 import '../../core/theme/app_theme.dart';
@@ -225,13 +226,20 @@ class SettingScreen extends ConsumerWidget {
 
           // Copyright
           const SizedBox(height: 24),
-          Text(
-            AppInfo.copyright,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+          GestureDetector(
+            onTap: () => launchUrl(
+              Uri.parse(AppInfo.companySite),
+              mode: LaunchMode.externalApplication,
+            ),
+            child: Text(
+              AppInfo.copyright,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+            ),
           ),
+
         ],
       ),
     );
