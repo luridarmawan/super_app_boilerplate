@@ -39,10 +39,10 @@ class ProfileScreen extends ConsumerWidget {
               onPressed: onBackTap ?? () => Navigator.of(context).pop(),
             ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.edit_outlined),
-                onPressed: onEditTap,
-              ),
+              // IconButton(
+              //   icon: const Icon(Icons.edit_outlined),
+              //   onPressed: onEditTap,
+              // ),
             ],
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
