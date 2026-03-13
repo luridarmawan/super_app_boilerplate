@@ -30,14 +30,29 @@ class Article {
   factory Article.fromModel(ArticleModel model) {
     return Article(
       id: model.id,
-      title: model.title,
-      excerpt: model.excerpt,
+      title: _unescapeHtml(model.title),
+      excerpt: model.excerpt != null ? _unescapeHtml(model.excerpt!) : null,
       imageUrl: model.imageUrl,
       author: model.author,
       publishedAt: model.publishedAt,
       category: model.category,
       slug: model.slug,
     );
+  }
+
+  /// Helper to unescape HTML entities
+  static String _unescapeHtml(String text) {
+    return text
+        .replaceAll('&amp;', '&')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#039;', "'")
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&hellip;', '...')
+        .replaceAll('&rsquo;', "'")
+        .replaceAll('&lsquo;', "'")
+        .replaceAll('&rdquo;', '"')
+        .replaceAll('&ldquo;', '"');
   }
 }
 

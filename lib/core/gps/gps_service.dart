@@ -181,12 +181,12 @@ class GpsService {
   /// Check if reverse geocoding is available
   bool get isReverseGeoEnabled => AppInfo.gpsReverseGeoUrl.isNotEmpty;
 
-  /// Get address from coordinates using reverse geocoding API
+  /// Get address and weather info from coordinates using reverse geocoding API
   /// URL template from GPS_REVERSE_GEO_URL env variable
   /// Replaces {lat} and {lon} with actual coordinates
-  /// Returns the "display_name" field from JSON response
+  /// Returns a map with "address" and "weatherIcon" fields
   /// Returns null if URL is empty or request fails
-  Future<String?> reverseGeocode(double latitude, double longitude) async {
+  Future<Map<String, String?>?> reverseGeocode(double latitude, double longitude) async {
     final urlTemplate = AppInfo.gpsReverseGeoUrl;
     
     if (urlTemplate.isEmpty) {
@@ -199,19 +199,45 @@ class GpsService {
         .replaceAll('{lat}', latitude.toString())
         .replaceAll('{lon}', longitude.toString());
 
-    debugPrint('GpsService: Fetching address from $url');
+    debugPrint('GpsService: Fetching data from $url');
 
     try {
       final response = await _httpGet(url);
       if (response != null) {
-        // Parse JSON response and extract display_name
+        // Parse JSON response
         final jsonData = json.decode(response);
-        if (jsonData is Map<String, dynamic> && jsonData.containsKey('display_name')) {
-          final displayName = jsonData['display_name'] as String?;
-          debugPrint('GpsService: Got address: $displayName');
-          return displayName;
+        if (jsonData is Map<String, dynamic>) {
+          String? displayName = jsonData['display_name'] as String?;
+          String? weatherIcon;
+
+          // Extract weather icon if present: weather/current/condition/icon
+          try {
+            final weather = jsonData['weather'];
+            if (weather is Map<String, dynamic>) {
+              final current = weather['current'];
+              if (current is Map<String, dynamic>) {
+                final condition = current['condition'];
+                if (condition is Map<String, dynamic>) {
+                  weatherIcon = condition['icon'] as String?;
+                  
+                  // Ensure URL is valid (add https: if it starts with //)
+                  if (weatherIcon != null && weatherIcon.startsWith('//')) {
+                    weatherIcon = 'https:$weatherIcon';
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            debugPrint('GpsService: Error extracting weather icon - $e');
+          }
+
+          debugPrint('GpsService: Got address: $displayName, WeatherIcon: $weatherIcon');
+          return {
+            'address': displayName,
+            'weatherIcon': weatherIcon,
+          };
         } else {
-          debugPrint('GpsService: display_name not found in response');
+          debugPrint('GpsService: Invalid JSON response');
           return null;
         }
       }

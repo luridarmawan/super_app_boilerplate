@@ -85,7 +85,7 @@ class NewsScreen extends ConsumerWidget {
 /// Displays up to 5 cover story articles in a swipeable carousel
 class _CoverStoryHeroBanner extends ConsumerWidget {
   final ValueChanged<Article>? onArticleTap;
-  
+
   /// Maximum number of articles to display in carousel
   static const int maxArticles = 5;
 
@@ -239,7 +239,7 @@ class _CoverStoryCarousel extends StatefulWidget {
 class _CoverStoryCarouselState extends State<_CoverStoryCarousel> {
   late PageController _pageController;
   int _currentPage = 0;
-  
+
   /// Auto-scroll timer duration in seconds
   static const int autoScrollDuration = 5;
 
@@ -249,7 +249,7 @@ class _CoverStoryCarouselState extends State<_CoverStoryCarousel> {
     _pageController = PageController(
       viewportFraction: 1.0,
     );
-    
+
     // Start auto-scroll if more than 1 article
     if (widget.articles.length > 1) {
       _startAutoScroll();
@@ -301,7 +301,7 @@ class _CoverStoryCarouselState extends State<_CoverStoryCarousel> {
             },
           ),
         ),
-        
+
         // Page Indicators (only show if more than 1 article)
         if (widget.articles.length > 1)
           Padding(
@@ -336,8 +336,8 @@ class _CoverStoryCarouselState extends State<_CoverStoryCarousel> {
         width: isActive ? 24 : 8,
         height: 8,
         decoration: BoxDecoration(
-          color: isActive 
-              ? colorScheme.primary 
+          color: isActive
+              ? colorScheme.primary
               : colorScheme.onSurface.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(4),
         ),

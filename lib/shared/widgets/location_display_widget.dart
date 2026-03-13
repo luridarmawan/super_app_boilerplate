@@ -184,7 +184,7 @@ class _LocationDisplayWidgetState extends ConsumerState<LocationDisplayWidget> {
   ) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(6.0),
         child: Row(
           children: [
             // Map icon - changes when location is available and opens Google Maps on tap
@@ -196,35 +196,49 @@ class _LocationDisplayWidgetState extends ConsumerState<LocationDisplayWidget> {
                       )
                   : null,
               child: Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
                   color: gpsState.hasPosition
                       ? colorScheme.primary
                       : colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
-                  gpsState.hasPosition ? Icons.pin_drop : Icons.place,
-                  color: gpsState.hasPosition
-                      ? colorScheme.onPrimary
-                      : colorScheme.onPrimaryContainer,
-                  size: 24,
-                ),
+                child: gpsState.weatherIconUrl != null
+                    ? Image.network(
+                        gpsState.weatherIconUrl!,
+                        width: 32,
+                        height: 32,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          gpsState.hasPosition ? Icons.pin_drop : Icons.place,
+                          color: gpsState.hasPosition
+                              ? colorScheme.onPrimary
+                              : colorScheme.onPrimaryContainer,
+                          size: 32,
+                        ),
+                      )
+                    : Icon(
+                        gpsState.hasPosition ? Icons.pin_drop : Icons.place,
+                        color: gpsState.hasPosition
+                            ? colorScheme.onPrimary
+                            : colorScheme.onPrimaryContainer,
+                        size: 32,
+                      ),
               ),
             ),
             const SizedBox(width: 12),
-            
+
             // Address or loading/error state
             Expanded(
               child: _buildAddressContent(context, l10n, colorScheme, gpsState),
             ),
-            
+
             const SizedBox(width: 8),
-            
+
             // Refresh button
             IconButton(
-              onPressed: (gpsState.isLoading || gpsState.isLoadingAddress) 
-                  ? null 
+              onPressed: (gpsState.isLoading || gpsState.isLoadingAddress)
+                  ? null
                   : _getCurrentLocation,
               icon: (gpsState.isLoading || gpsState.isLoadingAddress)
                   ? SizedBox(

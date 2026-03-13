@@ -16,6 +16,7 @@ class GpsState {
   final bool isServiceEnabled;
   final String? errorMessage;
   final String? address;
+  final String? weatherIconUrl;
   final bool isLoadingAddress;
 
   const GpsState({
@@ -25,6 +26,7 @@ class GpsState {
     this.isServiceEnabled = false,
     this.errorMessage,
     this.address,
+    this.weatherIconUrl,
     this.isLoadingAddress = false,
   });
 
@@ -35,10 +37,12 @@ class GpsState {
     bool? isServiceEnabled,
     String? errorMessage,
     String? address,
+    String? weatherIconUrl,
     bool? isLoadingAddress,
     bool clearPosition = false,
     bool clearError = false,
     bool clearAddress = false,
+    bool clearWeatherIcon = false,
   }) {
     return GpsState(
       currentPosition: clearPosition ? null : (currentPosition ?? this.currentPosition),
@@ -47,6 +51,7 @@ class GpsState {
       isServiceEnabled: isServiceEnabled ?? this.isServiceEnabled,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       address: clearAddress ? null : (address ?? this.address),
+      weatherIconUrl: clearWeatherIcon ? null : (weatherIconUrl ?? this.weatherIconUrl),
       isLoadingAddress: isLoadingAddress ?? this.isLoadingAddress,
     );
   }
@@ -171,7 +176,7 @@ class GpsNotifier extends StateNotifier<GpsState> {
 
   /// Clear current position
   void clearPosition() {
-    state = state.copyWith(clearPosition: true, clearError: true, clearAddress: true);
+    state = state.copyWith(clearPosition: true, clearError: true, clearAddress: true, clearWeatherIcon: true);
   }
 
   /// Clear error message
@@ -181,7 +186,7 @@ class GpsNotifier extends StateNotifier<GpsState> {
 
   /// Clear address
   void clearAddress() {
-    state = state.copyWith(clearAddress: true);
+    state = state.copyWith(clearAddress: true, clearWeatherIcon: true);
   }
 
   /// Get address from current position using reverse geocoding
@@ -198,14 +203,18 @@ class GpsNotifier extends StateNotifier<GpsState> {
     state = state.copyWith(isLoadingAddress: true);
 
     try {
-      final address = await _gpsService.reverseGeocode(
+      final result = await _gpsService.reverseGeocode(
         state.latitude,
         state.longitude,
       );
 
+      final address = result?['address'];
+      final weatherIcon = result?['weatherIcon'];
+
       state = state.copyWith(
         isLoadingAddress: false,
         address: address,
+        weatherIconUrl: weatherIcon,
       );
 
       return address;
@@ -223,7 +232,8 @@ class GpsNotifier extends StateNotifier<GpsState> {
       return null;
     }
 
-    return await _gpsService.reverseGeocode(lat, lng);
+    final result = await _gpsService.reverseGeocode(lat, lng);
+    return result?['address'];
   }
 
   /// Open device location settings
