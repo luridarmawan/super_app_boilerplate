@@ -1,0 +1,48 @@
+# ============================================
+# KEYSTORE CONFIGURATION
+# ============================================
+# Copy this file to key.properties and fill in your values
+# IMPORTANT: Do NOT commit key.properties to version control!
+
+# ============================================
+# DEBUG KEYSTORE CONFIGURATION
+# ============================================
+# Debug keystore for development builds
+# Uses custom debug.keystore from keystores folder
+
+debugStorePassword=android
+debugKeyPassword=android
+debugKeyAlias=androiddebugkey
+debugStoreFile=keystores/debug.keystore
+
+# ============================================
+# RELEASE KEYSTORE CONFIGURATION
+# ============================================
+# Release keystore for production builds
+
+storePassword=YOUR_STORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=app_release_key
+storeFile=keystores/release.keystore
+
+# ============================================
+# HOW TO CREATE KEYSTORES
+# ============================================
+#
+# --- DEBUG KEYSTORE ---
+# Create a debug keystore (optional - you can use default values):
+# keytool -genkey -v -keystore debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug,O=Android,C=US"
+# Then move to: android/keystores/debug.keystore
+#
+# --- RELEASE KEYSTORE ---
+# Create a release keystore:
+# keytool -genkey -v -keystore release.keystore -alias app_release_key -keyalg RSA -keysize 2048 -validity 10000
+# Then move to: android/keystores/release.keystore
+#
+# ============================================
+# IMPORTANT NOTES
+# ============================================
+# 1. Keep your keystore files and passwords safe!
+# 2. If you lose them, you won't be able to update your app on Play Store
+# 3. Store backups in a secure location (e.g., 1Password, HashiCorp Vault)
+# 4. Debug keystore uses standard Android debug credentials (password: android)

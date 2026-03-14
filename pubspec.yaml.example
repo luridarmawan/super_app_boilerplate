@@ -17,7 +17,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 3.7.1+35
+version: 1.0.0+1
 
 # 3.5.0
 # - custom quick action from module
@@ -68,12 +68,17 @@ dependencies:
   retrofit: ^4.1.0
   json_annotation: ^4.8.1
   connectivity_plus: ^7.0.0
+  dio_cookie_manager: ^3.0.0  # Cookie management for Dio (optional, enable via AUTH_USE_COOKIE=true)
+  cookie_jar: ^4.0.8          # Cookie storage
+  path_provider: ^2.1.1       # For persistent cookie storage
 
   # Permissions & Device Features
   permission_handler: ^12.0.1
   image_picker: ^1.0.7
   geolocator: ^13.0.2  # GPS & Location
   url_launcher: ^6.2.5  # Open URLs (Google Maps, etc.)
+  font_awesome_flutter: ^10.8.0
+  flutter_svg: ^2.0.23
 
   # Push Notifications
   # firebase_core: ^4.3.0  # Disabled to reduce APK size
@@ -96,8 +101,8 @@ dependencies:
     path: packages/module_interface
 
   # External Modules (from modules/ folder) - Example
-  # super_module:
-  #   path: modules/super_module
+  super_module:
+    path: modules/super_module
 
   # crm:
   #   path: modules/crm
@@ -149,6 +154,7 @@ flutter:
   assets:
     - .env
     - assets/images/
+    - assets/images/icons/
     - assets/images/logo/
     - assets/images/banners/
 
@@ -180,7 +186,7 @@ flutter:
 
 # Flutter Native Splash Configuration
 # Jalankan: dart run flutter_native_splash:create
-# 
+#
 # SMOOTH TRANSITION STRATEGY:
 # 1. Native splash tampil instan dengan warna solid
 # 2. Flutter splash muncul dengan fade-in dari warna yang sama
@@ -189,22 +195,22 @@ flutter:
 flutter_native_splash:
   # Warna background - sama dengan colorScheme.primary untuk seamless transition
   color: "#1565C0"
-  
+
   # Gambar logo di tengah splash screen
   image: assets/images/logo/carik_blue_logo.png
-  
+
   # Opsi untuk branding image di bagian bawah (opsional)
   # branding: assets/images/branding.png
   # branding_mode: bottom
-  
+
   # Background image full screen (opsional, jika ingin pakai gambar penuh)
   # Tidak digunakan karena kita pakai dynamic image dari Flutter splash
   # background_image: assets/images/splash_background.png
-  
+
   # Dark mode settings - matching dark theme primary color
   color_dark: "#0D47A1"
   image_dark: assets/images/logo/carik_blue_logo.png
-  
+
   # Android specific
   android: true
   android_12:
@@ -217,12 +223,12 @@ flutter_native_splash:
     # Icon background (opsional)
     # icon_background_color: "#FFFFFF"
     # icon_background_color_dark: "#1a1a2e"
-  
+
   # iOS specific
   ios: true
-  
+
   # Web specific
   web: true
-  
+
   # Full screen mode (hide status bar and navigation bar)
   fullscreen: false

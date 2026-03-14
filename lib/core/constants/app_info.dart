@@ -21,9 +21,11 @@ class AppInfo {
 
   /// Application name
   static String get name => dotenv.env['APP_NAME'] ?? 'Super X App';
+  static String get appName => dotenv.env['APP_NAME'] ?? 'Super X App';
 
   /// Application description
   static String get description => dotenv.env['APP_DESCRIPTION'] ?? 'A Super App Project.';
+  static String get appDescription => dotenv.env['APP_DESCRIPTION'] ?? 'A Super App Project.';
 
   /// Application tagline
   static String get tagline => dotenv.env['APP_TAGLINE'] ?? 'Your All-in-One Solution.';
@@ -33,6 +35,7 @@ class AppInfo {
 
   /// Application copyright
   static String get copyright => dotenv.env['APP_COPYRIGHT'] ?? '- Developed by CARIK.id -';
+  static String get companySite => dotenv.env['APP_COMPANY_SITE'] ?? 'https://carik.id/?utm=superapp';
 
   /// Application version (from pubspec.yaml via package_info_plus)
   static String _version = '1.0.0';
@@ -71,14 +74,24 @@ class AppInfo {
   // ============================================
   // API ENDPOINT
   // ============================================
+  static bool get authLoginWithUsernameAndPasswordEnable => dotenv.env['AUTH_LOGIN_WITH_USERNAME_AND_PASSWORD_ENABLE']?.toLowerCase() == 'true';
 
-  static String get apiEndpointLogin => dotenv.env['API_ENDPOINT_LOGIN'] ?? '/o/auth/login/';
-  static String get apiEndpointRegister => dotenv.env['API_ENDPOINT_REGISTER'] ?? '/o/auth/register/';
-  static String get apiEndpointForgotPassword => dotenv.env['API_ENDPOINT_FORGOT_PASSWORD'] ?? '/o/auth/forgot-password/';
-  static String get apiEndpointResetPassword => dotenv.env['API_ENDPOINT_RESET_PASSWORD'] ?? '/o/auth/reset-password/';
-  static String get apiEndpointLogout => dotenv.env['API_ENDPOINT_LOGOUT'] ?? '/o/auth/logout/';
-  static String get apiEndpointRefreshToken => dotenv.env['API_ENDPOINT_REFRESH_TOKEN'] ?? '/o/auth/refresh-token/';
-  static String get apiEndpointVerifyToken => dotenv.env['API_ENDPOINT_VERIFY_TOKEN'] ?? '/o/auth/verify-token/';
+  static String get authLoginUrl => dotenv.env['AUTH_LOGIN_URL'] ?? '';
+  static String get authLoginContentType => dotenv.env['AUTH_LOGIN_CONTENT_TYPE'] ?? 'application/json';
+  static String get authTokenName => dotenv.env['AUTH_TOKEN_NAME'] ?? 'token';
+  static String get authUsernameFieldName => dotenv.env['AUTH_USERNAME_FIELD_NAME'] ?? 'username';
+  static String get authPasswordFieldName => dotenv.env['AUTH_PASSWORD_FIELD_NAME'] ?? 'password';
+
+  static String get authKey => dotenv.env['AUTH_KEY'] ?? '';
+  static bool get authAutoCreateUser => dotenv.env['AUTH_AUTO_CREATE_USER']?.toLowerCase() == 'true';
+
+  static String get authRegisterUrl => dotenv.env['AUTH_REGISTER_URL'] ?? '/o/auth/register/';
+  static String get authForgotPasswordUrl => dotenv.env['AUTH_FORGOT_PASSWORD_URL'] ?? '/o/auth/forgot-password/';
+  static String get authResetPasswordUrl => dotenv.env['AUTH_RESET_PASSWORD_URL'] ?? '/o/auth/reset-password/';
+  static String get authLogoutUrl => dotenv.env['AUTH_LOGOUT_URL'] ?? '/o/auth/logout/';
+  static String get authRefreshTokenUrl => dotenv.env['AUTH_TOKEN_REFRESH_URL'] ?? '/o/auth/refresh-token/';
+  static String get authRefreshTokenMethod => dotenv.env['AUTH_TOKEN_REFRESH_METHOD'] ?? 'POST';
+  static String get authVerifyTokenUrl => dotenv.env['AUTH_VERIFY_TOKEN_URL'] ?? '/o/auth/verify-token/';
 
   // ============================================
   // SPLASH SCREEN
@@ -87,6 +100,10 @@ class AppInfo {
   /// Enable/disable splash screen on app startup
   /// If false, app will skip splash screen and go directly to login
   static bool get enableSplashScreen => dotenv.env['ENABLE_SPLASH_SCREEN']?.toLowerCase() == 'true';
+
+  /// Enable/disable splash tagline on app startup
+  /// If false, app will skip splash tagline and go directly to login
+  static bool get splashScreenShowTagline => dotenv.env['SPLASH_SHOW_TAGLINE']?.toLowerCase() == 'true';
 
   /// Duration of splash screen display (only applies if enableSplashScreen is true)
   static Duration get splashScreenDuration => Duration(seconds:int.tryParse(dotenv.env['SPLASH_DURATION'] ?? '5') ?? 5);
@@ -175,8 +192,49 @@ class AppInfo {
   static bool get enableGps => dotenv.env['ENABLE_GPS']?.toLowerCase() == 'true';
   static String get gpsReverseGeoUrl => dotenv.env['GPS_REVERSE_GEO_URL'] ?? '';
 
+  static bool get enableQuickAction => dotenv.env['ENABLE_QUICK_ACTION']?.toLowerCase() == 'true';
+
   /// Enable/disable Quick Action Demo (Pay, Bills, Pulsa)
   static bool get enableQuickActionDemo => dotenv.env['ENABLE_QUICK_ACTION_DEMO']?.toLowerCase() == 'true';
+
+  static bool get enableSignUp => dotenv.env['ENABLE_SIGN_UP']?.toLowerCase() == 'true';
+
+  // ============================================
+  // WIDGET FLAGS
+  // ============================================
+
+  static bool get widgetLocationEnable => dotenv.env['WIDGET_LOCATION_ENABLE']?.toLowerCase() == 'true';
+  static bool get workspaceWidgetNewsEnable => dotenv.env['WORKSPACE_WIDGET_NEWS_ENABLE']?.toLowerCase() == 'true';
+
+  // ============================================
+  // SIDEBAR FLAGS
+  // ============================================
+
+  /// Enable/disable Activity section in sidebar (History, Favorites)
+  static bool get sidebarActivityEnable => dotenv.env['SIDEBAR_ACTIVITY_ENABLE']?.toLowerCase() == 'true';
+
+  // ============================================
+  // FOOTER FLAGS
+  // ============================================
+  static bool get footerEnable => dotenv.env['FOOTER_ENABLE']?.toLowerCase() == 'true';
+
+  static bool get fabChatEnable => dotenv.env['FAB_CHAT_ENABLE']?.toLowerCase() == 'true';
+
+  // ============================================
+  // SUPPORT FLAGS
+  // ============================================
+
+  /// Enable/disable Quick Help section in Help screen
+  static bool get supportQuickHelpEnable => dotenv.env['SUPPORT_QUICK_HELP_ENABLE']?.toLowerCase() == 'true';
+
+  /// Enable/disable Live Chat in Help screen
+  static bool get supportLiveChatEnable => dotenv.env['SUPPORT_LIVE_CHAT_ENABLE']?.toLowerCase() == 'true';
+
+  /// Enable/disable Call Center in Help screen
+  static bool get supportCallCenterEnable => dotenv.env['SUPPORT_CALL_CENTER_ENABLE']?.toLowerCase() == 'true';
+
+  /// Feedback submission URL (POST endpoint)
+  static String get supportFeedbackUrl => dotenv.env['SUPPORT_FEEDBACK_URL'] ?? '';
 
   // ============================================
   // AUTH CONFIGURATION
@@ -192,7 +250,11 @@ class AppInfo {
   /// Required for google_sign_in v7.x on Android
   static String get googleServerClientId => dotenv.env['GOOGLE_CLIENT_ID'] ?? '';
 
-  static String get apiGoogleAuthVerification => dotenv.env['API_GOOGLE_AUTH_VERIFICATION'] ?? '';
+  static String get authGoogleVerificationUrl => dotenv.env['AUTH_GOOGLE_VERIFICATION_URL'] ?? '';
+
+  /// Enable/disable cookie-based authentication
+  /// When true, cookies will be stored and sent automatically with API requests
+  static bool get authUseCookie => dotenv.env['AUTH_USE_COOKIE']?.toLowerCase() == 'false';
 
   // ============================================
   // NOTIFICATION CONFIGURATION
@@ -230,7 +292,10 @@ class AppInfo {
 
   // CONTENT LINK
   static String get bannerApiURL => dotenv.env['BANNER_API_URL'] ?? 'https://api.carik.id/dummy/banner.json';
-  static String get articleApiURL => dotenv.env['ARTICLE_API_URL'] ?? 'https://api.carik.id/dummy/article.json';
+  static String get articleApiURL => dotenv.env['ARTICLE_API_URL'] ?? 'https://api.carik.id/dummy/article.json?slug={slug}';
+  static String get articleLastApiURL => dotenv.env['ARTICLE_LAST_API_URL'] ?? 'https://api.carik.id/dummy/articles.json';
+  static String get articleRecommendationApiURL => dotenv.env['ARTICLE_RECOMMENDATION_API_URL'] ?? 'https://api.carik.id/dummy/articles.json';
+  static String get articleCoverApiURL => dotenv.env['ARTICLE_COVER_API_URL'] ?? 'https://api.carik.id/dummy/articles.json';
 
 
   // ============================================

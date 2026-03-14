@@ -93,17 +93,20 @@ All API endpoints are configured through `.env` file:
 API_BASE_URL=https://api.yourdomain.com/
 API_BASE_URL_DEVELOPMENT=https://dev-api.yourdomain.com/
 
-# Auth Endpoints
-API_ENDPOINT_LOGIN=/v1/auth/login/
-API_ENDPOINT_REGISTER=/v1/auth/register/
-API_ENDPOINT_LOGOUT=/v1/auth/logout/
-API_ENDPOINT_REFRESH_TOKEN=/v1/auth/refresh-token/
-API_ENDPOINT_FORGOT_PASSWORD=/v1/auth/forgot-password/
-API_ENDPOINT_RESET_PASSWORD=/v1/auth/reset-password/
-API_ENDPOINT_VERIFY_TOKEN=/v1/auth/verify-token/
+# Auth Endpoints (Full URLs)
+AUTH_LOGIN_URL=https://api.yourdomain.com/o/auth/login/
+AUTH_LOGIN_CONTENT_TYPE="application/json"
+
+AUTH_TOKEN_REFRESH_URL=https://api.yourdomain.com/o/auth/token/
+AUTH_TOKEN_REFRESH_METHOD="POST"
+AUTH_LOGOUT_URL=https://api.yourdomain.com/o/auth/logout/
+AUTH_REGISTER_URL=https://api.yourdomain.com/o/auth/register/
+AUTH_FORGOT_PASSWORD_URL=https://api.yourdomain.com/o/auth/forgot-password/
+AUTH_RESET_PASSWORD_URL=https://api.yourdomain.com/o/auth/reset-password/
+AUTH_VERIFY_TOKEN_URL=https://api.yourdomain.com/o/auth/verify-token/
 ```
 
-> **Note:** Default endpoints use `/v1/auth/` prefix. Adjust according to your backend structure.
+> **Note:** All auth endpoints use full URLs. Adjust according to your backend structure.
 
 ---
 
@@ -112,23 +115,44 @@ API_ENDPOINT_VERIFY_TOKEN=/v1/auth/verify-token/
 Endpoint for login using username/email and password.
 
 ### Endpoint
+
+Login uses the URL directly from the `AUTH_LOGIN_URL` configuration in the `.env` file:
+
 ```
-POST {API_BASE_URL}{API_ENDPOINT_LOGIN}
+POST {AUTH_LOGIN_URL}
 ```
+
 
 ### Request
 
 #### Headers
-| Header | Value |
-|--------|-------|
-| Content-Type | application/json |
+
+Content-Type is configured via `AUTH_LOGIN_CONTENT_TYPE` in the `.env` file.
+
+| Header | Value | Description |
+|--------|-------|-------------|
+| Content-Type | Configurable | `application/json` (default) or `application/x-www-form-urlencoded` |
+
+**Supported Content Types:**
+
+| Content-Type | Format Data |
+|--------------|-------------|
+| `application/json` | JSON body (default) |
+| `application/x-www-form-urlencoded` | Form URL encoded |
 
 #### Payload
+
+**JSON Format** (`application/json`):
 ```json
 {
     "username": "admin@yourdomain.com",
     "password": "admin123"
 }
+```
+
+**Form URL Encoded** (`application/x-www-form-urlencoded`):
+```
+username=admin%40yourdomain.com&password=admin123
 ```
 
 | Field | Type | Required | Description |
@@ -165,25 +189,49 @@ POST {API_BASE_URL}{API_ENDPOINT_LOGIN}
 | token | string | Access token for subsequent API calls |
 | elapsed_time | int | Request processing time (ms) |
 
-> **Alternative Response Structures:**  
+> **Alternative Response Structures:**
 > The app also supports these response structures:
 > - `{ user: {...}, token: "..." }`
 > - `{ data: { user: {...}, token: "..." } }`
 
 #### Error Response
+
+The application supports various error response formats:
+
+**Format 1: With `message` field**
 ```json
 {
-    "code": 1,
+    "code": 400,
     "message": "Invalid email format",
     "elapsed_time": 0
 }
 ```
 
-| HTTP Status | code | message |
-|-------------|------|---------|
-| 200 | 1 | Invalid email format |
-| 200 | 2 | User not found |
-| 200 | 3 | Wrong password |
+**Format 2: With `msg` field**
+```json
+{
+    "code": 404,
+    "msg": "Invalid password or username not exists.",
+    "attempt": 1
+}
+```
+
+**Supported Error Fields:**
+
+The application will look for error messages from the following fields (in priority order):
+
+| Priority | Field Name | Example |
+|----------|------------|--------|
+| 1 | `message` | `{"message": "Invalid email"}` |
+| 2 | `msg` | `{"msg": "Invalid password"}` |
+| 3 | `error` | `{"error": "Unauthorized"}` |
+| 4 | `detail` | `{"detail": "Not found"}` |
+
+**Error Code Reference:**
+
+| HTTP Status | code | message/msg |
+|-------------|------|-------------|
+| 200 | 404 | Invalid password or username not exists |
 | 401 | - | Unauthorized |
 | 500 | - | Internal Server Error |
 
@@ -195,7 +243,7 @@ Endpoint for user registration.
 
 ### Endpoint
 ```
-POST {API_BASE_URL}{API_ENDPOINT_REGISTER}
+POST {AUTH_REGISTER_URL}
 ```
 
 ### Request
@@ -241,7 +289,7 @@ Endpoint for user logout.
 
 ### Endpoint
 ```
-POST {API_BASE_URL}{API_ENDPOINT_LOGOUT}
+POST {AUTH_LOGOUT_URL}
 ```
 
 ### Request
@@ -270,7 +318,7 @@ Endpoint to refresh access token.
 
 ### Endpoint
 ```
-POST {API_BASE_URL}{API_ENDPOINT_REFRESH_TOKEN}
+POST {AUTH_TOKEN_REFRESH_URL}
 ```
 
 ### Request
@@ -306,7 +354,7 @@ Authentication using Google OAuth. The app sends Google ID Token to backend for 
 
 ### Endpoint
 ```
-POST {API_GOOGLE_AUTH_VERIFICATION}
+POST {AUTH_GOOGLE_VERIFICATION_URL}
 ```
 
 ### Request
@@ -352,7 +400,7 @@ ENABLE_GOOGLE_LOGIN=true
 GOOGLE_CLIENT_ID=your_google_client_id
 
 # Endpoint for backend to verify Google ID Token
-API_GOOGLE_AUTH_VERIFICATION=https://api.yourdomain.com/v1/auth/google/verify
+AUTH_GOOGLE_VERIFICATION_URL=https://api.yourdomain.com/v1/auth/google/verify
 ```
 
 ### Steps to Get Google Client ID
@@ -374,7 +422,7 @@ API_GOOGLE_AUTH_VERIFICATION=https://api.yourdomain.com/v1/auth/google/verify
 
 #### Endpoint
 ```
-POST {API_BASE_URL}{API_ENDPOINT_FORGOT_PASSWORD}
+POST {AUTH_FORGOT_PASSWORD_URL}
 ```
 
 #### Payload
@@ -396,7 +444,7 @@ POST {API_BASE_URL}{API_ENDPOINT_FORGOT_PASSWORD}
 
 #### Endpoint
 ```
-POST {API_BASE_URL}{API_ENDPOINT_RESET_PASSWORD}
+POST {AUTH_RESET_PASSWORD_URL}
 ```
 
 #### Payload
@@ -474,7 +522,7 @@ class AuthUser {
 abstract class BaseAuthService {
   Stream<AuthUser?> get authStateChanges;
   AuthUser? get currentUser;
-  
+
   Future<AuthResult> signInWithEmailAndPassword({...});
   Future<AuthResult> createUserWithEmailAndPassword({...});
   Future<AuthResult> signInWithGoogle();
@@ -509,5 +557,5 @@ abstract class BaseAuthService {
 
 ---
 
-*Updated: January 1, 2026*
-*Version: 2.0.0*
+*Updated: January 5, 2026*
+*Version: 2.1.0*

@@ -7,6 +7,7 @@ import '../services/prefs_service.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/register_screen.dart';
+import '../../features/auth/forgot_password_screen.dart';
 import '../../features/dashboard/main_dashboard.dart';
 import '../../features/settings/setting_screen.dart';
 import '../../features/profile/profile_screen.dart';
@@ -14,6 +15,7 @@ import '../../shared/info/help_screen.dart';
 import '../../shared/info/tos_screen.dart';
 import '../../shared/info/privacy_screen.dart';
 import '../../features/dashboard/screens/quick_actions_manager_screen.dart';
+import '../../modules/news/screens/article_screen.dart';
 
 // Modular Architecture
 import '../../modules/module_registry.dart';
@@ -24,6 +26,7 @@ class AppRoutes {
   static const String splash = '/';
   static const String login = '/login';
   static const String register = '/register';
+  static const String forgotPassword = '/forgot-password';
   static const String dashboard = '/dashboard';
   static const String settings = '/settings';
   static const String profile = '/profile';
@@ -95,14 +98,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => LoginScreen(
           onLoginSuccess: () => context.go(AppRoutes.dashboard),
           onRegisterTap: () => context.push(AppRoutes.register),
-          onForgotPasswordTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Forgot password'),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          },
+          onForgotPasswordTap: () => context.push(AppRoutes.forgotPassword),
         ),
         redirect: (context, state) {
           // Use cached PrefsService (synchronous)
@@ -117,6 +113,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => RegisterScreen(
           onRegisterSuccess: () => context.go(AppRoutes.dashboard),
           onLoginTap: () => context.pop(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.forgotPassword,
+        builder: (context, state) => ForgotPasswordScreen(
+          onBackTap: () => context.pop(),
         ),
       ),
 
@@ -186,6 +188,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.quickActions,
         builder: (context, state) => const QuickActionsManagerScreen(),
+      ),
+      GoRoute(
+        path: '/article/:slug',
+        name: 'article_detail',
+        builder: (context, state) {
+          final slug = state.pathParameters['slug'] ?? '';
+          return ArticleScreen(slug: slug);
+        },
       ),
 
       // ============================================

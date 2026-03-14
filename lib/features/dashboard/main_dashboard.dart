@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/config/app_config.dart';
-import '../../core/constants/assets.dart';
 import '../../core/constants/app_info.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/network/repository/article_repository.dart';
@@ -25,6 +24,7 @@ import 'widgets/article_list.dart';
 import '../profile/profile_screen.dart';
 import '../../shared/widgets/location_display_widget.dart';
 import '../../shared/widgets/module_dashboard_slots.dart';
+import 'widgets/article_recommendation.dart';
 
 /// Current navigation index
 final currentNavIndexProvider = StateProvider<int>((ref) => 0);
@@ -56,7 +56,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
     super.initState();
     // Set system UI for edge-to-edge
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    
+
     // Initialize notifications after the first frame is built
     // This prevents "Tried to modify a provider while the widget tree was building" error
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -71,7 +71,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
     // Initialize and request permission
     await ref.read(notificationProvider.notifier).initialize();
     await ref.read(notificationProvider.notifier).requestPermission();
-    
+
     // Check for initial message (app opened from notification)
     final initialMessage = await ref.read(notificationProvider.notifier).getInitialMessage();
     if (initialMessage != null && mounted) {
@@ -88,7 +88,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
       // You can customize this based on your app's requirements
       debugPrint('Notification tapped: ${message.title}');
     }
-    
+
     // Show snackbar for demonstration
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -199,7 +199,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
         onNotificationTap: () {
           // Clear unread count when user taps notification
           ref.read(notificationProvider.notifier).clearUnreadCount();
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.noNewNotifications),
@@ -234,14 +234,16 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
             )
           : null,
       body: _buildBody(currentIndex),
-      bottomNavigationBar: CustomFooter(
-        selectedIndex: currentIndex,
-        onDestinationSelected: (index) {
-          ref.read(currentNavIndexProvider.notifier).state = index;
-        },
-        items: CustomFooter.defaultItems,
-        onCenterButtonTap: () => _showScanDialog(context),
-      ),
+      bottomNavigationBar: AppInfo.footerEnable
+          ? CustomFooter(
+              selectedIndex: currentIndex,
+              onDestinationSelected: (index) {
+                ref.read(currentNavIndexProvider.notifier).state = index;
+              },
+              items: CustomFooter.defaultItems,
+              onCenterButtonTap: () => _showScanDialog(context),
+            )
+          : null,
       // Additional Floating Action Buttons
       floatingActionButton: currentIndex == 0
           ? Column(
@@ -266,19 +268,20 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
                       child: const Icon(Icons.bug_report),
                     ),
                   ),
-                // Chat Button
-                FloatingActionButton.small(
-                  heroTag: 'fab_chat',
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(l10n.chatSupport),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                  child: const Icon(Icons.chat_outlined),
-                ),
+                // Chat Button (only when FAB_CHAT_ENABLE=true)
+                if (AppInfo.fabChatEnable)
+                  FloatingActionButton.small(
+                    heroTag: 'fab_chat',
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(l10n.chatSupport),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                    child: const Icon(Icons.chat_outlined),
+                  ),
               ],
             )
           : null,
@@ -315,6 +318,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
         await Future.wait([
           ref.read(bannersProvider.notifier).refresh(),
           ref.read(articlesProvider.notifier).refresh(),
+          ref.read(recommendedArticlesProvider.notifier).refresh(),
         ]);
       },
       child: SingleChildScrollView(
@@ -339,8 +343,8 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
 
             const SizedBox(height: 24),
 
-            // GPS Location Widget (only shown if ENABLE_GPS=true)
-            if (AppInfo.enableGps)
+            // GPS Location Widget (only shown if WIDGET_LOCATION_ENABLE=true)
+            if (AppInfo.widgetLocationEnable)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: LocationDisplayWidget(
@@ -352,22 +356,23 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
 
             const SizedBox(height: 24),
 
-            // Quick Actions
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                context.l10n.quickActions,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+            // Quick Actions (only shown if ENABLE_QUICK_ACTION=true)
+            if (AppInfo.enableQuickAction) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  context.l10n.quickActions,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            const QuickActionGrid(
-              maxItems: 7,
-            ),
-
-            const SizedBox(height: 24),
+              const SizedBox(height: 12),
+              const QuickActionGrid(
+                maxItems: 7,
+              ),
+              const SizedBox(height: 24),
+            ],
 
             // Module Dashboard Slots
             // Displays widgets from all active modules
@@ -378,7 +383,7 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
               childAspectRatio: 1.5,
             ),
 
-            const SizedBox(height: 24),
+            // const SizedBox(height: 12),
 
             // Articles from API (Horizontal)
             // Using ArticleListFromApi that fetches from https://api.carik.id/dummy/article.json
@@ -386,37 +391,21 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
               title: context.l10n.latestNews,
               seeAllText: context.l10n.seeAll,
               isHorizontal: true,
-              onSeeAllTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(context.l10n.seeAll),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
               onArticleTap: (article) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Selected: ${article.title}'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                if (article.slug != null) {
+                  context.push('/article/${article.slug}');
+                }
               },
             ),
 
             const SizedBox(height: 24),
 
-            // Articles from API (Vertical)
-            ArticleListFromApi(
-              title: context.l10n.recommendedForYou,
-              isHorizontal: false,
+            // Recommended Articles from API
+            ArticleRecommendation(
               onArticleTap: (article) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Selected: ${article.title}'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                if (article.slug != null) {
+                  context.push('/article/${article.slug}');
+                }
               },
             ),
 

@@ -15,6 +15,21 @@ abstract class BaseModule {
   List<RouteBase> get routes => [];
   List<Override> get providerOverrides => [];
   Widget? get dashboardWidget => null;
+
+  /// List of dashboard widgets for this module.
+  /// Override this to provide multiple workspace cards.
+  /// Falls back to [dashboardWidget] if not overridden.
+  List<Widget> get dashboardWidgets {
+    final single = dashboardWidget;
+    return single != null ? [single] : [];
+  }
+
+  /// List of dashboard widget configs corresponding to [dashboardWidgets].
+  /// Should have same length as [dashboardWidgets].
+  List<DashboardWidgetConfig> get dashboardConfigs {
+    return dashboardWidgets.map((_) => dashboardConfig).toList();
+  }
+
   DashboardWidgetConfig get dashboardConfig => const DashboardWidgetConfig();
   List<NavigationItem> get menuItems => [];
   List<QuickActionItem> get quickActions => [];

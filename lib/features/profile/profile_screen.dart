@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/config/app_config.dart';
 import '../../core/constants/app_info.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../auth/change_password_screen.dart';
 
 /// Profile Screen - User profile details
 class ProfileScreen extends ConsumerWidget {
@@ -23,7 +24,7 @@ class ProfileScreen extends ConsumerWidget {
     final l10n = context.l10n;
 
     // Check if user logged in with Google (from property or detect from photoUrl)
-    final isGoogleUser = user?.isGoogleLogin == true || 
+    final isGoogleUser = user?.isGoogleLogin == true ||
         (user?.photoUrl?.contains('googleusercontent.com') ?? false);
 
     return Scaffold(
@@ -38,10 +39,10 @@ class ProfileScreen extends ConsumerWidget {
               onPressed: onBackTap ?? () => Navigator.of(context).pop(),
             ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.edit_outlined),
-                onPressed: onEditTap,
-              ),
+              // IconButton(
+              //   icon: const Icon(Icons.edit_outlined),
+              //   onPressed: onEditTap,
+              // ),
             ],
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
@@ -101,11 +102,20 @@ class ProfileScreen extends ConsumerWidget {
                                 ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        user?.email ?? l10n.notLoggedIn,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onPrimaryContainer,
+                      SizedBox(
+                        width: double.infinity,
+                        child: Center(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Text(
+                              user?.email ?? l10n.notLoggedIn,
+                              maxLines: 1,
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: colorScheme.onPrimaryContainer,
+                                  ),
                             ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -157,8 +167,8 @@ class ProfileScreen extends ConsumerWidget {
 
                   const SizedBox(height: 24),
 
-                  // Quick Actions
-                  _buildSectionHeader(context, l10n.quickActions),
+                  // Quick Actions - Security
+                  _buildSectionHeader(context, l10n.security),
                   const SizedBox(height: 8),
                   Card(
                     child: Column(
@@ -170,9 +180,26 @@ class ProfileScreen extends ConsumerWidget {
                             title: Text(l10n.changePassword),
                             trailing: const Icon(Icons.chevron_right),
                             onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => ChangePasswordScreen(
+                                    onBackTap: () => Navigator.of(context).pop(),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          const Divider(height: 1),
+                        ],
+                        if (AppInfo.enableNotification) ...[
+                          ListTile(
+                            leading: const Icon(Icons.notifications_outlined),
+                            title: Text(l10n.notificationSettings),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(l10n.changePassword),
+                                  content: Text(l10n.notificationSettings),
                                   behavior: SnackBarBehavior.floating,
                                 ),
                               );
@@ -180,33 +207,19 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                           const Divider(height: 1),
                         ],
-                        ListTile(
-                          leading: const Icon(Icons.notifications_outlined),
-                          title: Text(l10n.notificationSettings),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(l10n.notificationSettings),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          },
-                        ),
-                        const Divider(height: 1),
-                        ListTile(
-                          leading: const Icon(Icons.security_outlined),
-                          title: Text(l10n.privacyAndSecurity),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(l10n.privacyAndSecurity),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          },
-                        ),
+                        // ListTile(
+                        //   leading: const Icon(Icons.security_outlined),
+                        //   title: Text(l10n.privacyAndSecurity),
+                        //   trailing: const Icon(Icons.chevron_right),
+                        //   onTap: () {
+                        //     ScaffoldMessenger.of(context).showSnackBar(
+                        //       SnackBar(
+                        //         content: Text(l10n.privacyAndSecurity),
+                        //         behavior: SnackBarBehavior.floating,
+                        //       ),
+                        //     );
+                        //   },
+                        // ),
                       ],
                     ),
                   ),
@@ -279,18 +292,28 @@ class ProfileScreen extends ConsumerWidget {
     return ListTile(
       leading: Icon(icon),
       title: Text(title),
-      trailing: Text(
-        value,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: valueColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+      trailing: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.45,
+        ),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          reverse: true,
+          child: Text(
+            value,
+            maxLines: 1,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: valueColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+          ),
+        ),
       ),
     );
   }
 
   void _showDeleteAccountDialog(BuildContext context, AppLocalizations l10n) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -408,11 +431,20 @@ class EmbeddedProfileContent extends ConsumerWidget {
                       ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  user?.email ?? l10n.notLoggedIn,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onPrimaryContainer,
+                SizedBox(
+                  width: double.infinity,
+                  child: Center(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Text(
+                        user?.email ?? l10n.notLoggedIn,
+                        maxLines: 1,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onPrimaryContainer,
+                            ),
                       ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -549,11 +581,21 @@ class EmbeddedProfileContent extends ConsumerWidget {
     return ListTile(
       leading: Icon(icon),
       title: Text(title),
-      trailing: Text(
-        value,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: valueColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+      trailing: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.45,
+        ),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          reverse: true,
+          child: Text(
+            value,
+            maxLines: 1,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: valueColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+          ),
+        ),
       ),
     );
   }

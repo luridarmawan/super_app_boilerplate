@@ -87,6 +87,15 @@ class AppLocalizations {
   String get confirmPassword => translate('confirmPassword');
   String get fullName => translate('fullName');
   String get forgotPassword => translate('forgotPassword');
+  String get forgotPasswordDesc => translate('forgotPasswordDesc');
+  String get resetPassword => translate('resetPassword');
+  String get resetEmailSent => translate('resetEmailSent');
+  String get currentPassword => translate('currentPassword');
+  String get newPassword => translate('newPassword');
+  String get changePasswordDesc => translate('changePasswordDesc');
+  String get changePasswordSuccess => translate('changePasswordSuccess');
+  String get pleaseEnterCurrentPassword => translate('pleaseEnterCurrentPassword');
+  String get pleaseEnterNewPassword => translate('pleaseEnterNewPassword');
   String get signIn => translate('signIn');
   String get signUp => translate('signUp');
   String get signOut => translate('signOut');
@@ -151,6 +160,7 @@ class AppLocalizations {
   String get pleaseLoginToContinue => translate('pleaseLoginToContinue');
   String get editProfile => translate('editProfile');
   String get workspace => translate('workspace');
+  String get security => translate('security');
 
   // ============================================
   // SCAN & PHOTO STRINGS
@@ -224,6 +234,19 @@ class AppLocalizations {
   String get chatWithSupport => translate('chatWithSupport');
   String get emailSupport => translate('emailSupport');
   String get callCenter => translate('callCenter');
+  String get twentyFourHours => translate('24hours');
+  String get feedbackAndIdeas => translate('feedbackAndIdeas');
+  String get weLoveToHearFromYou => translate('weLoveToHearFromYou');
+  String get feedbackDesc => translate('feedbackDesc');
+  String get sendFeedback => translate('sendFeedback');
+  String get feedbackHint => translate('feedbackHint');
+  String get feedbackSubmittedThankYou => translate('feedbackSubmittedThankYou');
+  String get feedbackUrlNotConfigured => translate('feedbackUrlNotConfigured');
+  String get feedbackMessageRequired => translate('feedbackMessageRequired');
+  String get feedbackMessageTooShort => translate('feedbackMessageTooShort');
+  String get feedbackMessageInvalid => translate('feedbackMessageInvalid');
+  String get feedbackSending => translate('feedbackSending');
+  String get feedbackSendFailed => translate('feedbackSendFailed');
   String get reportAnIssue => translate('reportAnIssue');
   String get havingTrouble => translate('havingTrouble');
   String get reportIssueDesc => translate('reportIssueDesc');
@@ -237,6 +260,7 @@ class AppLocalizations {
   String get describeYourIssue => translate('describeYourIssue');
   String get submit => translate('submit');
   String get reportSubmittedThankYou => translate('reportSubmittedThankYou');
+  String get opening => translate('opening');
 
   // ============================================
   // SIDEBAR MENU STRINGS
@@ -319,6 +343,14 @@ class AppLocalizations {
   String get locationUpdated => translate('locationUpdated');
   String get failedToGetLocation => translate('failedToGetLocation');
   String get accuracy => translate('accuracy');
+
+  // ============================================
+  // NEWS MODULE STRINGS
+  // ============================================
+  String get failedToLoadCoverStory => translate('failedToLoadCoverStory');
+  String get failedToLoadNews => translate('failedToLoadNews');
+  String get noNewsAvailable => translate('noNewsAvailable');
+  String get tryAgain => translate('tryAgain');
 }
 
 

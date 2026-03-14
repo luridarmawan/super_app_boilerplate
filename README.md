@@ -113,6 +113,7 @@ lib/
 | **Environment Config** | ✅ | Konfigurasi via `.env` file dengan `flutter_dotenv` |
 | **GPS & Location** | ✅ | Geolocator + URL launcher untuk integrasi maps |
 | **Google Sign-In** | ✅ | OAuth authentication dengan `google_sign_in` |
+| **WordPress API** | ✅ | Full support untuk WordPress REST API dengan JWT Auth (lihat [docs/API.md](docs/API.md)) |
 
 ---
 
@@ -205,6 +206,9 @@ lib/core/network/
 
 | Fitur | Deskripsi |
 |-------|-----------|
+| **REST Auth (JWT/Token)** | Autentikasi REST API dengan JWT atau token, dikonfigurasi via `.env` |
+| **WordPress wp-json Auth** | Dukungan WordPress REST API melalui plugin [simple-jwt-login](https://wordpress.org/plugins/simple-jwt-login/), dikonfigurasi via `.env` |
+| **Cookie Auth** | Autentikasi berbasis cookie untuk session management, dikonfigurasi via `.env` |
 | **Auto Auth Headers** | Token `Authorization: Bearer` ditambahkan otomatis |
 | **Token Refresh** | Otomatis refresh token saat 401 |
 | **Common Headers** | `X-Request-ID`, `X-Timestamp`, `X-Platform` selalu ditambahkan |
@@ -213,7 +217,7 @@ lib/core/network/
 | **Structured Logging** | Log request/response di debug mode |
 | **BaseRequest** | Field shared (deviceId, timestamp, locale) untuk semua request |
 | **BaseResponse** | Wrapper standar dengan support pagination |
-| **Connectivity Monitoring** | Deteksi status koneksi jaringan secara real-time |
+| **Connectivity Monitoring** | Deteksi status koneksi jaringan secara real-time. Dipersiapkan jika ada kebutuhan untuk "offline-first mode" |
 | **External Modules** | Integrasi modul eksternal tanpa mengubah repository utama (lihat [docs/SubModule.md](docs/SubModule.md)) |
 
 ### 🚫 Anti-Pattern yang Dihindari
@@ -248,7 +252,7 @@ class ProductRepository extends BaseRepository {
   Future<BaseResponse<Product>> getProduct(String id) async {
     return get<Product>('/products/$id', parser: Product.fromJson);
   }
-  
+
   Future<BaseResponse<Product>> createProduct(Product product) async {
     return post<Product>('/products', data: product.toJson(), parser: Product.fromJson);
   }
@@ -295,6 +299,19 @@ final response = await uploadFile<UploadResult>(
 ```
 
 📚 **Dokumentasi lengkap:** [`docs/API.md`](docs/API.md)
+
+## 🌐 WordPress API Support
+
+Boilerplate ini memiliki **dukungan penuh untuk WordPress REST API**, termasuk autentikasi dengan **JWT (JSON Web Token)**.
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| **Auto-Detection** | Otomatis mendeteksi backend WordPress via `/wp-json/` |
+| **JWT Authentication** | Login via WordPress JWT Auth plugin |
+| **User Profile Sync** | Otomatis fetch profil dari `/wp-json/wp/v2/users/me` |
+| **Avatar Support** | Mapping avatar URL dari WordPress Gravatar |
+
+📚 **Dokumentasi lengkap:** [`docs/WordPress.md`](docs/WordPress.md)
 
 ## 🔔 Push Notification (Multi-Provider)
 
@@ -376,6 +393,26 @@ File `lib/core/config/app_config.dart` mengontrol:
 
 ---
 
+## 🚀 Persiapan untuk build
+
+Sebelum menjalankan aplikasi, copy file konfigurasi berikut:
+
+```bash
+# Windows
+copy .env.example .env
+copy pubspec.yaml.example pubspec.yaml
+
+# Linux / macOS
+cp .env.example .env
+cp pubspec.yaml.example pubspec.yaml
+```
+
+Kemudian edit file `.env` dan `pubspec.yaml` sesuai kebutuhan proyek Anda.
+
+📚 **Dokumentasi lengkap:** [`docs/Development-and-Build.md`](docs/Development-and-Build.md)
+
+---
+
 ## 🚀 Cara Menjalankan
 
 ```bash
@@ -394,7 +431,50 @@ flutter build ios
 
 ---
 
-## � Menjalankan di Android Emulator
+## 📦 Release & Keystore
+
+Proyek ini menggunakan **custom keystore** untuk konsistensi signing di seluruh tim development.
+
+### Keystore Files
+
+| File | Deskripsi | Masuk Repo? |
+|------|-----------|-------------|
+| `android/keystores/debug.keystore` | Debug keystore untuk development | ✅ Ya |
+| `android/keystores/release.keystore` | Release keystore (rahasia) | ❌ Tidak |
+| `android/key.properties.example` | Template konfigurasi | ✅ Ya |
+| `android/key.properties` | Konfigurasi aktif (rahasia) | ❌ Tidak |
+
+### Quick Start
+
+```bash
+# 1. Copy template key.properties
+copy android\key.properties.example android\key.properties
+
+# 2. Edit android/key.properties dengan password release Anda
+
+# 3. Generate debug keystore (jika belum ada)
+keytool -genkey -v -keystore android/keystores/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug,O=Android,C=US"
+
+# 4. Generate release keystore
+dart run tool/generate_release_keystore.dart
+
+# 5. Build APK
+flutter build apk --debug    # Debug build
+flutter build apk --release  # Release build
+
+# 6. Build App Bundle untuk Play Store
+flutter build appbundle
+```
+
+> ⚠️ **PENTING:** Jangan pernah commit `key.properties` dan `release.keystore` ke repository!
+>
+> ✅ **Debug keystore** (`debug.keystore`) AMAN untuk dicommit karena menggunakan password standar Android (`android`).
+
+📚 **Dokumentasi lengkap:** [`docs/Release.md`](docs/Release.md)
+
+---
+
+## 📱 Menjalankan di Android Emulator
 
 ### Langkah 1: Cek Emulator yang Tersedia
 ```bash
@@ -464,6 +544,7 @@ flutter run -d emulator-5554
 |----------|-------------|
 | [SuperApp-Architecture.md](docs/SuperApp-Architecture.md) | Architecture overview & design |
 | [API.md](docs/API.md) | Network layer (Dio + Retrofit) |
+| [WordPress.md](docs/WordPress.md) | WordPress REST API & JWT Auth support |
 | [Modular.md](docs/Modular.md) | Modular architecture guide |
 | [SubModule.md](docs/SubModule.md) | External modules integration |
 | [Notification.md](docs/Notification.md) | Push notification system |
@@ -472,6 +553,8 @@ flutter run -d emulator-5554
 | [SplashScreen.md](docs/SplashScreen.md) | Splash screen configuration |
 | [QuickAction.md](docs/QuickAction.md) | Quick actions system |
 | [Permission Helper.md](docs/Permission%20Helper.md) | Permission management |
+| [Change-Application-Id.md](docs/Change-Application-Id.md) | Change app ID tool |
+| [Release.md](docs/Release.md) | Release keystore & signing guide |
 
 ## 📋 TODO (Pengembangan Lanjut)
 

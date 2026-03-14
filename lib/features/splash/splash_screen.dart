@@ -3,10 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/constants/app_info.dart';
-import '../../core/constants/assets.dart';
 
 /// Splash Screen full screen dengan gambar utama
-/// 
+///
 /// SMOOTH TRANSITION FLOW:
 /// 1. Native splash (solid color) tampil instan
 /// 2. Flutter splash ini muncul di atas native splash
@@ -36,13 +35,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<double> _backgroundFadeAnimation;
-  
+
   bool _nativeSplashRemoved = false;
 
   @override
   void initState() {
     super.initState();
-    
+
     // Set status bar transparan untuk full-screen
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     SystemChrome.setSystemUIOverlayStyle(
@@ -95,7 +94,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   /// Preload background image sebelum start animasi
   Future<void> _preloadBackgroundImage() async {
     final backgroundUrl = AppInfo.splashBackground;
-    
+
     if (backgroundUrl.isEmpty) {
       // Tidak ada background URL, langsung mulai animasi
       _onBackgroundReady();
@@ -105,7 +104,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     try {
       // Preload image menggunakan CachedNetworkImageProvider
       final imageProvider = CachedNetworkImageProvider(backgroundUrl);
-      
+
       // Precache image
       if (mounted) {
         await precacheImage(imageProvider, context).timeout(
@@ -119,17 +118,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     } catch (e) {
       debugPrint('Background image preload error: $e');
     }
-    
+
     _onBackgroundReady();
   }
 
   /// Called when background is ready (loaded or timeout/error)
   void _onBackgroundReady() {
     if (!mounted) return;
-    
+
     // Start animation setelah background ready
     _animationController.forward();
-    
+
     // Remove native splash dengan sedikit delay agar transisi smooth
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted && !_nativeSplashRemoved) {
@@ -256,36 +255,38 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    if (AppInfo.splashScreenShowTagline) ...[
+                      const SizedBox(height: 24),
 
-                    // App Name
-                    Text(
-                      AppInfo.name,
-                      style:
-                          Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                    ),
+                      // App Name
+                      Text(
+                        AppInfo.name,
+                        style:
+                            Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                      ),
 
-                    const SizedBox(height: 8),
+                      const SizedBox(height: 8),
 
-                    // Tagline
-                    Text(
-                      AppInfo.tagline,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
-                          ),
-                    ),
+                      // Tagline
+                      Text(
+                        AppInfo.tagline,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: Colors.white.withValues(alpha: 0.9),
+                            ),
+                      ),
 
-                    // Sub Tagline
-                    Text(
-                      AppInfo.subTagline,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 10,
-                          ),
-                    ),
+                      // Sub Tagline
+                      Text(
+                        AppInfo.subTagline,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              fontSize: 10,
+                            ),
+                      ),
+                    ],
 
                   ],
                 ),

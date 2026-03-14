@@ -28,7 +28,7 @@ class ApiConfig {
 
   /// Build complete URL from base URL and endpoint
   /// Handles duplicate slashes automatically
-  /// Example: buildUrl('/auth/login/') => 'https://dashboard.carik.id/auth/login/'
+  /// Example: buildUrl('/auth/login/') => 'https://api.yourdomain.com/auth/login/'
   static String buildUrl(String endpoint) {
     return '$fullBaseUrl${_normalizeEndpoint(endpoint)}';
   }

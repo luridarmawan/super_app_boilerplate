@@ -10,6 +10,7 @@ import 'core/routes/app_router.dart';
 import 'core/l10n/app_localizations.dart';
 import 'core/constants/app_info.dart';
 import 'core/services/prefs_service.dart';
+import 'core/network/cookie/cookie_manager.dart';
 
 // Modular Architecture
 import 'modules/all_modules.dart';
@@ -45,9 +46,15 @@ void main() async {
   // ============================================
   // Modules will only be active if enabled in .env
   ModuleManifest.register();
-  
+
   // Print module status for debugging
   ModuleRegistry.printDebugInfo();
+
+  // Initialize cookie manager if enabled (must be before other async initializations)
+  if (AppInfo.authUseCookie) {
+    await CookieManager.instance.initialize(usePersistentCookies: true);
+    debugPrint('[Main] Cookie management enabled');
+  }
 
   // Initialize services in PARALLEL for better performance
   // This reduces startup time by running async operations concurrently

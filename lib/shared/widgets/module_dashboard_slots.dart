@@ -4,10 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../modules/module_registry.dart';
 
 /// A widget that displays dashboard widgets from all active modules.
-/// 
+///
 /// This widget automatically collects and displays widgets provided by
 /// registered modules, creating a dynamic and extensible dashboard.
-/// 
+///
 /// Usage:
 /// ```dart
 /// ModuleDashboardSlots(
@@ -156,7 +156,7 @@ class ModuleWidgetsList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final widgets = ModuleRegistry.dashboardWidgets;
-    
+
     if (widgets.isEmpty) {
       return const SizedBox.shrink();
     }

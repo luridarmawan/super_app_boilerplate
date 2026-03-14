@@ -31,7 +31,16 @@ const Map<String, String> idStrings = {
   'password': 'Kata Sandi',
   'confirmPassword': 'Konfirmasi Kata Sandi',
   'fullName': 'Nama Lengkap',
-  'forgotPassword': 'Lupa Kata Sandi?',
+  'forgotPassword': 'Lupa Kata Sandi',
+  'forgotPasswordDesc': 'Masukkan email Anda untuk menerima instruksi pengaturan ulang kata sandi.',
+  'resetPassword': 'Atur Ulang Kata Sandi',
+  'resetEmailSent': 'Email pengaturan ulang kata sandi telah dikirim.',
+  'currentPassword': 'Kata Sandi Saat Ini',
+  'newPassword': 'Kata Sandi Baru',
+  'changePasswordDesc': 'Masukkan kata sandi saat ini dan kata sandi baru untuk mengubahnya.',
+  'changePasswordSuccess': 'Kata sandi berhasil diubah.',
+  'pleaseEnterCurrentPassword': 'Silakan masukkan kata sandi saat ini',
+  'pleaseEnterNewPassword': 'Silakan masukkan kata sandi baru',
   'signIn': 'Masuk',
   'signUp': 'Daftar',
   'signOut': 'Keluar',
@@ -90,6 +99,7 @@ const Map<String, String> idStrings = {
   'pleaseLoginToContinue': 'Silakan masuk untuk melanjutkan',
   'editProfile': 'Edit Profil',
   'workspace': 'Workspace',
+  'security': 'Keamanan',
 
   // Scan & Photo
   'scanAndPhoto': 'Scan & Foto',
@@ -155,6 +165,19 @@ const Map<String, String> idStrings = {
   'chatWithSupport': 'Chat dengan tim support kami',
   'emailSupport': 'Dukungan Email',
   'callCenter': 'Call Center',
+  '24hours': '24 jam',
+  'feedbackAndIdeas': 'Masukan & Ide',
+  'weLoveToHearFromYou': 'Kami ingin mendengar dari Anda!',
+  'feedbackDesc': 'Punya masalah, saran, atau ide baru? Bagikan masukan Anda kepada kami \u2014 baik itu laporan bug, permintaan fitur, atau masukan apapun untuk membantu kami berkembang.',
+  'sendFeedback': 'Kirim Masukan',
+  'feedbackHint': 'Bagikan masukan, laporkan masalah, atau sarankan ide baru...',
+  'feedbackSubmittedThankYou': 'Masukan terkirim. Terima kasih!',
+  'feedbackUrlNotConfigured': 'URL feedback belum dikonfigurasi. Silakan atur SUPPORT_FEEDBACK_URL di file .env.',
+  'feedbackMessageRequired': 'Silakan masukkan pesan masukan Anda.',
+  'feedbackMessageTooShort': 'Pesan masukan terlalu pendek. Silakan berikan detail lebih lanjut.',
+  'feedbackMessageInvalid': 'Pesan Anda mengandung karakter yang tidak valid. Silakan hapus konten yang mencurigakan.',
+  'feedbackSending': 'Mengirim masukan...',
+  'feedbackSendFailed': 'Gagal mengirim masukan. Silakan coba lagi nanti.',
   'reportAnIssue': 'Laporkan Masalah',
   'havingTrouble': 'Mengalami masalah?',
   'reportIssueDesc': 'Beritahu kami tentang masalah yang Anda alami. Kami akan menghubungi Anda sesegera mungkin.',
@@ -168,6 +191,7 @@ const Map<String, String> idStrings = {
   'describeYourIssue': 'Jelaskan masalah yang Anda alami...',
   'submit': 'Kirim',
   'reportSubmittedThankYou': 'Laporan terkirim. Terima kasih!',
+  'opening': 'Membuka',
 
   // Sidebar
   'menuLabel': 'Menu',
@@ -201,7 +225,7 @@ const Map<String, String> idStrings = {
   // TOS & Privacy
   'tosTitle': 'Ketentuan Layanan',
   'tosLastUpdated': 'Terakhir diperbarui',
-  'tosIntro': 'Selamat datang di Super App. Dengan menggunakan aplikasi ini, Anda setuju untuk mematuhi ketentuan berikut.',
+  'tosIntro': 'Dengan menggunakan aplikasi ini, Anda setuju untuk mematuhi ketentuan berikut.',
   'privacyTitle': 'Kebijakan Privasi',
   'privacyLastUpdated': 'Terakhir diperbarui',
   'privacyIntro': 'Privasi Anda penting bagi kami. Kebijakan ini menjelaskan bagaimana kami mengumpulkan dan menggunakan data Anda.',
@@ -238,4 +262,10 @@ const Map<String, String> idStrings = {
   'locationUpdated': 'Lokasi diperbarui',
   'failedToGetLocation': 'Gagal mendapatkan lokasi',
   'accuracy': 'Akurasi',
+
+  // News Module
+  'failedToLoadCoverStory': 'Gagal memuat cover story',
+  'failedToLoadNews': 'Gagal memuat berita',
+  'noNewsAvailable': 'Belum ada berita',
+  'tryAgain': 'Coba Lagi',
 };

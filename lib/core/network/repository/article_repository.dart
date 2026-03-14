@@ -16,6 +16,7 @@ class ArticleModel {
   final String? author;
   final DateTime? publishedAt;
   final String? category;
+  final String? slug;
 
   const ArticleModel({
     required this.id,
@@ -25,7 +26,17 @@ class ArticleModel {
     this.author,
     this.publishedAt,
     this.category,
+    this.slug,
+    this.content,
+    this.prev,
+    this.next,
+    this.related,
   });
+
+  final String? content;
+  final ArticleModel? prev;
+  final ArticleModel? next;
+  final List<ArticleModel>? related;
 
   /// Parse from JSON
   factory ArticleModel.fromJson(Map<String, dynamic> json) {
@@ -39,6 +50,16 @@ class ArticleModel {
           ? DateTime.tryParse(json['publishedAt'] as String)
           : null,
       category: json['category'] as String?,
+      slug: json['slug'] as String?,
+      content: json['content'] as String?,
+      prev: json['prev'] is Map<String, dynamic> ? ArticleModel.fromJson(json['prev'] as Map<String, dynamic>) : null,
+      next: json['next'] is Map<String, dynamic> ? ArticleModel.fromJson(json['next'] as Map<String, dynamic>) : null,
+      related: (json['related'] is List)
+          ? (json['related'] as List)
+              .whereType<Map<String, dynamic>>()
+              .map((i) => ArticleModel.fromJson(i))
+              .toList()
+          : null,
     );
   }
 
@@ -51,6 +72,11 @@ class ArticleModel {
         'author': author,
         'publishedAt': publishedAt?.toIso8601String(),
         'category': category,
+        'slug': slug,
+        'content': content,
+        'prev': prev?.toJson(),
+        'next': next?.toJson(),
+        'related': related?.map((r) => r.toJson()).toList(),
       };
 }
 
@@ -59,7 +85,7 @@ class ArticleModel {
 class ArticleRepository extends BaseRepository {
   /// Base URL untuk API artikel
   /// Configured via ARTICLE_API_URL in .env file
-  static String get _articleApiUrl => AppInfo.articleApiURL;
+  static String get _articleLastApiUrl => AppInfo.articleLastApiURL;
 
   ArticleRepository({required super.apiClient});
 
@@ -79,7 +105,7 @@ class ArticleRepository extends BaseRepository {
       // Fetch with bot protection retry and browser-like headers
       final response = await fetchWithCloudflareRetry(
         () => dio.get(
-          _articleApiUrl,
+          _articleLastApiUrl,
           options: Options(
             headers: {
               'User-Agent': ApiConfig.browserUserAgent,
@@ -139,24 +165,144 @@ class ArticleRepository extends BaseRepository {
     }
   }
 
-  /// Ambil artikel berdasarkan kategori
-  Future<BaseResponse<List<ArticleModel>>> getArticlesByCategory(
-    String category,
-  ) async {
+  /// Ambil detail artikel berdasarkan slug
+  Future<BaseResponse<ArticleModel>> getArticleBySlug(String slug) async {
     try {
-      final response = await getArticles();
+      final url = AppInfo.articleApiURL.replaceAll('{slug}', slug);
 
-      if (response.success && response.data != null) {
-        final filtered = response.data!
-            .where((a) =>
-                a.category?.toLowerCase() == category.toLowerCase())
-            .toList();
-        return BaseResponse.success(data: filtered);
+      final response = await fetchWithCloudflareRetry(
+        () => dio.get(
+          url,
+          options: Options(
+            headers: {
+              'User-Agent': ApiConfig.browserUserAgent,
+              'Accept': 'application/json, text/plain, */*',
+              'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
+            },
+          ),
+        ),
+        apiName: 'Article Detail',
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        dynamic data = response.data;
+        
+        // Handle if response is wrapped in a "data" field
+        if (data is Map<String, dynamic> && data.containsKey('data')) {
+          data = data['data'];
+        }
+        
+        // Handle if response is a list (take first item)
+        if (data is List && data.isNotEmpty) {
+          data = data.first;
+        }
+
+        if (data is Map<String, dynamic>) {
+          return BaseResponse.success(
+            data: ArticleModel.fromJson(data),
+            statusCode: response.statusCode,
+          );
+        }
       }
 
-      return BaseResponse.error(message: 'Failed to fetch articles');
+      return BaseResponse.error(
+        message: 'Failed to fetch article detail',
+        statusCode: response.statusCode,
+      );
     } catch (e) {
-      return BaseResponse.error(message: e.toString());
+      return BaseResponse.error(
+        message: 'Error fetching article detail: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Ambil artikel rekomendasi
+  Future<BaseResponse<List<ArticleModel>>> getRecommendedArticles() async {
+    try {
+      final response = await fetchWithCloudflareRetry(
+        () => dio.get(
+          AppInfo.articleRecommendationApiURL,
+          options: Options(
+            headers: {
+              'User-Agent': ApiConfig.browserUserAgent,
+              'Accept': 'application/json, text/plain, */*',
+              'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
+            },
+          ),
+        ),
+        apiName: 'Article Recommendation',
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final List<ArticleModel> articles = [];
+
+        if (response.data is List) {
+          for (final item in response.data) {
+            if (item is Map<String, dynamic>) {
+              articles.add(ArticleModel.fromJson(item));
+            }
+          }
+        }
+
+        return BaseResponse.success(
+          data: articles,
+          statusCode: response.statusCode,
+        );
+      }
+
+      return BaseResponse.error(
+        message: 'Failed to fetch recommended articles',
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return BaseResponse.error(
+        message: 'Error fetching recommended articles: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Ambil artikel cover story
+  Future<BaseResponse<List<ArticleModel>>> getCoverStoryArticles() async {
+    try {
+      final response = await fetchWithCloudflareRetry(
+        () => dio.get(
+          AppInfo.articleCoverApiURL,
+          options: Options(
+            headers: {
+              'User-Agent': ApiConfig.browserUserAgent,
+              'Accept': 'application/json, text/plain, */*',
+              'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
+            },
+          ),
+        ),
+        apiName: 'Article Cover Story',
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final List<ArticleModel> articles = [];
+
+        if (response.data is List) {
+          for (final item in response.data) {
+            if (item is Map<String, dynamic>) {
+              articles.add(ArticleModel.fromJson(item));
+            }
+          }
+        }
+
+        return BaseResponse.success(
+          data: articles,
+          statusCode: response.statusCode,
+        );
+      }
+
+      return BaseResponse.error(
+        message: 'Failed to fetch cover story articles',
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return BaseResponse.error(
+        message: 'Error fetching cover story articles: ${e.toString()}',
+      );
     }
   }
 }
@@ -204,4 +350,82 @@ class ArticlesNotifier extends StateNotifier<AsyncValue<List<ArticleModel>>> {
 final articlesProvider =
     StateNotifierProvider<ArticlesNotifier, AsyncValue<List<ArticleModel>>>(
   (ref) => ArticlesNotifier(ref.watch(articleRepositoryProvider)),
+);
+
+/// Recommended Articles Notifier
+class RecommendedArticlesNotifier extends StateNotifier<AsyncValue<List<ArticleModel>>> {
+  final ArticleRepository _repository;
+
+  RecommendedArticlesNotifier(this._repository) : super(const AsyncValue.loading()) {
+    fetchArticles();
+  }
+
+  Future<void> fetchArticles() async {
+    state = const AsyncValue.loading();
+    final response = await _repository.getRecommendedArticles();
+
+    if (response.success && response.data != null) {
+      state = AsyncValue.data(response.data!);
+    } else {
+      state = AsyncValue.error(
+        response.message ?? 'Failed to fetch recommended articles',
+        StackTrace.current,
+      );
+    }
+  }
+
+  Future<void> refresh() async {
+    await fetchArticles();
+  }
+}
+
+/// Recommended Articles Provider
+final recommendedArticlesProvider =
+    StateNotifierProvider<RecommendedArticlesNotifier, AsyncValue<List<ArticleModel>>>(
+  (ref) => RecommendedArticlesNotifier(ref.watch(articleRepositoryProvider)),
+);
+
+/// Article Detail Provider (Lazy Load)
+final articleDetailProvider = FutureProvider.family<ArticleModel, String>((ref, slug) async {
+  final repository = ref.watch(articleRepositoryProvider);
+  final response = await repository.getArticleBySlug(slug);
+  
+  if (response.success && response.data != null) {
+    return response.data!;
+  }
+  
+  throw Exception(response.message ?? 'Failed to load article detail');
+});
+
+/// Cover Story Articles Notifier
+class CoverStoryArticlesNotifier extends StateNotifier<AsyncValue<List<ArticleModel>>> {
+  final ArticleRepository _repository;
+
+  CoverStoryArticlesNotifier(this._repository) : super(const AsyncValue.loading()) {
+    fetchArticles();
+  }
+
+  Future<void> fetchArticles() async {
+    state = const AsyncValue.loading();
+    final response = await _repository.getCoverStoryArticles();
+
+    if (response.success && response.data != null) {
+      state = AsyncValue.data(response.data!);
+    } else {
+      state = AsyncValue.error(
+        response.message ?? 'Failed to fetch cover story articles',
+        StackTrace.current,
+      );
+    }
+  }
+
+  Future<void> refresh() async {
+    await fetchArticles();
+  }
+}
+
+/// Cover Story Articles Provider
+final coverStoryArticlesProvider =
+    StateNotifierProvider<CoverStoryArticlesNotifier, AsyncValue<List<ArticleModel>>>(
+  (ref) => CoverStoryArticlesNotifier(ref.watch(articleRepositoryProvider)),
 );

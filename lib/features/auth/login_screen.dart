@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../core/config/app_config.dart';
 import '../../core/constants/app_info.dart';
-import '../../core/constants/assets.dart';
+import '../../core/l10n/app_localizations.dart';
 
 /// Login Screen
 class LoginScreen extends ConsumerStatefulWidget {
@@ -102,7 +104,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                 // Title
                 Text(
-                  'Welcome Back',
+                  AppInfo.appName,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -117,93 +119,97 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   textAlign: TextAlign.center,
                 ),
 
-                const SizedBox(height: 40),
+                // Username/Password Login Section (conditional)
+                if (AppInfo.authLoginWithUsernameAndPasswordEnable) ...[
+                  const SizedBox(height: 40),
 
-                // Email Field
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined),
+                  // Email Field
+                  TextFormField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: Icon(Icons.email_outlined),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your email';
+                      }
+                      if (!value.contains('@')) {
+                        return 'Please enter a valid email';
+                      }
+                      return null;
+                    },
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Please enter a valid email';
-                    }
-                    return null;
-                  },
-                ),
 
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                // Password Field
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  textInputAction: TextInputAction.done,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
+                  // Password Field
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: _obscurePassword,
+                    textInputAction: TextInputAction.done,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your password';
+                      }
+                      if (value.length < 6) {
+                        return 'Password must be at least 6 characters';
+                      }
+                      return null;
+                    },
+                    onFieldSubmitted: (_) => _handleLogin(),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Forgot Password
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: widget.onForgotPasswordTap,
+                      child: const Text('Forgot Password?'),
                     ),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
-                  onFieldSubmitted: (_) => _handleLogin(),
-                ),
 
-                const SizedBox(height: 8),
+                  const SizedBox(height: 24),
 
-                // Forgot Password
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: widget.onForgotPasswordTap,
-                    child: const Text('Forgot Password?'),
+                  // Login Button
+                  FilledButton(
+                    onPressed: _isLoading ? null : _handleLogin,
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('Sign In'),
                   ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Login Button
-                FilledButton(
-                  onPressed: _isLoading ? null : _handleLogin,
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Sign In'),
-                ),
+                ],
 
                 // Google Login Section (conditional)
                 if (AppInfo.enableGoogleLogin) ...[
                   const SizedBox(height: 24),
 
                   // Divider
+                  if (AppInfo.authLoginWithUsernameAndPasswordEnable) ...[
                   Row(
                     children: [
                       Expanded(child: Divider(color: colorScheme.outline)),
@@ -219,24 +225,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       Expanded(child: Divider(color: colorScheme.outline)),
                     ],
                   ),
+                  ],
 
                   const SizedBox(height: 24),
 
                   // Social Login Buttons
                   OutlinedButton.icon(
                     onPressed: _isLoading ? null : _handleGoogleLogin,
-                    icon: Icon(
-                      Icons.g_mobiledata,
-                      size: 24,
+                    icon: FaIcon(
+                      FontAwesomeIcons.google,
+                      size: 20,
                       color: colorScheme.primary,
                     ),
-                    label: const Text('Continue with Google'),
+                    label: const Text('Login with Google'),
                   ),
                 ],
 
                 const SizedBox(height: 32),
 
                 // Register Link
+                if (AppInfo.enableSignUp) ...[
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -250,6 +258,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ],
                 ),
+                ],
               ],
             ),
           ),
@@ -259,37 +268,75 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
+    debugPrint('[LOGIN_SCREEN] >>> _handleLogin() called');
+
+    if (!_formKey.currentState!.validate()) {
+      debugPrint('[LOGIN_SCREEN] Form validation failed');
+      return;
+    }
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    debugPrint('[LOGIN_SCREEN] Attempting login with email: $email');
+    debugPrint('[LOGIN_SCREEN] Password length: ${password.length}');
 
     setState(() => _isLoading = true);
 
     try {
+      debugPrint('[LOGIN_SCREEN] Getting authService from provider...');
       final authService = ref.read(authServiceProvider);
+      debugPrint('[LOGIN_SCREEN] authService type: ${authService.runtimeType}');
+
+      debugPrint('[LOGIN_SCREEN] Calling signInWithEmailAndPassword...');
       final result = await authService.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
+        email: email,
+        password: password,
       );
+
+      debugPrint('[LOGIN_SCREEN] <<< Login result received:');
+      debugPrint('[LOGIN_SCREEN]   success: ${result.success}');
+      debugPrint('[LOGIN_SCREEN]   errorMessage: ${result.errorMessage}');
+      debugPrint('[LOGIN_SCREEN]   user: ${result.user?.email ?? "null"}');
 
       if (mounted) {
         setState(() => _isLoading = false);
 
         if (result.success) {
+          debugPrint('[LOGIN_SCREEN] Login SUCCESS, calling onLoginSuccess callback');
           widget.onLoginSuccess?.call();
         } else {
+          final errorMsg = result.errorMessage ?? 'Login failed';
+          debugPrint('[LOGIN_SCREEN] Login FAILED: $errorMsg');
+
+          // Use localized message in production, show detailed error only in debug
+          final l10n = AppLocalizations.of(context);
+          final displayMessage = kReleaseMode
+              ? l10n.loginFailed
+              : 'ERR: $errorMsg';
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result.errorMessage ?? 'Login failed'),
+              content: Text(displayMessage),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('[LOGIN_SCREEN] !!! EXCEPTION caught: $e');
+      debugPrint('[LOGIN_SCREEN] StackTrace: $stackTrace');
       if (mounted) {
         setState(() => _isLoading = false);
+
+        // Use localized message in production, show detailed error only in debug
+        final l10n = AppLocalizations.of(context);
+        final displayMessage = kReleaseMode
+            ? l10n.loginFailed
+            : '${l10n.loginFailed}: ${e.toString()}';
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: ${e.toString()}'),
+            content: Text(displayMessage),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );

@@ -29,19 +29,19 @@ class CustomSidebar extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final user = ref.watch(currentUserProvider);
     final l10n = context.l10n;
-    
+
     return NavigationDrawer(
       selectedIndex: null,
       onDestinationSelected: (index) => _handleNavigation(context, index, l10n),
       children: [
         // Header dengan profil user
         _buildDrawerHeader(context, user, colorScheme),
-        
+
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Divider(),
         ),
-        
+
         // Menu items
         Padding(
           padding: const EdgeInsets.fromLTRB(28, 16, 16, 8),
@@ -53,60 +53,63 @@ class CustomSidebar extends ConsumerWidget {
             ),
           ),
         ),
-        
+
         NavigationDrawerDestination(
           icon: const Icon(Icons.home_outlined),
           selectedIcon: const Icon(Icons.home),
           label: Text(l10n.dashboard),
         ),
-        
+
         // NavigationDrawerDestination(
         //   icon: const Icon(Icons.person_outline),
         //   selectedIcon: const Icon(Icons.person),
         //   label: Text(l10n.profile),
         // ),
-        
-        NavigationDrawerDestination(
-          icon: const Icon(Icons.notifications_outlined),
-          selectedIcon: const Icon(Icons.notifications),
-          label: Text(l10n.notifications),
-        ),
-        
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Divider(),
-        ),
-        
-        Padding(
-          padding: const EdgeInsets.fromLTRB(28, 16, 16, 8),
-          child: Text(
-            l10n.activityLabel,
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 12,
+
+        if (AppInfo.enableNotification)
+          NavigationDrawerDestination(
+            icon: const Icon(Icons.notifications_outlined),
+            selectedIcon: const Icon(Icons.notifications),
+            label: Text(l10n.notifications),
+          ),
+
+        if (AppInfo.sidebarActivityEnable) ...[
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Divider(),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.fromLTRB(28, 16, 16, 8),
+            child: Text(
+              l10n.activityLabel,
+              style: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+              ),
             ),
           ),
-        ),
-        
-        NavigationDrawerDestination(
-          icon: const Icon(Icons.history_outlined),
-          selectedIcon: const Icon(Icons.history),
-          label: Text(l10n.history),
-        ),
-        
-        NavigationDrawerDestination(
-          icon: const Icon(Icons.favorite_outline),
-          selectedIcon: const Icon(Icons.favorite),
-          label: Text(l10n.favorites),
-        ),
-        
 
-        
+          NavigationDrawerDestination(
+            icon: const Icon(Icons.history_outlined),
+            selectedIcon: const Icon(Icons.history),
+            label: Text(l10n.history),
+          ),
+
+          NavigationDrawerDestination(
+            icon: const Icon(Icons.favorite_outline),
+            selectedIcon: const Icon(Icons.favorite),
+            label: Text(l10n.favorites),
+          ),
+        ],
+
+
+
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Divider(),
         ),
-        
+
         Padding(
           padding: const EdgeInsets.fromLTRB(28, 16, 16, 8),
           child: Text(
@@ -117,19 +120,19 @@ class CustomSidebar extends ConsumerWidget {
             ),
           ),
         ),
-        
+
         NavigationDrawerDestination(
           icon: const Icon(Icons.settings_outlined),
           selectedIcon: const Icon(Icons.settings),
           label: Text(l10n.settings),
         ),
-        
+
         NavigationDrawerDestination(
           icon: const Icon(Icons.help_outline),
           selectedIcon: const Icon(Icons.help),
           label: Text(l10n.helpAndSupport),
         ),
-        
+
         // Notification Test (only when notification enabled AND mock provider)
         if (AppInfo.enableNotification &&
             (AppInfo.notificationProvider.toLowerCase() == 'mock' ||
@@ -139,9 +142,9 @@ class CustomSidebar extends ConsumerWidget {
             selectedIcon: Icon(Icons.bug_report),
             label: Text('Notification Test'),
           ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Logout button
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -155,7 +158,7 @@ class CustomSidebar extends ConsumerWidget {
             ),
           ),
         ),
-        
+
         const SizedBox(height: 24),
       ],
     );
@@ -220,9 +223,9 @@ class CustomSidebar extends ConsumerWidget {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Name
           Text(
             user?.displayName ?? context.l10n.guestUser,
@@ -232,19 +235,27 @@ class CustomSidebar extends ConsumerWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          
+
           // Email
           if (user?.email != null)
-            Text(
-              user!.email!,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onPrimaryContainer,
+            SizedBox(
+              width: double.infinity,
+              child: Center(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Text(
+                    user!.email!,
+                    maxLines: 1,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                ),
               ),
             ),
-          
+
           const SizedBox(height: 8),
-          
+
           // View Profile button
           TextButton.icon(
             onPressed: onProfileTap,
@@ -274,44 +285,78 @@ class CustomSidebar extends ConsumerWidget {
 
   void _handleNavigation(BuildContext context, int index, AppLocalizations l10n) {
     Navigator.of(context).pop(); // Close drawer
-    
-    switch (index) {
-      case 0: // Dashboard
-        onDashboardTap?.call();
-        break;
-      // case 1: // Profile
-      //   onProfileTap?.call();
-      //   break;
-      case 1: // Notifications
+
+    // Index mapping:
+    // 0 = Dashboard
+    // (if notification enabled) 1 = Notifications
+    // (if activity enabled) next 2 = History, Favorites
+    // next = Settings
+    // next = Help
+    // next = Notification Test (conditional)
+
+    int currentIndex = 0;
+
+    if (index == currentIndex) {
+      // Dashboard
+      onDashboardTap?.call();
+      return;
+    }
+
+    if (AppInfo.enableNotification) {
+      currentIndex++;
+      if (index == currentIndex) {
+        // Notifications
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.notifications)),
         );
-        break;
-      case 2: // History
+        return;
+      }
+    }
+
+    if (AppInfo.sidebarActivityEnable) {
+      currentIndex++;
+      if (index == currentIndex) {
+        // History
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.history)),
         );
-        break;
-      case 3: // Favorites
+        return;
+      }
+      currentIndex++;
+      if (index == currentIndex) {
+        // Favorites
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.favorites)),
         );
-        break;
-      case 4: // Settings
-        onSettingsTap?.call();
-        break;
-      case 5: // Help
-        onHelpTap?.call();
-        break;
-      case 6: // Notification Test (only if shown)
-        if (AppInfo.enableNotification &&
-            (AppInfo.notificationProvider.toLowerCase() == 'mock' ||
-             AppInfo.notificationProvider.toLowerCase() == 'test')) {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const NotificationTestPanel()),
-          );
-        }
-        break;
+        return;
+      }
+    }
+
+    currentIndex++;
+    if (index == currentIndex) {
+      // Settings
+      onSettingsTap?.call();
+      return;
+    }
+
+    currentIndex++;
+    if (index == currentIndex) {
+      // Help
+      onHelpTap?.call();
+      return;
+    }
+
+    currentIndex++;
+    if (index == currentIndex) {
+      // Notification Test (only if shown)
+      if (AppInfo.enableNotification &&
+          (AppInfo.notificationProvider.toLowerCase() == 'mock' ||
+           AppInfo.notificationProvider.toLowerCase() == 'test')) {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const NotificationTestPanel()),
+        );
+      }
+      return;
     }
   }
 }

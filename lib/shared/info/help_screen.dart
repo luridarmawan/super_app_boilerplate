@@ -1,8 +1,14 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:super_app/core/constants/app_info.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:super_app/core/l10n/app_localizations.dart';
+import 'package:super_app/core/config/app_config.dart';
+import 'package:super_app/core/network/api_client.dart';
 
 /// Help & Report Screen
-class HelpScreen extends StatelessWidget {
+class HelpScreen extends ConsumerStatefulWidget {
   final VoidCallback? onBackTap;
 
   const HelpScreen({
@@ -11,15 +17,21 @@ class HelpScreen extends StatelessWidget {
   });
 
   @override
+  ConsumerState<HelpScreen> createState() => _HelpScreenState();
+}
+
+class _HelpScreenState extends ConsumerState<HelpScreen> {
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Help & Support'),
+        title: Text(l10n.helpAndSupport),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: onBackTap ?? () => Navigator.of(context).pop(),
+          onPressed: widget.onBackTap ?? () => Navigator.of(context).pop(),
         ),
       ),
       body: ListView(
@@ -28,7 +40,7 @@ class HelpScreen extends StatelessWidget {
           // Search Box
           TextField(
             decoration: InputDecoration(
-              hintText: 'Search help articles...',
+              hintText: l10n.searchHelpArticles,
               prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -39,44 +51,46 @@ class HelpScreen extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Quick Help
-          Text(
-            'Quick Help',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-          const SizedBox(height: 12),
+          if (AppInfo.supportQuickHelpEnable) ...[
+            Text(
+              l10n.quickHelp,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            const SizedBox(height: 12),
 
-          _buildHelpCategory(
-            context,
-            icon: Icons.account_circle_outlined,
-            title: 'Account & Profile',
-            subtitle: 'Manage your account settings',
-          ),
-          _buildHelpCategory(
-            context,
-            icon: Icons.payment_outlined,
-            title: 'Payments & Transactions',
-            subtitle: 'Payment methods, history, refunds',
-          ),
-          _buildHelpCategory(
-            context,
-            icon: Icons.security_outlined,
-            title: 'Security & Privacy',
-            subtitle: 'Account security, privacy settings',
-          ),
-          _buildHelpCategory(
-            context,
-            icon: Icons.apps_outlined,
-            title: 'Using the App',
-            subtitle: 'Features, navigation, tips',
-          ),
+            _buildHelpCategory(
+              context,
+              icon: Icons.account_circle_outlined,
+              title: l10n.accountAndProfile,
+              subtitle: l10n.manageAccountSettings,
+            ),
+            _buildHelpCategory(
+              context,
+              icon: Icons.payment_outlined,
+              title: l10n.paymentsAndTransactions,
+              subtitle: l10n.paymentMethodsHistory,
+            ),
+            _buildHelpCategory(
+              context,
+              icon: Icons.security_outlined,
+              title: l10n.securityAndPrivacy,
+              subtitle: l10n.accountSecurityPrivacy,
+            ),
+            _buildHelpCategory(
+              context,
+              icon: Icons.apps_outlined,
+              title: l10n.usingTheApp,
+              subtitle: l10n.featuresNavigationTips,
+            ),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
+          ],
 
           // Contact Us
           Text(
-            'Contact Us',
+            l10n.contactUs,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -86,25 +100,27 @@ class HelpScreen extends StatelessWidget {
           Card(
             child: Column(
               children: [
-                ListTile(
-                  leading: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(8),
+                if (AppInfo.supportLiveChatEnable) ...[
+                  ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.chat_outlined,
+                        color: colorScheme.onPrimaryContainer,
+                      ),
                     ),
-                    child: Icon(
-                      Icons.chat_outlined,
-                      color: colorScheme.onPrimaryContainer,
-                    ),
+                    title: Text(l10n.liveChat),
+                    subtitle: Text(l10n.chatWithSupport),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showContactDialog(context, l10n.liveChat),
                   ),
-                  title: const Text('Live Chat'),
-                  subtitle: const Text('Chat with our support team'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _showContactDialog(context, 'Live Chat'),
-                ),
-                const Divider(height: 1),
+                  const Divider(height: 1),
+                ],
                 ListTile(
                   leading: Container(
                     width: 40,
@@ -118,39 +134,41 @@ class HelpScreen extends StatelessWidget {
                       color: colorScheme.onPrimaryContainer,
                     ),
                   ),
-                  title: const Text('Email Support'),
+                  title: Text(l10n.emailSupport),
                   subtitle: Text(AppInfo.emailSupport),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _showContactDialog(context, 'Email'),
+                  onTap: () => _showContactDialog(context, l10n.emailSupport),
                 ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(8),
+                if (AppInfo.supportCallCenterEnable) ...[
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.phone_outlined,
+                        color: colorScheme.onPrimaryContainer,
+                      ),
                     ),
-                    child: Icon(
-                      Icons.phone_outlined,
-                      color: colorScheme.onPrimaryContainer,
-                    ),
+                    title: Text(l10n.callCenter),
+                    subtitle: Text('${AppInfo.phoneSupport} (${l10n.twentyFourHours})'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showContactDialog(context, l10n.callCenter),
                   ),
-                  title: const Text('Call Center'),
-                  subtitle: Text('${AppInfo.phoneSupport} (24 hours)'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _showContactDialog(context, 'Phone'),
-                ),
+                ],
               ],
             ),
           ),
 
           const SizedBox(height: 24),
 
-          // Report Issue
+          // Feedback & Ideas
           Text(
-            'Report an Issue',
+            l10n.feedbackAndIdeas,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -164,21 +182,21 @@ class HelpScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Having trouble?',
+                    l10n.weLoveToHearFromYou,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Let us know about any issues you experience. We\'ll get back to you as soon as possible.',
+                    l10n.feedbackDesc,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
                   ),
                   const SizedBox(height: 16),
                   FilledButton.icon(
-                    onPressed: () => _showReportDialog(context),
-                    icon: const Icon(Icons.bug_report_outlined),
-                    label: const Text('Report an Issue'),
+                    onPressed: () => _showFeedbackDialog(context),
+                    icon: const Icon(Icons.feedback_outlined),
+                    label: Text(l10n.sendFeedback),
                   ),
                 ],
               ),
@@ -189,7 +207,7 @@ class HelpScreen extends StatelessWidget {
 
           // FAQ
           Text(
-            'Frequently Asked Questions',
+            l10n.faq,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -198,24 +216,63 @@ class HelpScreen extends StatelessWidget {
 
           _buildFaqItem(
             context,
-            question: 'How do I reset my password?',
-            answer:
-                'You can reset your password by going to Settings > Account > Change Password, or use the "Forgot Password" option on the login screen.',
+            question: l10n.howToResetPassword,
+            answer: l10n.resetPasswordAnswer,
           ),
           _buildFaqItem(
             context,
-            question: 'How do I update my profile?',
-            answer:
-                'Go to Profile > Edit Profile to update your personal information, profile picture, and other details.',
+            question: l10n.howToUpdateProfile,
+            answer: l10n.updateProfileAnswer,
           ),
           _buildFaqItem(
             context,
-            question: 'How do I contact customer support?',
-            answer:
-                'You can reach us through Live Chat, Email, or Call Center. Check the "Contact Us" section above for details.',
+            question: l10n.howToContactSupport,
+            answer: l10n.contactSupportAnswer,
           ),
 
-          const SizedBox(height: 32),
+          // Privacy Policy
+          Card(
+            child: ListTile(
+              leading: Icon(
+                Icons.privacy_tip_outlined,
+                color: colorScheme.primary,
+              ),
+              title: Text(l10n.privacyPolicy),
+              subtitle: Text(l10n.privacyIntro),
+              trailing: const Icon(Icons.open_in_new, size: 20),
+              onTap: () async {
+                final url = Uri.parse(AppInfo.privacyUrl);
+                try {
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                } catch (e) {
+                  debugPrint('Could not launch ${AppInfo.privacyUrl}: $e');
+                }
+              },
+            ),
+          ),
+
+          // TOS - Term of Service
+          Card(
+            child: ListTile(
+              leading: Icon(
+                Icons.description_outlined,
+                color: colorScheme.primary,
+              ),
+              title: Text(l10n.termsOfService),
+              subtitle: Text(l10n.tosIntro),
+              trailing: const Icon(Icons.open_in_new, size: 20),
+              onTap: () async {
+                final url = Uri.parse(AppInfo.termsUrl);
+                try {
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                } catch (e) {
+                  debugPrint('Could not launch ${AppInfo.termsUrl}: $e');
+                }
+              },
+            ),
+          ),
+
+          const SizedBox(height: 64),
         ],
       ),
     );
@@ -228,6 +285,7 @@ class HelpScreen extends StatelessWidget {
     required String subtitle,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -250,7 +308,7 @@ class HelpScreen extends StatelessWidget {
         onTap: () {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Opening $title...'),
+              content: Text('${l10n.opening} $title...'),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -287,52 +345,229 @@ class HelpScreen extends StatelessWidget {
   }
 
   void _showContactDialog(BuildContext context, String method) {
+    final l10n = context.l10n;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Opening $method...'),
+        content: Text('${l10n.opening} $method...'),
         behavior: SnackBarBehavior.floating,
       ),
     );
   }
 
-  void _showReportDialog(BuildContext context) {
+  /// Validates the feedback message for suspicious or dangerous content.
+  /// Returns null if valid, or an error message string if invalid.
+  String? _validateFeedbackMessage(String message, AppLocalizations l10n) {
+    final trimmed = message.trim();
+
+    // Check empty
+    if (trimmed.isEmpty) {
+      return l10n.feedbackMessageRequired;
+    }
+
+    // Check minimum length
+    if (trimmed.length < 10) {
+      return l10n.feedbackMessageTooShort;
+    }
+
+    // Check for suspicious/dangerous patterns
+    // - Script injection: <script>, javascript:, on[event]=
+    // - SQL injection: common patterns like DROP TABLE, UNION SELECT, etc.
+    // - Command injection: shell commands
+    // - Excessive special characters
+    final dangerousPatterns = [
+      RegExp(r'<\s*script', caseSensitive: false),
+      RegExp(r'javascript\s*:', caseSensitive: false),
+      RegExp(r'on\w+\s*=', caseSensitive: false),
+      RegExp(r'<\s*iframe', caseSensitive: false),
+      RegExp(r'<\s*object', caseSensitive: false),
+      RegExp(r'<\s*embed', caseSensitive: false),
+      RegExp(r'<\s*form', caseSensitive: false),
+      RegExp(r'<\s*img\s+[^>]*onerror', caseSensitive: false),
+      RegExp(r"(DROP|DELETE|INSERT|UPDATE|ALTER)\s+(TABLE|DATABASE|INTO)", caseSensitive: false),
+      RegExp(r"UNION\s+(ALL\s+)?SELECT", caseSensitive: false),
+      RegExp(r";\s*(DROP|DELETE|INSERT|UPDATE|ALTER)\b", caseSensitive: false),
+      RegExp(r'(--|/\*|\*/)', caseSensitive: false),
+      RegExp(r'(\bexec\b|\beval\b)\s*\(', caseSensitive: false),
+      RegExp(r'(\brm\s+-rf\b|\bsudo\b|\bchmod\b|\bchown\b)', caseSensitive: false),
+      RegExp(r'(\\x[0-9a-fA-F]{2}|\\u[0-9a-fA-F]{4})', caseSensitive: false),
+      RegExp(r'data\s*:\s*text/html', caseSensitive: false),
+    ];
+
+    for (final pattern in dangerousPatterns) {
+      if (pattern.hasMatch(trimmed)) {
+        return l10n.feedbackMessageInvalid;
+      }
+    }
+
+    return null; // valid
+  }
+
+  void _showFeedbackDialog(BuildContext context) {
+    final l10n = context.l10n;
+    final feedbackUrl = AppInfo.supportFeedbackUrl;
+
+    // Check if feedback URL is configured
+    if (feedbackUrl.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.feedbackUrlNotConfigured),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
+
+    final messageController = TextEditingController();
+    String? errorText;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Report an Issue'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              maxLines: 4,
-              decoration: InputDecoration(
-                hintText: 'Describe the issue you\'re experiencing...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: Text(l10n.sendFeedback),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: messageController,
+                maxLines: 4,
+                maxLength: 1000,
+                decoration: InputDecoration(
+                  hintText: l10n.feedbackHint,
+                  errorText: errorText,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                // Validate message
+                final validationError = _validateFeedbackMessage(
+                  messageController.text,
+                  l10n,
+                );
+
+                if (validationError != null) {
+                  setDialogState(() {
+                    errorText = validationError;
+                  });
+                  return;
+                }
+
+                // Close dialog and submit
+                Navigator.of(dialogContext).pop();
+                _submitFeedback(
+                  context,
+                  message: messageController.text.trim(),
+                );
+              },
+              child: Text(l10n.submit),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Report submitted. Thank you!'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            child: const Text('Submit'),
-          ),
-        ],
       ),
     );
+  }
+
+  Future<void> _submitFeedback(
+    BuildContext context, {
+    required String message,
+  }) async {
+    final l10n = context.l10n;
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final errorColor = Theme.of(context).colorScheme.error;
+
+    // Show sending indicator
+    scaffoldMessenger.showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: 16),
+            Text(l10n.feedbackSending),
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 30),
+      ),
+    );
+
+    try {
+      final user = ref.read(currentUserProvider);
+      final dio = ref.read(dioProvider);
+
+      final response = await dio.post(
+        AppInfo.supportFeedbackUrl,
+        data: {
+          'name': user?.displayName ?? '',
+          'email': user?.email ?? '',
+          'message': message,
+        },
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      debugPrint('[Feedback] Response status: ${response.statusCode}');
+      debugPrint('[Feedback] Response data: ${response.data}');
+
+      // Dismiss sending snackbar and show success
+      scaffoldMessenger.hideCurrentSnackBar();
+
+      if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.feedbackSubmittedThankYou),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.feedbackSendFailed),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: errorColor,
+          ),
+        );
+      }
+    } on DioException catch (e) {
+      debugPrint('[Feedback] DioException: ${e.message}');
+      debugPrint('[Feedback] Response: ${e.response?.data}');
+
+      scaffoldMessenger.hideCurrentSnackBar();
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.feedbackSendFailed),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: errorColor,
+        ),
+      );
+    } catch (e) {
+      debugPrint('[Feedback] Error: $e');
+
+      scaffoldMessenger.hideCurrentSnackBar();
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.feedbackSendFailed),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: errorColor,
+        ),
+      );
+    }
   }
 }

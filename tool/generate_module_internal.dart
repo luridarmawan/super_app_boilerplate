@@ -116,9 +116,10 @@ void _syncModules() {
 
       if (classMatch != null) {
         final className = classMatch.group(1)!;
+        // Normalize path separators first, then remove the prefix
         String relativePath = entity.path
-            .replaceFirst('lib/modules/', '')
-            .replaceAll('\\', '/');
+            .replaceAll('\\', '/')
+            .replaceFirst('lib/modules/', '');
 
         imports.add("import '$relativePath';");
         registrations.add("    ModuleRegistry.register($className());");

@@ -4,22 +4,24 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:module_interface/module_interface.dart';
 import 'auth_interface.dart';
 import '../constants/app_info.dart';
-import '../network/api_client.dart';
-import '../network/api_config.dart';
 
 /// Implementasi Custom API Auth
 /// Gunakan ini untuk backend custom (REST API, GraphQL, dll)
 class CustomApiAuthProvider implements BaseAuthService {
   AuthUser? _currentUser;
-  final StreamController<AuthUser?> _authStateController = 
+  final StreamController<AuthUser?> _authStateController =
       StreamController<AuthUser?>.broadcast();
-  
+
+  /// Get current JWT token
+  String? get token => _currentUser?.jwt;
+
   // Configuration
   final String? baseUrl;
   final Map<String, String>? headers;
-  
+
   // Google Sign-In instance (singleton in v7.x)
   GoogleSignIn get _googleSignIn => GoogleSignIn.instance;
   bool _googleSignInInitialized = false;
@@ -38,7 +40,121 @@ class CustomApiAuthProvider implements BaseAuthService {
     // Memuat saved user saat inisialisasi
     _loadSavedUser();
   }
-  
+
+  /// Helper untuk mendeteksi apakah API menggunakan WordPress
+  /// Berdasarkan apakah URL mengandung "/wp-json/" atau "rest_route=/jwt-login" atau "rest_route=/simple-jwt-login"
+  bool _isWordPressApi(String url) {
+    return url.contains('/wp-json/') ||
+           url.contains('rest_route=/jwt-login') ||
+           url.contains('rest_route=/simple-jwt-login');
+  }
+
+  /// Mendapatkan base URL dari login URL untuk WordPress API
+  /// Contoh: "https://example.com/wp-json/jwt-login/v1/auth" -> "https://example.com"
+  String _getWordPressBaseUrl(String loginUrl) {
+    final wpJsonIndex = loginUrl.indexOf('/wp-json/');
+    if (wpJsonIndex > 0) {
+      return loginUrl.substring(0, wpJsonIndex);
+    }
+    return loginUrl;
+  }
+
+  /// Fetch user profile dari WordPress REST API
+  /// Endpoint: /wp-json/wp/v2/users/me
+  /// Response fields: id, name, avatar_urls.48
+  Future<void> _fetchWordPressUserProfile(String jwt) async {
+    try {
+      final loginUrl = AppInfo.authLoginUrl;
+      final baseUrl = _getWordPressBaseUrl(loginUrl);
+      final userMeUrl = '$baseUrl/wp-json/wp/v2/users/me';
+
+      debugPrint('[AUTH-WP] ----------------------------------------');
+      debugPrint('[AUTH-WP] Fetching WordPress user profile...');
+      debugPrint('[AUTH-WP] URL: $userMeUrl');
+
+      final dio = Dio();
+      final response = await dio.get(
+        userMeUrl,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $jwt',
+            'Accept': 'application/json',
+            ...?headers,
+          },
+        ),
+      );
+
+      debugPrint('[AUTH-WP] Response Status: ${response.statusCode}');
+      debugPrint('[AUTH-WP] Response Data: ${response.data}');
+
+      if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
+        final wpData = response.data as Map<String, dynamic>;
+
+        // Extract data dari WordPress user profile
+        // Mapping:
+        // - id -> uid
+        // - name -> displayName
+        // - avatar_urls.48 -> photoUrl
+        final wpUserId = wpData['id']?.toString();
+        final wpDisplayName = wpData['name']?.toString();
+        String? wpAvatarUrl;
+
+        // Extract avatar URL dari avatar_urls.48
+        if (wpData['avatar_urls'] is Map<String, dynamic>) {
+          final avatarUrls = wpData['avatar_urls'] as Map<String, dynamic>;
+          wpAvatarUrl = avatarUrls['48']?.toString() ??
+                        avatarUrls['96']?.toString() ??
+                        avatarUrls['24']?.toString();
+        }
+
+        debugPrint('[AUTH-WP] WordPress User ID: $wpUserId');
+        debugPrint('[AUTH-WP] WordPress Display Name: $wpDisplayName');
+        debugPrint('[AUTH-WP] WordPress Avatar URL: $wpAvatarUrl');
+
+        // Update current user dengan data dari WordPress
+        if (_currentUser != null) {
+          // Jika user login via Google dan sudah punya photo URL dari Google,
+          // jangan overwrite dengan WordPress Gravatar avatar
+          final shouldKeepGooglePhoto = _currentUser!.isGoogleLogin &&
+              _currentUser!.photoUrl != null &&
+              _currentUser!.photoUrl!.isNotEmpty;
+
+          final finalPhotoUrl = shouldKeepGooglePhoto
+              ? _currentUser!.photoUrl  // Keep Google profile photo
+              : (wpAvatarUrl ?? _currentUser!.photoUrl);  // Use WP avatar
+
+          debugPrint('[AUTH-WP] isGoogleLogin: ${_currentUser!.isGoogleLogin}');
+          debugPrint('[AUTH-WP] Keeping Google photo: $shouldKeepGooglePhoto');
+
+          _currentUser = _currentUser!.copyWith(
+            uid: wpUserId ?? _currentUser!.uid,
+            displayName: wpDisplayName ?? _currentUser!.displayName,
+            photoUrl: finalPhotoUrl,
+          );
+
+          debugPrint('[AUTH-WP] Updated user with WordPress profile data');
+          debugPrint('[AUTH-WP] Final UID: ${_currentUser!.uid}');
+          debugPrint('[AUTH-WP] Final Name: ${_currentUser!.displayName}');
+          debugPrint('[AUTH-WP] Final Avatar: ${_currentUser!.photoUrl}');
+        }
+      } else {
+        debugPrint('[AUTH-WP] WARNING: Could not fetch WordPress user profile');
+      }
+    } on DioException catch (e) {
+      debugPrint('[AUTH-WP] DIO ERROR fetching WordPress user profile:');
+      debugPrint('[AUTH-WP] Type: ${e.type}');
+      debugPrint('[AUTH-WP] Message: ${e.message}');
+      if (e.response != null) {
+        debugPrint('[AUTH-WP] Status: ${e.response?.statusCode}');
+        debugPrint('[AUTH-WP] Data: ${e.response?.data}');
+      }
+      // Non-fatal error, jangan throw exception
+    } catch (e) {
+      debugPrint('[AUTH-WP] ERROR fetching WordPress user profile: $e');
+      // Non-fatal error, jangan throw exception
+    }
+  }
+
   Future<void> _initGoogleSignIn() async {
     if (_googleSignInInitialized) return;
     try {
@@ -108,52 +224,105 @@ class CustomApiAuthProvider implements BaseAuthService {
     required String password,
   }) async {
     try {
+      debugPrint('[AUTH] ============================================');
       debugPrint('[AUTH] >>> Starting Email/Password Login');
       debugPrint('[AUTH] Email: $email');
+      debugPrint('[AUTH] Password length: ${password.length}');
 
-      // Build API URL using ApiConfig and AppInfo
-      final endpoint = AppInfo.apiEndpointLogin;
-      final fullUrl = ApiConfig.buildUrl(endpoint);
-      debugPrint('[AUTH] POST $fullUrl');
+      // Get login URL directly from AppInfo
+      final loginUrl = AppInfo.authLoginUrl;
+      final contentType = AppInfo.authLoginContentType;
+      debugPrint('[AUTH] POST URL: $loginUrl');
+      debugPrint('[AUTH] Content-Type: $contentType');
 
-      // Create ApiClient instance and make request
-      final apiClient = ApiClient(baseUrl: ApiConfig.fullBaseUrl);
-      final response = await apiClient.dio.post(
-        endpoint,
-        data: {
-          'username': email,
-          'password': password,
-        },
+      // Prepare request data based on content type
+      final dio = Dio();
+      Object requestData;
+
+      if (contentType == 'application/x-www-form-urlencoded') {
+        // For form-urlencoded, use FormData or string format
+        requestData = {
+          AppInfo.authUsernameFieldName: email,
+          AppInfo.authPasswordFieldName: password,
+        };
+      } else {
+        // Default: application/json
+        requestData = {
+          AppInfo.authUsernameFieldName: email,
+          AppInfo.authPasswordFieldName: password,
+        };
+      }
+      debugPrint('[AUTH] Request data: $requestData');
+
+      debugPrint('[AUTH] Sending POST request...');
+      final response = await dio.post(
+        loginUrl,
+        options: Options(
+          headers: {
+            'Content-Type': contentType,
+            ...?headers,
+          },
+          // For form-urlencoded, Dio needs this to encode properly
+          contentType: contentType,
+        ),
+        data: requestData,
       );
 
-      debugPrint('[AUTH] Response: ${response.statusCode} - ${response.data}');
+      debugPrint('[AUTH] ----------------------------------------');
+      debugPrint('[AUTH] Response Status Code: ${response.statusCode}');
+      debugPrint('[AUTH] Response Headers: ${response.headers}');
+      debugPrint('[AUTH] Raw Response Data Type: ${response.data.runtimeType}');
+      debugPrint('[AUTH] Raw Response Data: ${response.data}');
 
       // Handle error responses
       if (response.statusCode != 200) {
         final errorData = response.data;
+        debugPrint('[AUTH] ERROR: Non-200 status code received');
+        debugPrint('[AUTH] Error data type: ${errorData.runtimeType}');
+        debugPrint('[AUTH] Error data: $errorData');
+
         String errorMessage = 'Login failed';
 
         if (errorData is Map<String, dynamic>) {
           // Try to extract error message from response
+          // Support various field names: message, msg, error, detail
           errorMessage = errorData['message']?.toString() ??
+              errorData['msg']?.toString() ??
               errorData['error']?.toString() ??
               errorData['detail']?.toString() ??
               'Login failed: ${response.statusCode}';
+          debugPrint('[AUTH] Extracted error message: $errorMessage');
         }
 
-        debugPrint('[AUTH] ERROR: $errorMessage');
+        debugPrint('[AUTH] Returning failure: $errorMessage');
         return AuthResult.failure(errorMessage);
       }
 
       // Parse response data
+      debugPrint('[AUTH] ----------------------------------------');
+      debugPrint('[AUTH] Parsing response data...');
+
+      if (response.data == null) {
+        debugPrint('[AUTH] ERROR: response.data is null!');
+        return AuthResult.failure('Server response is null');
+      }
+
+      if (response.data is! Map<String, dynamic>) {
+        debugPrint('[AUTH] ERROR: response.data is not a Map!');
+        debugPrint('[AUTH] Actual type: ${response.data.runtimeType}');
+        debugPrint('[AUTH] Actual value: ${response.data}');
+        return AuthResult.failure('Invalid server response format');
+      }
+
       final responseData = response.data as Map<String, dynamic>;
+      debugPrint('[AUTH] Response keys: ${responseData.keys.toList()}');
 
       // Extract user data (adapt based on your API response structure)
       // Common response structures:
       // 1. { user: {...}, token: "..." }
       // 2. { data: { user: {...}, token: "..." } }
       // 3. { id: ..., email: ..., name: ..., token: "..." }
-      
+
       Map<String, dynamic>? userData;
       String? accessToken; // ignore: unused_local_variable
       String? refreshToken; // ignore: unused_local_variable
@@ -161,40 +330,66 @@ class CustomApiAuthProvider implements BaseAuthService {
       // check response data, jika json dan memiliki field "code", check value-nya
       // code 0 atau 200 artinya success
       if (responseData.containsKey('code')) {
+        debugPrint('[AUTH] Response contains "code" field: ${responseData['code']}');
         if (responseData['code'] != 0 && responseData['code'] != 200) {
-          return AuthResult.failure(responseData['message']?.toString() ?? 'Login failed');
+          // Support both 'message' and 'msg' field names
+          final errorMsg = responseData['message']?.toString() ??
+              responseData['msg']?.toString() ??
+              'Login failed';
+          debugPrint('[AUTH] Code indicates failure. Error: $errorMsg');
+          return AuthResult.failure(errorMsg);
         }
+        debugPrint('[AUTH] Code indicates success');
       }
 
       // Handle different API response structures
+      debugPrint('[AUTH] Detecting API response structure...');
       if (responseData.containsKey('user')) {
+        debugPrint('[AUTH] Structure detected: { user: {...} }');
         userData = responseData['user'] as Map<String, dynamic>?;
-        accessToken = responseData['token']?.toString() ?? 
+        accessToken = responseData['token']?.toString() ??
                       responseData['access_token']?.toString();
         refreshToken = responseData['refresh_token']?.toString();
       } else if (responseData.containsKey('data')) {
-        final data = responseData['data'] as Map<String, dynamic>;
-        userData = data['user'] as Map<String, dynamic>? ?? data;
-        accessToken = data['token']?.toString() ?? 
-                      data['access_token']?.toString();
-        refreshToken = data['refresh_token']?.toString();
+        debugPrint('[AUTH] Structure detected: { data: {...} }');
+        final data = responseData['data'];
+        debugPrint('[AUTH] data type: ${data.runtimeType}');
+        debugPrint('[AUTH] data value: $data');
+        if (data is Map<String, dynamic>) {
+          userData = data['user'] as Map<String, dynamic>? ?? data;
+          accessToken = data['token']?.toString() ??
+                        data['access_token']?.toString();
+          refreshToken = data['refresh_token']?.toString();
+        } else {
+          debugPrint('[AUTH] WARNING: data is not a Map, treating response as user data');
+          userData = responseData;
+        }
       } else {
+        debugPrint('[AUTH] Structure detected: user data at root level');
         // Assume the response is the user data itself
         userData = responseData;
-        accessToken = responseData['token']?.toString() ?? 
+        accessToken = responseData['token']?.toString() ??
                       responseData['access_token']?.toString();
         refreshToken = responseData['refresh_token']?.toString();
       }
 
+      debugPrint('[AUTH] Extracted userData: $userData');
+      debugPrint('[AUTH] Extracted accessToken: ${accessToken != null ? "(${accessToken.length} chars)" : "null"}');
+      debugPrint('[AUTH] Extracted refreshToken: ${refreshToken != null ? "(${refreshToken.length} chars)" : "null"}');
+
       // Build display name from available fields
-      String? displayName = userData?['name']?.toString() ?? 
+      debugPrint('[AUTH] ----------------------------------------');
+      debugPrint('[AUTH] Building display name...');
+      String? displayName = userData?['name']?.toString() ??
                             userData?['display_name']?.toString() ??
                             userData?['full_name']?.toString();
+      debugPrint('[AUTH] Initial displayName: $displayName');
 
       // If no direct name field, try combining first_name and last_name
       if (displayName == null || displayName.isEmpty) {
         final firstName = userData?['first_name']?.toString() ?? '';
         final lastName = userData?['last_name']?.toString() ?? '';
+        debugPrint('[AUTH] firstName: "$firstName", lastName: "$lastName"');
         final combinedName = '$firstName $lastName'.trim();
         if (combinedName.isNotEmpty) {
           displayName = combinedName;
@@ -203,67 +398,133 @@ class CustomApiAuthProvider implements BaseAuthService {
 
       // Fallback to email prefix if no name found
       displayName ??= email.split('@').first;
+      debugPrint('[AUTH] Final displayName: $displayName');
+
+      // Build user ID
+      final uid = userData?['id']?.toString() ??
+                  userData?['uid']?.toString() ??
+                  'user_${DateTime.now().millisecondsSinceEpoch}';
+      debugPrint('[AUTH] User ID: $uid');
 
       // Create AuthUser from response
+      debugPrint('[AUTH] Creating AuthUser object...');
       _currentUser = AuthUser(
-        uid: userData?['id']?.toString() ?? 
-             userData?['uid']?.toString() ?? 
-             'user_${DateTime.now().millisecondsSinceEpoch}',
+        uid: uid,
         email: userData?['email']?.toString() ?? email,
         displayName: displayName,
-        photoUrl: userData?['photo_url']?.toString() ?? 
+        photoUrl: userData?['photo_url']?.toString() ??
                   userData?['avatar']?.toString() ??
                   userData?['picture']?.toString(),
-        isEmailVerified: userData?['email_verified'] == true || 
+        isEmailVerified: userData?['email_verified'] == true ||
                          userData?['is_verified'] == true,
         isGoogleLogin: false,
+        jwt: responseData['jwt']?.toString() ??
+             responseData['token']?.toString() ??
+             responseData['access_token']?.toString() ??
+             (responseData['data'] is Map ? responseData['data']['jwt']?.toString() : null) ??
+             (responseData['data'] is Map ? responseData['data']['token']?.toString() : null) ??
+             (responseData['data'] is Map ? responseData['data']['access_token']?.toString() : null),
       );
 
-      debugPrint('[AUTH] <<< Login Success: ${_currentUser!.email}, Name: ${_currentUser!.displayName}');
+      debugPrint('[AUTH] ============================================');
+      debugPrint('[AUTH] <<< LOGIN SUCCESS');
+      debugPrint('[AUTH] User email: ${_currentUser!.email}');
+      debugPrint('[AUTH] User name: ${_currentUser!.displayName}');
+      debugPrint('[AUTH] User uid: ${_currentUser!.uid}');
+      debugPrint('[AUTH] url: $loginUrl');
+      debugPrint('[AUTH] User jwt: ${_currentUser!.jwt}');
+      debugPrint(responseData.toString());
 
-      // Save user after successful login
+      // Jika WordPress API terdeteksi, fetch user profile untuk data yang lebih lengkap
+      if (_isWordPressApi(loginUrl) && _currentUser!.jwt != null) {
+        debugPrint('[AUTH] WordPress API detected, fetching user profile...');
+        await _fetchWordPressUserProfile(_currentUser!.jwt!);
+      }
+
+      // Save user after successful login (dan setelah WordPress profile di-fetch jika applicable)
       await _saveUser(_currentUser!);
-
-      // TODO: If your API returns tokens, you can save them here
-      // Example:
-      // if (accessToken != null) {
-      //   final prefs = await SharedPreferences.getInstance();
-      //   await prefs.setString('access_token', accessToken);
-      //   if (refreshToken != null) {
-      //     await prefs.setString('refresh_token', refreshToken);
-      //   }
-      // }
 
       _authStateController.add(_currentUser);
       return AuthResult.success(_currentUser!);
-    } on DioException catch (e) {
-      debugPrint('[AUTH] DioException: ${e.type} - ${e.message}');
+    } on DioException catch (e, stackTrace) {
+      debugPrint('[AUTH] ============================================');
+      debugPrint('[AUTH] !!! DIO EXCEPTION !!!');
+      debugPrint('[AUTH] Exception Type: ${e.type}');
+      debugPrint('[AUTH] Exception Message: ${e.message}');
+      debugPrint('[AUTH] Request URL: ${e.requestOptions.uri}');
+      debugPrint('[AUTH] Request Method: ${e.requestOptions.method}');
+      debugPrint('[AUTH] Request Headers: ${e.requestOptions.headers}');
+      debugPrint('[AUTH] Request Data: ${e.requestOptions.data}');
+
+      if (e.response != null) {
+        debugPrint('[AUTH] ----------------------------------------');
+        debugPrint('[AUTH] Response Status Code: ${e.response?.statusCode}');
+        debugPrint('[AUTH] Response Status Message: ${e.response?.statusMessage}');
+        debugPrint('[AUTH] Response Headers: ${e.response?.headers}');
+        debugPrint('[AUTH] Response Data Type: ${e.response?.data.runtimeType}');
+        debugPrint('[AUTH] Response Data (RAW): ${e.response?.data}');
+      } else {
+        debugPrint('[AUTH] Response: NULL (no response received)');
+      }
+
+      debugPrint('[AUTH] StackTrace: $stackTrace');
+      debugPrint('[AUTH] ============================================');
 
       String errorMessage;
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout ||
           e.type == DioExceptionType.sendTimeout) {
         errorMessage = 'Koneksi timeout. Silakan coba lagi.';
+        debugPrint('[AUTH] Error Category: TIMEOUT');
       } else if (e.type == DioExceptionType.connectionError) {
         errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+        debugPrint('[AUTH] Error Category: CONNECTION_ERROR');
       } else if (e.response != null) {
+        debugPrint('[AUTH] Error Category: SERVER_RESPONSE_ERROR');
         // Try to extract error message from response
         final data = e.response?.data;
+        debugPrint('[AUTH] Extracting error message from response data...');
+        debugPrint('[AUTH] Data type: ${data.runtimeType}');
+
         if (data is Map<String, dynamic>) {
-          errorMessage = data['message']?.toString() ??
-              data['error']?.toString() ??
-              data['detail']?.toString() ??
-              'Login gagal';
+          debugPrint('[AUTH] Data keys: ${data.keys.toList()}');
+          // Support various field names: message, msg, error, detail
+          final msgFromMessage = data['message']?.toString();
+          final msgFromMsg = data['msg']?.toString();
+          final msgFromError = data['error']?.toString();
+          final msgFromDetail = data['detail']?.toString();
+
+          debugPrint('[AUTH] data["message"]: $msgFromMessage');
+          debugPrint('[AUTH] data["msg"]: $msgFromMsg');
+          debugPrint('[AUTH] data["error"]: $msgFromError');
+          debugPrint('[AUTH] data["detail"]: $msgFromDetail');
+
+          errorMessage = msgFromMessage ??
+              msgFromMsg ??
+              msgFromError ??
+              msgFromDetail ??
+              'Login failed';
+        } else if (data is String) {
+          debugPrint('[AUTH] Response is a String: $data');
+          errorMessage = data.isNotEmpty ? data : 'Login failed: ${e.response?.statusCode}';
         } else {
-          errorMessage = 'Login gagal: ${e.response?.statusCode}';
+          debugPrint('[AUTH] Response data is neither Map nor String');
+          errorMessage = 'Login failed: ${e.response?.statusCode}';
         }
       } else {
-        errorMessage = 'Login gagal: ${e.message}';
+        debugPrint('[AUTH] Error Category: UNKNOWN');
+        errorMessage = 'Login failed: ${e.message}';
       }
 
+      debugPrint('[AUTH] Final error message: $errorMessage');
       return AuthResult.failure(errorMessage);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('[AUTH] ============================================');
+      debugPrint('[AUTH] !!! GENERAL EXCEPTION !!!');
+      debugPrint('[AUTH] Exception Type: ${e.runtimeType}');
       debugPrint('[AUTH] Exception: $e');
+      debugPrint('[AUTH] StackTrace: $stackTrace');
+      debugPrint('[AUTH] ============================================');
       return AuthResult.failure('Login gagal: ${e.toString()}');
     }
   }
@@ -277,14 +538,14 @@ class CustomApiAuthProvider implements BaseAuthService {
     try {
       // TODO: Implementasi dengan HTTP client
       await Future.delayed(const Duration(seconds: 1));
-      
+
       _currentUser = AuthUser(
         uid: 'api_user_${DateTime.now().millisecondsSinceEpoch}',
         email: email,
         displayName: displayName ?? email.split('@').first,
         isEmailVerified: false,
       );
-      
+
       // Simpan user setelah registrasi berhasil
       await _saveUser(_currentUser!);
 
@@ -295,6 +556,219 @@ class CustomApiAuthProvider implements BaseAuthService {
     }
   }
 
+  /// Register user baru via Simple JWT Login Register API
+  /// Digunakan untuk auto-create user saat Google Sign-In jika user belum terdaftar
+  /// Endpoint: AppInfo.authRegisterUrl (AUTH_REGISTER_URL di .env)
+  /// Docs: https://simplejwtlogin.com/docs/register-user
+  ///
+  /// Returns JWT token jika registrasi berhasil dan plugin di-setting "Force login after register"
+  /// Returns null jika registrasi gagal
+  Future<String?> _registerUserForGoogle({
+    required String email,
+    String? displayName,
+    String? firstName,
+    String? lastName,
+    String? photoUrl,
+  }) async {
+    try {
+      final registerUrl = AppInfo.authRegisterUrl;
+      if (registerUrl.isEmpty) {
+        debugPrint('[GAUTH-REG] ERROR: AUTH_REGISTER_URL is empty');
+        return null;
+      }
+
+      debugPrint('[GAUTH-REG] ============================================');
+      debugPrint('[GAUTH-REG] >>> Auto-registering new user...');
+      debugPrint('[GAUTH-REG] URL: $registerUrl');
+      debugPrint('[GAUTH-REG] Email: $email');
+      debugPrint('[GAUTH-REG] Display Name: $displayName');
+
+      // Generate a random secure password for Google OAuth users
+      // User login via Google OAuth, so password is not used directly
+      final randomPassword = 'G00gl3_${DateTime.now().millisecondsSinceEpoch}_${email.hashCode.abs()}';
+
+      // Build request payload sesuai dokumentasi Simple JWT Login
+      // Required: email, password
+      // Optional: display_name, first_name, last_name, nickname, user_login
+      final Map<String, dynamic> payload = {
+        'email': email,
+        'password': randomPassword,
+        'AUTH_CODE': AppInfo.authKey,
+      };
+
+      // Tambahkan optional fields jika tersedia
+      if (displayName != null && displayName.isNotEmpty) {
+        payload['display_name'] = displayName;
+        payload['nickname'] = displayName;
+      }
+
+      // Parse first_name dan last_name dari displayName jika tidak diberikan
+      final effectiveFirstName = firstName ?? (displayName?.split(' ').first);
+      final effectiveLastName = lastName ?? (displayName != null && displayName.contains(' ')
+          ? displayName.split(' ').skip(1).join(' ')
+          : null);
+
+      if (effectiveFirstName != null && effectiveFirstName.isNotEmpty) {
+        payload['first_name'] = effectiveFirstName;
+      }
+      if (effectiveLastName != null && effectiveLastName.isNotEmpty) {
+        payload['last_name'] = effectiveLastName;
+      }
+
+      // User login menggunakan bagian sebelum @ dari email
+      payload['user_login'] = email.split('@').first;
+
+      debugPrint('[GAUTH-REG] Payload: $payload');
+
+      final dio = Dio();
+      final response = await dio.post(
+        registerUrl,
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            ...?headers,
+          },
+          contentType: 'application/json',
+          // Don't throw on non-2xx status codes, handle manually
+          validateStatus: (status) => status != null && status < 500,
+        ),
+        data: payload,
+      );
+
+      debugPrint('[GAUTH-REG] Response Status: ${response.statusCode}');
+      debugPrint('[GAUTH-REG] Response Data: ${response.data}');
+
+      if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
+        final responseData = response.data as Map<String, dynamic>;
+
+        // Check if registration was successful
+        // Response format: { success: true, id: ..., message: "...", user: {...}, jwt: "..." }
+        if (responseData['success'] == true) {
+          debugPrint('[GAUTH-REG] <<< User registered successfully!');
+          debugPrint('[GAUTH-REG] User ID: ${responseData['id']}');
+          debugPrint('[GAUTH-REG] Message: ${responseData['message']}');
+
+          // Return JWT jika tersedia (jika plugin di-set "Force login after register")
+          final jwt = responseData['jwt']?.toString();
+          if (jwt != null && jwt.isNotEmpty) {
+            debugPrint('[GAUTH-REG] JWT received: (${jwt.length} chars)');
+          }
+          return jwt;
+        } else {
+          final errorMsg = responseData['message']?.toString() ??
+              (responseData['data'] is Map ? responseData['data']['message']?.toString() : null) ??
+              'Registration failed';
+          debugPrint('[GAUTH-REG] ERROR: $errorMsg');
+          return null;
+        }
+      } else {
+        debugPrint('[GAUTH-REG] ERROR: Unexpected response status ${response.statusCode}');
+        if (response.data is Map<String, dynamic>) {
+          final data = response.data as Map<String, dynamic>;
+          final errorMsg = data['message']?.toString() ??
+              (data['data'] is Map ? data['data']['message']?.toString() : null) ??
+              'Registration failed';
+          debugPrint('[GAUTH-REG] Error message: $errorMsg');
+        }
+        return null;
+      }
+    } on DioException catch (e) {
+      debugPrint('[GAUTH-REG] DIO ERROR: ${e.type} - ${e.message}');
+      if (e.response != null) {
+        debugPrint('[GAUTH-REG] Status: ${e.response?.statusCode}');
+        debugPrint('[GAUTH-REG] Data: ${e.response?.data}');
+      }
+      return null;
+    } catch (e) {
+      debugPrint('[GAUTH-REG] ERROR: $e');
+      return null;
+    }
+  }
+
+  /// Verifikasi Google ID token ke backend
+  /// Dipisah dari signInWithGoogle agar bisa di-retry setelah auto-register
+  Future<Response> _verifyGoogleToken({
+    required String idToken,
+    required String apiUrl,
+  }) async {
+    final dio = Dio();
+    return await dio.post(
+      apiUrl,
+      options: Options(
+        headers: {
+          'Accept': 'application/json',
+          ...?headers,
+        },
+        contentType: 'application/json',
+      ),
+      // Send both 'token' and 'id_token' for maximum compatibility with WP plugins
+      data: {
+        AppInfo.authTokenName: idToken,
+        'id_token': idToken,
+      },
+    );
+  }
+
+  /// Parse response data dari Google OAuth verification dan buat AuthUser
+  AuthResult _parseGoogleAuthResponse({
+    required dynamic responseData,
+    required GoogleSignInAccount googleUser,
+  }) {
+    // Some APIs return data directly, some wrap in 'data' or 'user'
+    Map<String, dynamic>? userData;
+    if (responseData is Map<String, dynamic>) {
+      userData = responseData['user'] as Map<String, dynamic>? ??
+                 responseData['data'] as Map<String, dynamic>? ??
+                 responseData;
+    }
+
+    if (userData == null) {
+      debugPrint('[GAUTH] ERROR: No user data in response');
+      return AuthResult.failure('Data user tidak ditemukan dalam response');
+    }
+
+    // Extract JWT token - check multiple possible locations
+    String? jwtToken;
+    if (responseData is Map<String, dynamic>) {
+      // Try root level first
+      jwtToken = responseData['jwt']?.toString() ??
+                 responseData['token']?.toString();
+
+      // Try inside 'data' object (common structure: {success: true, data: {jwt: ...}})
+      if (jwtToken == null && responseData['data'] is Map) {
+        final dataMap = responseData['data'] as Map<String, dynamic>;
+        jwtToken = dataMap['jwt']?.toString() ??
+                   dataMap['token']?.toString() ??
+                   dataMap['access_token']?.toString();
+      }
+    }
+
+    debugPrint('[GAUTH] Extracted JWT: ${jwtToken != null ? "(${jwtToken.length} chars)" : "null"}');
+
+    _currentUser = AuthUser(
+      uid: userData['id']?.toString() ??
+           userData['uid']?.toString() ??
+           googleUser.id,
+      email: userData['email']?.toString() ??
+             userData['user_email']?.toString() ??
+             googleUser.email,
+      displayName: userData['name']?.toString() ??
+                   userData['display_name']?.toString() ??
+                   googleUser.displayName,
+      // Untuk Google login, prioritaskan foto dari Google profile
+      // karena lebih relevan daripada Gravatar/WordPress avatar
+      photoUrl: googleUser.photoUrl ??
+                userData['picture']?.toString() ??
+                userData['avatar']?.toString(),
+      isEmailVerified: userData['email_verified'] == true || userData['is_verified'] == true,
+      isGoogleLogin: true,
+      jwt: jwtToken,
+    );
+
+    return AuthResult.success(_currentUser!);
+  }
+
   @override
   Future<AuthResult> signInWithGoogle() async {
     try {
@@ -302,13 +776,13 @@ class CustomApiAuthProvider implements BaseAuthService {
 
       // Ensure Google Sign-In is initialized
       await _initGoogleSignIn();
-      
+
       // Check if authenticate is supported
       if (!_googleSignIn.supportsAuthenticate()) {
         debugPrint('[GAUTH] ERROR: Not supported on this platform');
         return AuthResult.failure('Google Sign-In tidak didukung di platform ini');
       }
-      
+
       // Trigger Google Sign-In flow (v7.x API)
       final googleUser = await _googleSignIn.authenticate();
       debugPrint('[GAUTH] User: ${googleUser.email}');
@@ -324,54 +798,143 @@ class CustomApiAuthProvider implements BaseAuthService {
       debugPrint('[GAUTH] Token obtained (${idToken.length} chars)');
 
       // Send idToken to backend API for verification
-      final apiUrl = AppInfo.apiGoogleAuthVerification;
+      final apiUrl = AppInfo.authGoogleVerificationUrl;
       debugPrint('[GAUTH] POST $apiUrl');
 
-      final dio = Dio();
-      final response = await dio.post(
-        apiUrl,
-        options: Options(
-          headers: {
-            'Content-Type': 'application/json',
-            ...?headers,
-          },
-        ),
-        data: {'token': idToken},
-      );
+      Response response;
+      bool isRetryAfterRegister = false;
+
+      try {
+        // Attempt 1: Verify Google token (user might already exist)
+        response = await _verifyGoogleToken(idToken: idToken, apiUrl: apiUrl);
+      } on DioException catch (e) {
+        // Jika error karena user tidak terdaftar, coba auto-register
+        debugPrint('[GAUTH] First attempt failed: ${e.response?.statusCode} - ${e.response?.data}');
+
+        // Cek apakah error ini menunjukkan user belum terdaftar
+        // Biasanya status 403, 404, atau 400 dengan pesan terkait user tidak ditemukan
+        final shouldAutoRegister = _shouldAttemptAutoRegister(e);
+
+        if (!shouldAutoRegister) {
+          // Re-throw jika bukan masalah user tidak terdaftar
+          rethrow;
+        }
+
+        debugPrint('[GAUTH] User not found, attempting auto-registration...');
+
+        // Auto-register user
+        final regJwt = await _registerUserForGoogle(
+          email: googleUser.email,
+          displayName: googleUser.displayName,
+          photoUrl: googleUser.photoUrl,
+        );
+
+        if (regJwt != null) {
+          debugPrint('[GAUTH] Registration returned JWT, using it directly');
+          // Jika registrasi langsung memberikan JWT, bisa langsung login
+          // Tapi tetap retry verify untuk mendapatkan response format yang konsisten
+        }
+
+        debugPrint('[GAUTH] Retrying Google token verification after registration...');
+
+        // Attempt 2: Retry verification setelah user di-register
+        try {
+          response = await _verifyGoogleToken(idToken: idToken, apiUrl: apiUrl);
+          isRetryAfterRegister = true;
+        } on DioException catch (retryError) {
+          debugPrint('[GAUTH] Retry also failed: ${retryError.response?.statusCode}');
+
+          // Jika retry juga gagal tapi kita punya JWT dari registrasi, gunakan itu
+          if (regJwt != null) {
+            debugPrint('[GAUTH] Using JWT from registration response');
+            _currentUser = AuthUser(
+              uid: 'user_${DateTime.now().millisecondsSinceEpoch}',
+              email: googleUser.email,
+              displayName: googleUser.displayName,
+              photoUrl: googleUser.photoUrl,
+              isEmailVerified: true,
+              isGoogleLogin: true,
+              jwt: regJwt,
+            );
+
+            // Fetch WordPress profile if applicable
+            if (_isWordPressApi(apiUrl) && _currentUser!.jwt != null) {
+              debugPrint('[GAUTH] WordPress API detected, fetching user profile...');
+              await _fetchWordPressUserProfile(_currentUser!.jwt!);
+            }
+
+            await _saveUser(_currentUser!);
+            _authStateController.add(_currentUser);
+            return AuthResult.success(_currentUser!);
+          }
+
+          // Jika tidak ada JWT dari registrasi dan retry gagal, throw error
+          rethrow;
+        }
+      }
 
       debugPrint('[GAUTH] Response: ${response.statusCode} - ${response.data}');
+      if (isRetryAfterRegister) {
+        debugPrint('[GAUTH] (This was after auto-registration)');
+      }
 
       if (response.statusCode != 200) {
         debugPrint('[GAUTH] ERROR: Backend returned ${response.statusCode}');
-        return AuthResult.failure('Verifikasi token gagal: ${response.statusCode}');
+        return AuthResult.failure('Verifikasi token gagal: ${response.statusCode}.');
       }
 
-      // Parse user data from API response
-      final responseData = response.data;
-      final userData = responseData['user'] as Map<String, dynamic>?;
-
-      if (userData == null) {
-        debugPrint('[GAUTH] ERROR: No user data in response');
-        return AuthResult.failure('Data user tidak ditemukan dalam response');
-      }
-
-      // Create user from API response (more complete than googleUser)
-      _currentUser = AuthUser(
-        uid: userData['id']?.toString() ?? googleUser.id,
-        email: userData['email']?.toString() ?? googleUser.email,
-        displayName: userData['name']?.toString() ?? googleUser.displayName,
-        photoUrl: userData['picture']?.toString() ?? googleUser.photoUrl,
-        isEmailVerified: userData['email_verified'] == true,
-        isGoogleLogin: true,
+      // Parse response dan buat AuthUser
+      final result = _parseGoogleAuthResponse(
+        responseData: response.data,
+        googleUser: googleUser,
       );
 
-      debugPrint('[GAUTH] <<< Success: ${_currentUser!.email}, Name: ${_currentUser!.displayName}');
+      if (!result.success) {
+        return result;
+      }
 
-      // Simpan user setelah login Google berhasil
+      debugPrint('[GAUTH] <<< Success: ${_currentUser!.email}, Name: ${_currentUser!.displayName}');
+      debugPrint('[GAUTH] JWT saved: ${_currentUser!.jwt != null ? "(${_currentUser!.jwt!.length} chars)" : "null"}');
+
+      // Jika WordPress API terdeteksi, fetch user profile untuk data yang lebih lengkap
+      if (_isWordPressApi(apiUrl) && _currentUser!.jwt != null) {
+        debugPrint('[GAUTH] WordPress API detected, fetching user profile...');
+        await _fetchWordPressUserProfile(_currentUser!.jwt!);
+      }
+
+      // Simpan user setelah login Google berhasil (dan setelah WordPress profile di-fetch jika applicable)
       await _saveUser(_currentUser!);
 
       _authStateController.add(_currentUser);
       return AuthResult.success(_currentUser!);
+    } on DioException catch (e, stackTrace) {
+      debugPrint('[GAUTH] ============================================');
+      debugPrint('[GAUTH] !!! DIO EXCEPTION !!!');
+      debugPrint('[GAUTH] Type: ${e.type}');
+      debugPrint('[GAUTH] Message: ${e.message}');
+      debugPrint('[GAUTH] URL: ${e.requestOptions.uri}');
+
+      if (e.response != null) {
+        debugPrint('[GAUTH] Status: ${e.response?.statusCode}');
+        debugPrint('[GAUTH] Data (RAW): ${e.response?.data}');
+
+        final responseData = e.response?.data;
+        String errorMessage = 'Verifikasi token gagal. (${e.response?.statusCode})';
+
+        if (responseData is Map<String, dynamic>) {
+          errorMessage = responseData['message']?.toString() ??
+                         responseData['msg']?.toString() ??
+                         responseData['error']?.toString() ??
+                         errorMessage;
+        }
+
+        debugPrint('[GAUTH] Extracted Message: $errorMessage');
+        return AuthResult.failure(errorMessage);
+      }
+
+      debugPrint('[GAUTH] Stack: $stackTrace');
+      debugPrint('[GAUTH] ============================================');
+      return AuthResult.failure('Koneksi ke server gagal: ${e.message}');
     } catch (e, stackTrace) {
       debugPrint('[GAUTH] EXCEPTION: $e');
       debugPrint('[GAUTH] Stack: $stackTrace');
@@ -382,6 +945,125 @@ class CustomApiAuthProvider implements BaseAuthService {
       }
       return AuthResult.failure('Login Google gagal: ${e.toString()}');
     }
+  }
+
+  /// Menentukan apakah error dari OAuth verification menunjukkan user belum terdaftar
+  /// sehingga perlu auto-register
+  ///
+  /// Simple JWT Login response format ketika gagal:
+  /// { "success": false, "data": { "message": "Wrong user credentials.", "errorCode": 74 } }
+  bool _shouldAttemptAutoRegister(DioException e) {
+    final statusCode = e.response?.statusCode;
+    final responseData = e.response?.data;
+
+    debugPrint('[GAUTH] Checking if auto-register should be attempted...');
+    debugPrint('[GAUTH] Status code: $statusCode');
+
+    // Status codes yang menunjukkan user tidak ditemukan
+    // 403: Forbidden (user not found in WP)
+    // 404: Not found
+    // 400: Bad request (bisa berarti user tidak ada)
+    if (statusCode == null) return false;
+
+    // Jika status code 5xx, jangan coba register (server error)
+    if (statusCode >= 500) return false;
+
+    // Cek pesan error untuk memastikan ini masalah user tidak ditemukan
+    if (responseData is Map<String, dynamic>) {
+      // Extract error message - handle nested Simple JWT Login format
+      // Format: { success: false, data: { message: "...", errorCode: N } }
+      String message = '';
+      int? errorCode;
+
+      // Cek nested data.message (format Simple JWT Login)
+      if (responseData['data'] is Map<String, dynamic>) {
+        final dataMap = responseData['data'] as Map<String, dynamic>;
+        message = dataMap['message']?.toString().toLowerCase() ?? '';
+        errorCode = dataMap['errorCode'] is int
+            ? dataMap['errorCode'] as int
+            : int.tryParse(dataMap['errorCode']?.toString() ?? '');
+      }
+
+      // Fallback ke root level message jika nested message kosong
+      if (message.isEmpty) {
+        message = (responseData['message']?.toString() ??
+                   responseData['msg']?.toString() ??
+                   responseData['error']?.toString() ??
+                   '')
+            .toLowerCase();
+      }
+
+      debugPrint('[GAUTH] Error message: $message');
+      debugPrint('[GAUTH] Error code: $errorCode');
+
+      // Simple JWT Login errorCode 74 = "Wrong user credentials"
+      // Ini terjadi ketika user tidak ditemukan di WordPress saat OAuth
+      if (errorCode == 74) {
+        debugPrint('[GAUTH] Matched errorCode 74 (Wrong user credentials) → will attempt auto-register');
+        return true;
+      }
+
+      // Keyword yang menunjukkan user tidak terdaftar
+      final userNotFoundKeywords = [
+        'wrong user credentials',
+        'user not found',
+        'user_not_found',
+        'user does not exist',
+        'user not exist',
+        'no user',
+        'not registered',
+        'tidak terdaftar',
+        'tidak ditemukan',
+        'invalid user',
+        'user is not registered',
+        'could not find user',
+        'unable to find user',
+      ];
+
+      for (final keyword in userNotFoundKeywords) {
+        if (message.contains(keyword)) {
+          debugPrint('[GAUTH] Matched keyword: "$keyword" → will attempt auto-register');
+          return true;
+        }
+      }
+    }
+
+    // Untuk status 403 dan 404, coba register meskipun pesan tidak cocok
+    // karena ini umumnya menunjukkan user tidak ada
+    if (statusCode == 403 || statusCode == 404) {
+      debugPrint('[GAUTH] Status $statusCode suggests user not found → will attempt auto-register');
+      return true;
+    }
+
+    debugPrint('[GAUTH] No auto-register indicators found');
+    return false;
+  }
+
+  /// Refresh expired JWT token
+  /// Uses AppInfo.authRefreshTokenUrl and AppInfo.authRefreshTokenMethod
+  /// URL can contain {JWT} placeholder which will be replaced with current token
+  ///
+  /// This method delegates to TokenRefreshService for the actual refresh,
+  /// but handles updating the local user state.
+  Future<String?> refreshToken() async {
+    // Delegate to TokenRefreshService
+    final currentJwt = _currentUser?.jwt;
+    final newJwt = await TokenRefreshService.instance.refreshToken(currentJwt: currentJwt);
+
+    if (newJwt != null && _currentUser != null) {
+      // Update current user with new JWT
+      _currentUser = _currentUser!.copyWith(jwt: newJwt);
+
+      // Save updated user to SharedPreferences
+      await _saveUser(_currentUser!);
+
+      // Notify listeners
+      _authStateController.add(_currentUser);
+
+      debugPrint('[AUTH-REFRESH] Local user state updated with new JWT');
+    }
+
+    return newJwt;
   }
 
   @override
@@ -412,10 +1094,173 @@ class CustomApiAuthProvider implements BaseAuthService {
   @override
   Future<AuthResult> sendPasswordResetEmail(String email) async {
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
-      return AuthResult(success: true);
+      debugPrint('[AUTH] ============================================');
+      debugPrint('[AUTH] >>> Starting Password Reset Request');
+      debugPrint('[AUTH] Email: $email');
+
+      final forgotPasswordUrl = AppInfo.authForgotPasswordUrl;
+      debugPrint('[AUTH] POST URL: $forgotPasswordUrl');
+
+      final dio = Dio();
+      final Map<String, dynamic> payload = {
+        'email': email,
+        'AUTH_CODE': AppInfo.authKey,
+      };
+      debugPrint('[AUTH] Request payload: $payload');
+
+      final response = await dio.post(
+        forgotPasswordUrl,
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            ...?headers,
+          },
+          contentType: 'application/json',
+        ),
+        data: payload,
+      );
+
+      debugPrint('[AUTH] ----------------------------------------');
+      debugPrint('[AUTH] Response Status: ${response.statusCode}');
+      debugPrint('[AUTH] Response Data: ${response.data}');
+
+      if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
+        final responseData = response.data as Map<String, dynamic>;
+
+        // Handle success based on 'success' flag or 'code'
+        bool isSuccess = responseData['success'] == true ||
+                        responseData['code'] == 0 ||
+                        responseData['code'] == 200;
+
+        if (isSuccess) {
+          debugPrint('[AUTH] <<< PASSWORD RESET REQUEST SUCCESS');
+          return AuthResult(success: true);
+        } else {
+          final errorMessage = responseData['message']?.toString() ??
+                             responseData['msg']?.toString() ??
+                             'Gagal mengirim email reset password';
+          debugPrint('[AUTH] <<< PASSWORD RESET REQUEST FAILED: $errorMessage');
+          return AuthResult.failure(errorMessage);
+        }
+      } else {
+        debugPrint('[AUTH] ERROR: Unexpected response status ${response.statusCode}');
+        return AuthResult.failure('Gagal mengirim email reset password (Status: ${response.statusCode})');
+      }
+    } on DioException catch (e) {
+      debugPrint('[AUTH] !!! DIO EXCEPTION in sendPasswordResetEmail !!!');
+      debugPrint('[AUTH] Message: ${e.message}');
+      if (e.response != null) {
+        debugPrint('[AUTH] Status: ${e.response?.statusCode}');
+        debugPrint('[AUTH] Data: ${e.response?.data}');
+      }
+
+      String errorMessage = 'Gagal mengirim email reset password';
+      if (e.response?.data is Map<String, dynamic>) {
+        errorMessage = e.response?.data['message']?.toString() ??
+                       e.response?.data['msg']?.toString() ??
+                       errorMessage;
+      }
+      return AuthResult.failure(errorMessage);
     } catch (e) {
-      return AuthResult.failure('Gagal mengirim email reset password');
+      debugPrint('[AUTH] !!! GENERAL EXCEPTION in sendPasswordResetEmail: $e');
+      return AuthResult.failure('Gagal mengirim email reset password: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<AuthResult> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      debugPrint('[AUTH] ============================================');
+      debugPrint('[AUTH] >>> Starting Change Password');
+
+      final changePasswordUrl = AppInfo.authResetPasswordUrl;
+      if (changePasswordUrl.isEmpty) {
+        debugPrint('[AUTH] ERROR: AUTH_RESET_PASSWORD_URL is empty');
+        return AuthResult.failure('URL ubah password belum dikonfigurasi');
+      }
+      debugPrint('[AUTH] POST URL: $changePasswordUrl');
+
+      final email = _currentUser?.email ?? '';
+      final jwt = _currentUser?.jwt;
+
+      final Map<String, dynamic> payload = {
+        'email': email,
+        'current_password': currentPassword,
+        AppInfo.authPasswordFieldName: newPassword,
+        'new_password': newPassword,
+        'AUTH_CODE': AppInfo.authKey,
+      };
+      debugPrint('[AUTH] Request payload keys: ${payload.keys.toList()}');
+
+      final dio = Dio();
+      final response = await dio.post(
+        changePasswordUrl,
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            if (jwt != null && jwt.isNotEmpty) 'Authorization': 'Bearer $jwt',
+            ...?headers,
+          },
+          contentType: 'application/json',
+        ),
+        data: payload,
+      );
+
+      debugPrint('[AUTH] ----------------------------------------');
+      debugPrint('[AUTH] Response Status: ${response.statusCode}');
+      debugPrint('[AUTH] Response Data: ${response.data}');
+
+      if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
+        final responseData = response.data as Map<String, dynamic>;
+
+        final isSuccess = responseData['success'] == true ||
+            responseData['code'] == 0 ||
+            responseData['code'] == 200;
+
+        if (isSuccess) {
+          debugPrint('[AUTH] <<< CHANGE PASSWORD SUCCESS');
+          return AuthResult(success: true);
+        } else {
+          final errorMessage = responseData['message']?.toString() ??
+              responseData['msg']?.toString() ??
+              'Gagal mengubah kata sandi';
+          debugPrint('[AUTH] <<< CHANGE PASSWORD FAILED: $errorMessage');
+          return AuthResult.failure(errorMessage);
+        }
+      } else {
+        debugPrint('[AUTH] ERROR: Unexpected response status ${response.statusCode}');
+        return AuthResult.failure(
+            'Gagal mengubah kata sandi (Status: ${response.statusCode})');
+      }
+    } on DioException catch (e) {
+      debugPrint('[AUTH] !!! DIO EXCEPTION in changePassword !!!');
+      debugPrint('[AUTH] Message: ${e.message}');
+      if (e.response != null) {
+        debugPrint('[AUTH] Status: ${e.response?.statusCode}');
+        debugPrint('[AUTH] Data: ${e.response?.data}');
+      }
+
+      String errorMessage = 'Gagal mengubah kata sandi';
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        errorMessage = 'Koneksi timeout. Silakan coba lagi.';
+      } else if (e.type == DioExceptionType.connectionError) {
+        errorMessage = 'Tidak dapat terhubung ke server.';
+      } else if (e.response?.data is Map<String, dynamic>) {
+        errorMessage = e.response?.data['message']?.toString() ??
+            e.response?.data['msg']?.toString() ??
+            errorMessage;
+      }
+      return AuthResult.failure(errorMessage);
+    } catch (e) {
+      debugPrint('[AUTH] !!! GENERAL EXCEPTION in changePassword: $e');
+      return AuthResult.failure('Gagal mengubah kata sandi: ${e.toString()}');
     }
   }
 

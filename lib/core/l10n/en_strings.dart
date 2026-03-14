@@ -31,7 +31,16 @@ const Map<String, String> enStrings = {
   'password': 'Password',
   'confirmPassword': 'Confirm Password',
   'fullName': 'Full Name',
-  'forgotPassword': 'Forgot Password?',
+  'forgotPassword': 'Forgot Password',
+  'forgotPasswordDesc': 'Enter your email to receive password reset instructions.',
+  'resetPassword': 'Reset Password',
+  'resetEmailSent': 'Password reset email has been sent.',
+  'currentPassword': 'Current Password',
+  'newPassword': 'New Password',
+  'changePasswordDesc': 'Enter your current password and a new password to change it.',
+  'changePasswordSuccess': 'Password changed successfully.',
+  'pleaseEnterCurrentPassword': 'Please enter your current password',
+  'pleaseEnterNewPassword': 'Please enter your new password',
   'signIn': 'Sign In',
   'signUp': 'Sign Up',
   'signOut': 'Sign Out',
@@ -90,6 +99,7 @@ const Map<String, String> enStrings = {
   'pleaseLoginToContinue': 'Please login to continue',
   'editProfile': 'Edit Profile',
   'workspace': 'Workspace',
+  'security': 'Security',
 
   // Scan & Photo
   'scanAndPhoto': 'Scan & Photo',
@@ -155,6 +165,19 @@ const Map<String, String> enStrings = {
   'chatWithSupport': 'Chat with our support team',
   'emailSupport': 'Email Support',
   'callCenter': 'Call Center',
+  '24hours': '24 hours',
+  'feedbackAndIdeas': 'Feedback & Ideas',
+  'weLoveToHearFromYou': "We'd love to hear from you!",
+  'feedbackDesc': "Have a problem, suggestion, or a great idea? Share your feedback with us \u2014 whether it's a bug report, feature request, or any input to help us improve.",
+  'sendFeedback': 'Send Feedback',
+  'feedbackHint': 'Share your feedback, report an issue, or suggest a new idea...',
+  'feedbackSubmittedThankYou': 'Feedback submitted. Thank you!',
+  'feedbackUrlNotConfigured': 'Feedback URL is not configured. Please set SUPPORT_FEEDBACK_URL in .env file.',
+  'feedbackMessageRequired': 'Please enter your feedback message.',
+  'feedbackMessageTooShort': 'Feedback message is too short. Please provide more details.',
+  'feedbackMessageInvalid': 'Your message contains invalid characters. Please remove any suspicious content.',
+  'feedbackSending': 'Sending feedback...',
+  'feedbackSendFailed': 'Failed to send feedback. Please try again later.',
   'reportAnIssue': 'Report an Issue',
   'havingTrouble': 'Having trouble?',
   'reportIssueDesc': "Let us know about any issues you experience. We'll get back to you as soon as possible.",
@@ -168,6 +191,7 @@ const Map<String, String> enStrings = {
   'describeYourIssue': "Describe the issue you're experiencing...",
   'submit': 'Submit',
   'reportSubmittedThankYou': 'Report submitted. Thank you!',
+  'opening': 'Opening',
 
   // Sidebar
   'menuLabel': 'Menu',
@@ -201,7 +225,7 @@ const Map<String, String> enStrings = {
   // TOS & Privacy
   'tosTitle': 'Terms of Service',
   'tosLastUpdated': 'Last updated',
-  'tosIntro': 'Welcome to Super App. By using this application, you agree to comply with the following terms.',
+  'tosIntro': 'By using this application, you agree to comply with the following terms.',
   'privacyTitle': 'Privacy Policy',
   'privacyLastUpdated': 'Last updated',
   'privacyIntro': 'Your privacy is important to us. This policy explains how we collect and use your data.',
@@ -238,4 +262,10 @@ const Map<String, String> enStrings = {
   'locationUpdated': 'Location updated',
   'failedToGetLocation': 'Failed to get location',
   'accuracy': 'Accuracy',
+
+  // News Module
+  'failedToLoadCoverStory': 'Failed to load cover story',
+  'failedToLoadNews': 'Failed to load news',
+  'noNewsAvailable': 'No news available',
+  'tryAgain': 'Try Again',
 };

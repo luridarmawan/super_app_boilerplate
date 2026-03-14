@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/network/repository/article_repository.dart';
 
@@ -12,6 +13,7 @@ class Article {
   final String? author;
   final DateTime? publishedAt;
   final String? category;
+  final String? slug;
 
   const Article({
     required this.id,
@@ -21,24 +23,41 @@ class Article {
     this.author,
     this.publishedAt,
     this.category,
+    this.slug,
   });
 
   /// Convert dari ArticleModel (dari API)
   factory Article.fromModel(ArticleModel model) {
     return Article(
       id: model.id,
-      title: model.title,
-      excerpt: model.excerpt,
+      title: _unescapeHtml(model.title),
+      excerpt: model.excerpt != null ? _unescapeHtml(model.excerpt!) : null,
       imageUrl: model.imageUrl,
       author: model.author,
       publishedAt: model.publishedAt,
       category: model.category,
+      slug: model.slug,
     );
+  }
+
+  /// Helper to unescape HTML entities
+  static String _unescapeHtml(String text) {
+    return text
+        .replaceAll('&amp;', '&')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#039;', "'")
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&hellip;', '...')
+        .replaceAll('&rsquo;', "'")
+        .replaceAll('&lsquo;', "'")
+        .replaceAll('&rdquo;', '"')
+        .replaceAll('&ldquo;', '"');
   }
 }
 
 /// Widget untuk menampilkan artikel dari API
-/// 
+///
 /// Contoh penggunaan:
 /// ```dart
 /// // Menggunakan data dari API (recommended)
@@ -46,7 +65,7 @@ class Article {
 ///   title: 'Latest Articles',
 ///   seeAllText: 'See All',
 /// )
-/// 
+///
 /// // Atau dengan data manual (ArticleList biasa)
 /// ArticleList(
 ///   articles: myArticles,
@@ -92,7 +111,7 @@ class ArticleListFromApi extends ConsumerWidget {
           articles: articleList,
           title: title,
           seeAllText: seeAllText,
-          onSeeAllTap: onSeeAllTap,
+          onSeeAllTap: onSeeAllTap ?? () => context.push('/news'),
           onArticleTap: onArticleTap,
           isHorizontal: isHorizontal,
           horizontalHeight: horizontalHeight,

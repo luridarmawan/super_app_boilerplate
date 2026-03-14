@@ -165,6 +165,327 @@ final response = await dio.get(
 - ✅ Skip auth untuk public endpoints
 - ✅ Callback `onUnauthorized` untuk redirect ke login
 
+---
+
+## 🍪 Cookie Management (Opsional)
+
+### Konfigurasi
+
+Cookie management dapat diaktifkan melalui environment variable:
+
+```ini
+# Di file .env
+AUTH_USE_COOKIE=true
+```
+
+Ketika diaktifkan:
+- Cookies akan otomatis disimpan saat server mengirim `Set-Cookie` header
+- Cookies akan otomatis dikirim di setiap request berikutnya
+- Cookies disimpan secara persisten (tetap ada setelah app di-restart)
+
+### Dependencies
+
+Pastikan dependencies berikut ada di `pubspec.yaml`:
+
+```yaml
+dependencies:
+  dio_cookie_manager: ^3.0.0
+  cookie_jar: ^4.0.8
+  path_provider: ^2.1.1
+```
+
+### Inisialisasi
+
+Cookie manager diinisialisasi otomatis di `main.dart` jika `AUTH_USE_COOKIE=true`:
+
+```dart
+// Otomatis dilakukan di main.dart
+if (AppInfo.authUseCookie) {
+  await CookieManager.instance.initialize(usePersistentCookies: true);
+}
+```
+
+### Penggunaan di Module
+
+Untuk modul yang memerlukan akses cookies, gunakan `CookieManager.instance`:
+
+```dart
+import 'package:super_app/core/network/cookie/cookie_manager.dart';
+
+// Ambil semua cookies untuk URL tertentu
+final cookies = await CookieManager.instance.getCookies(Uri.parse('https://api.example.com'));
+
+// Ambil cookie string (format: "name1=value1; name2=value2")
+final cookieString = await CookieManager.instance.getCookieString('https://api.example.com');
+
+// Ambil nilai cookie spesifik
+final sessionId = await CookieManager.instance.getCookieValue(
+  'https://api.example.com',
+  'session_id',
+);
+
+// Set cookie manual
+await CookieManager.instance.setCookie(
+  Uri.parse('https://api.example.com'),
+  Cookie('custom_cookie', 'value'),
+);
+
+// Clear semua cookies (saat logout)
+await CookieManager.instance.clearCookies();
+```
+
+### Penggunaan dengan Dio Instance Manual
+
+Jika modul membuat instance Dio sendiri, tambahkan cookie interceptor:
+
+```dart
+final dio = Dio();
+
+// Tambahkan cookie management ke Dio instance
+if (AppInfo.authUseCookie) {
+  dio.addCookieManager(); // Extension method
+}
+
+// Atau secara manual
+if (AppInfo.authUseCookie) {
+  final interceptor = CookieManager.instance.createInterceptor();
+  if (interceptor != null) {
+    dio.interceptors.add(interceptor);
+  }
+}
+```
+
+### Provider untuk Riverpod
+
+```dart
+// Akses via provider
+final cookieManager = ref.watch(cookieManagerProvider);
+final cookies = await cookieManager.getCookies(Uri.parse('https://api.example.com'));
+```
+
+### Kapan Menggunakan Cookies vs JWT
+
+| Aspek | Cookies | JWT |
+|-------|---------|-----|
+| **Server Control** | Server mengontrol via Set-Cookie | Aplikasi mengontrol storage |
+| **Auto-expiry** | Ya (via cookie attributes) | Harus handle manual |
+| **Cross-domain** | Perlu credentials: true | Mudah |
+| **Security** | HttpOnly, Secure flags | Rentan XSS jika tidak hati-hati |
+| **Use Case** | Session-based auth | Stateless API |
+
+Gunakan cookies jika:
+- Backend menggunakan session-based authentication
+- Server mengirim `Set-Cookie` header saat login
+- Perlu CSRF protection bawaan
+
+---
+
+## 🔐 JWT Authentication
+
+### Cara Kerja JWT di Aplikasi
+
+JWT (JSON Web Token) digunakan untuk autentikasi API. Token disimpan setelah login berhasil dan otomatis dikirim di setiap request API yang memerlukan autentikasi.
+
+#### Struktur Penyimpanan Token
+
+Token disimpan di `SharedPreferences` dengan key `app_saved_user`:
+
+```json
+{
+  "uid": "9",
+  "email": "user@example.com",
+  "displayName": "User Name",
+  "photoUrl": null,
+  "isEmailVerified": true,
+  "isGoogleLogin": true,
+  "jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+}
+```
+
+#### Response Login yang Didukung
+
+Aplikasi mendukung berbagai struktur response login:
+
+**1. JWT di root level:**
+```json
+{
+  "success": true,
+  "jwt": "eyJ0eX...",
+  "user": { "id": "1", "email": "user@example.com" }
+}
+```
+
+**2. JWT di dalam object `data`:**
+```json
+{
+  "success": true,
+  "data": {
+    "jwt": "eyJ0eX...",
+    "id": "1",
+    "email": "user@example.com"
+  }
+}
+```
+
+**3. Field `token` sebagai alternatif:**
+```json
+{
+  "success": true,
+  "token": "eyJ0eX...",
+  "data": { "id": "1", "email": "user@example.com" }
+}
+```
+
+#### Pengambilan JWT untuk API Request
+
+JWT diambil otomatis dari user yang tersimpan:
+
+```dart
+// Di module yang memerlukan JWT (contoh: equipment_repository.dart)
+Future<String?> _getJwtToken(Ref ref) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final savedUserJson = prefs.getString('app_saved_user');
+
+    if (savedUserJson != null && savedUserJson.isNotEmpty) {
+      final userMap = jsonDecode(savedUserJson) as Map<String, dynamic>;
+      final jwt = userMap['jwt'] as String?;
+      return jwt;
+    }
+
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+```
+
+#### Penggunaan JWT di Header Request
+
+```dart
+// JWT ditambahkan sebagai Bearer token
+final headers = <String, dynamic>{
+  'Authorization': 'Bearer $jwtToken',
+  'Accept': 'application/json',
+};
+
+final response = await dio.get(
+  'https://api.example.com/protected-endpoint',
+  options: Options(headers: headers),
+);
+```
+
+#### Debug Log untuk JWT
+
+Saat mode debug, log berikut akan muncul:
+
+```
+[GAUTH] Extracted JWT: (256 chars)
+[GAUTH] <<< Success: user@example.com, Name: User Name
+[GAUTH] JWT saved: (256 chars)
+```
+
+```
+[EquipmentRepository] JWT Token: (256 chars)
+[EquipmentRepository] Authorization header added
+```
+
+#### Error Handling JWT
+
+| Status Code | Penyebab | Penanganan |
+|-------------|----------|------------|
+| 401 | Token expired atau invalid | Redirect ke login screen |
+| 403 | User tidak memiliki permission | Tampilkan error message |
+
+```dart
+} on DioException catch (e) {
+  if (e.response?.statusCode == 401) {
+    _debugLog('ERROR: Unauthorized - JWT token may be invalid or expired');
+    // Redirect ke login
+  } else if (e.response?.statusCode == 403) {
+    _debugLog('ERROR: Forbidden - User may not have permission');
+  }
+}
+```
+
+---
+
+## 🌐 Browser User-Agent
+
+### Tujuan
+
+User-Agent browser-like digunakan untuk menghindari bot detection dari server yang memiliki proteksi seperti Cloudflare atau Imunify360.
+
+### Konfigurasi di Main App
+
+Di `lib/core/network/api_config.dart`:
+
+```dart
+class ApiConfig {
+  /// Browser-like User-Agent to avoid bot detection
+  /// Used for external API calls that may have bot protection
+  static const String browserUserAgent =
+      'Mozilla/5.0 (Linux; Android 13; SM-G998B) AppleWebKit/537.36 '
+      '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36';
+}
+```
+
+### Penggunaan di Module
+
+Untuk module terpisah (seperti `super_module`), definisikan konstanta lokal karena tidak bisa import langsung dari main app:
+
+```dart
+// Di module super_module
+const String _browserUserAgent =
+    'Mozilla/5.0 (Linux; Android 13; SM-G998B) AppleWebKit/537.36 '
+    '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36';
+
+// Penggunaan di request
+final headers = <String, dynamic>{
+  'User-Agent': _browserUserAgent,
+  'Accept': 'application/json, text/plain, */*',
+  'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
+};
+```
+
+### Contoh Implementasi Lengkap
+
+```dart
+Future<List<EquipmentModel>> getEquipment() async {
+  try {
+    // Build headers dengan User-Agent dan JWT
+    final headers = <String, dynamic>{
+      'User-Agent': _browserUserAgent,
+      'Accept': 'application/json, text/plain, */*',
+      'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
+    };
+
+    // Add Authorization header if JWT token is available
+    if (_jwtToken != null && _jwtToken!.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $_jwtToken';
+    }
+
+    final response = await _dio.get(
+      _equipmentApiUrl,
+      options: Options(headers: headers),
+    );
+
+    // Parse response...
+  } catch (e) {
+    rethrow;
+  }
+}
+```
+
+### Kapan Menggunakan Browser User-Agent
+
+| Situasi | Gunakan Browser UA? |
+|---------|---------------------|
+| API internal (backend sendiri) | Opsional |
+| API eksternal dengan bot protection | ✅ Wajib |
+| Scraping atau crawling | ✅ Wajib |
+| API publik tanpa proteksi | Opsional |
+
 ### 2. LoggingInterceptor
 
 Mencatat semua request dan response untuk debugging.
@@ -343,25 +664,25 @@ Base class yang menyediakan method HTTP standar.
 abstract class BaseRepository {
   // GET request
   Future<BaseResponse<T>> get<T>(String endpoint, {...});
-  
+
   // POST request
   Future<BaseResponse<T>> post<T>(String endpoint, {...});
-  
+
   // PUT request
   Future<BaseResponse<T>> put<T>(String endpoint, {...});
-  
+
   // PATCH request
   Future<BaseResponse<T>> patch<T>(String endpoint, {...});
-  
+
   // DELETE request
   Future<BaseResponse<T>> delete<T>(String endpoint, {...});
-  
+
   // File upload
   Future<BaseResponse<T>> uploadFile<T>(String endpoint, {...});
-  
+
   // File download
   Future<void> downloadFile(String url, String savePath, {...});
-  
+
   // Bot protection detection & retry
   Future<Response> fetchWithCloudflareRetry(Future<Response> Function() fetchFunction, {...});
   bool isCloudflareResponse(Response response);
@@ -396,11 +717,11 @@ Future<List<Banner>> getBanners() async {
       maxRetries: 3,             // Default: 3
       retryDelayMs: 2000,        // Default: 2000ms
     );
-    
+
     // Parse response jika berhasil
     final data = response.data as List;
     return data.map((e) => Banner.fromJson(e)).toList();
-    
+
   } on DioException catch (e) {
     // Handle error - bisa gunakan fallback data
     debugPrint('Failed to fetch banners: ${e.message}');
@@ -472,7 +793,7 @@ class ProductRepository extends BaseRepository {
       '/products',
       queryParameters: {'page': page, 'limit': limit},
     );
-    
+
     if (response.success && response.data != null) {
       final items = (response.data!['items'] as List)
           .map((e) => Product.fromJson(e))
@@ -604,7 +925,7 @@ try {
   print('Message: ${e.message}');
   print('Status Code: ${e.statusCode}');
   print('Error Code: ${e.errorCode}');
-  
+
   if (e.isAuthError) {
     // Redirect ke login
   } else if (e.isNetworkError) {
@@ -781,7 +1102,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureTokenStorage implements TokenStorage {
   final _storage = FlutterSecureStorage();
-  
+
   static const _accessTokenKey = 'access_token';
   static const _refreshTokenKey = 'refresh_token';
 
@@ -901,9 +1222,12 @@ testWidgets('should display user profile', (tester) async {
 - [Dio Documentation](https://pub.dev/packages/dio)
 - [Retrofit Documentation](https://pub.dev/packages/retrofit)
 - [Flutter Riverpod](https://riverpod.dev/)
+- [Dio Cookie Manager](https://pub.dev/packages/dio_cookie_manager)
+- [Cookie Jar](https://pub.dev/packages/cookie_jar)
 
 ---
 
 *Dibuat: 4 Mei 2025*
-*Diperbarui: 1 Januari 2026*
-*Versi: 1.3.0*
+*Diperbarui: 23 Januari 2026*
+*Versi: 1.5.0*
+
