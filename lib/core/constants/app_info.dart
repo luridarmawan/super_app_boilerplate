@@ -392,4 +392,13 @@ class AppInfo {
   /// Default avatar/placeholder image
   static String get defaultAvatarPath =>
       dotenv.env['DEFAULT_AVATAR'] ?? 'assets/images/default_avatar.png';
+
+  // ============================================
+  // FIREBASE REMOTE CONFIG
+  // ============================================
+
+  /// Enable/disable Firebase Remote Config
+  /// Controlled via REMOTE_CONFIG_ENABLE in .env
+  static bool get remoteConfigEnable =>
+      dotenv.env['REMOTE_CONFIG_ENABLE']?.toLowerCase() == 'true';
 }
