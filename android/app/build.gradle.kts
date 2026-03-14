@@ -6,7 +6,10 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    // Required for Firebase (processes google-services.json → values.xml)
+    id("com.google.gms.google-services")
 }
+
 
 // Load keystore properties for release signing
 val keystorePropertiesFile = rootProject.file("key.properties")
@@ -33,7 +36,7 @@ fun readAppNameFromEnv(): String {
 val appNameFromEnv = readAppNameFromEnv()
 
 android {
-    namespace = "id.carik.superapp_demo"
+    namespace = "id.ihasa.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -50,7 +53,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "id.carik.superapp_demo"
+        applicationId = "id.ihasa.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
