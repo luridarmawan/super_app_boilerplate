@@ -268,4 +268,9 @@ const Map<String, String> idStrings = {
   'failedToLoadNews': 'Gagal memuat berita',
   'noNewsAvailable': 'Belum ada berita',
   'tryAgain': 'Coba Lagi',
+  
+  // Maintenance Mode
+  'maintenanceTitle': 'Dalam Pemeliharaan',
+  'maintenanceDescription': 'Kami sedang melakukan pemeliharaan rutin untuk meningkatkan layanan kami. Silakan coba beberapa saat lagi.',
+  'maintenanceRetry': 'Coba Lagi',
 };

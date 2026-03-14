@@ -351,6 +351,13 @@ class AppLocalizations {
   String get failedToLoadNews => translate('failedToLoadNews');
   String get noNewsAvailable => translate('noNewsAvailable');
   String get tryAgain => translate('tryAgain');
+
+  // ============================================
+  // MAINTENANCE MODE STRINGS
+  // ============================================
+  String get maintenanceTitle => translate('maintenanceTitle');
+  String get maintenanceDescription => translate('maintenanceDescription');
+  String get maintenanceRetry => translate('maintenanceRetry');
 }
 
 

@@ -268,4 +268,9 @@ const Map<String, String> enStrings = {
   'failedToLoadNews': 'Failed to load news',
   'noNewsAvailable': 'No news available',
   'tryAgain': 'Try Again',
+  
+  // Maintenance Mode
+  'maintenanceTitle': 'Under Maintenance',
+  'maintenanceDescription': 'We are currently performing routine maintenance to improve our services. Please try again in a few moments.',
+  'maintenanceRetry': 'Try Again',
 };

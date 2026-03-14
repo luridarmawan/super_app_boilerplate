@@ -126,6 +126,8 @@ class AppInfo {
   /// Splash gradient end color (bottom) - hex format e.g. #90CAF9
   static String? get splashGradientEnd => dotenv.env['SPLASH_GRADIENT_END'];
 
+  static String get maintenanceModeBackground => dotenv.env['MAINTENANCE_MODE_BACKGROUND'] ?? 'https://picsum.photos/800/1600';
+
   /// Parse hex color string to Color, returns null if invalid
   static Color? parseHexColor(String? hexString) {
     if (hexString == null || hexString.isEmpty) return null;

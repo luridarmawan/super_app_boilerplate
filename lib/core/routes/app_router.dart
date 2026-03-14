@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../constants/app_info.dart';
 import '../services/prefs_service.dart';
+import '../services/remote_config_service.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/register_screen.dart';
@@ -14,6 +15,7 @@ import '../../features/profile/profile_screen.dart';
 import '../../shared/info/help_screen.dart';
 import '../../shared/info/tos_screen.dart';
 import '../../shared/info/privacy_screen.dart';
+import '../../features/maintenance/maintenance_mode_screen.dart';
 import '../../features/dashboard/screens/quick_actions_manager_screen.dart';
 import '../../modules/news/screens/article_screen.dart';
 
@@ -24,6 +26,7 @@ import '../../modules/module_registry.dart';
 /// Route names
 class AppRoutes {
   static const String splash = '/';
+  static const String maintenance = '/maintenance';
   static const String login = '/login';
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
@@ -77,11 +80,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.splash,
         builder: (context, state) => SplashScreen(
-          onComplete: () {
-            // Use cached PrefsService (synchronous, no blocking)
-            final isLoggedIn = prefsService.isLoggedIn;
+          onComplete: () async {
+            // Check maintenance mode from RemoteConfig before proceeding
+            final isMaintenance = await RemoteConfigService.fetchMaintenanceMode();
 
             if (context.mounted) {
+              if (isMaintenance) {
+                context.go(AppRoutes.maintenance);
+                return;
+              }
+
+              // Use cached PrefsService (synchronous, no blocking)
+              final isLoggedIn = prefsService.isLoggedIn;
               if (isLoggedIn) {
                 context.go(AppRoutes.dashboard);
               } else {
@@ -89,6 +99,14 @@ final routerProvider = Provider<GoRouter>((ref) {
               }
             }
           },
+        ),
+      ),
+
+      // Maintenance Mode
+      GoRoute(
+        path: AppRoutes.maintenance,
+        builder: (context, state) => MaintenanceModeScreen(
+          onRetry: () => context.go(AppRoutes.splash),
         ),
       ),
 
