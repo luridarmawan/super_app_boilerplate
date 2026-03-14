@@ -1,0 +1,55 @@
+{
+  "parameters": {
+    "maintenance_mode": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "valueType": "BOOLEAN"
+    },
+    "force_update": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "valueType": "STRING"
+    },
+    "update_url": {
+      "defaultValue": {
+        "value": "https://play.google.com/store/apps/details?id=com.yourdomain.app"
+      },
+      "valueType": "STRING"
+    },
+    "latest_version": {
+      "defaultValue": {
+        "value": "1.0.2+62"
+      },
+      "valueType": "STRING"
+    },
+    "ai_provider": {
+      "defaultValue": {
+        "value": "internal"
+      },
+      "valueType": "STRING"
+    },
+    "min_version": {
+      "defaultValue": {
+        "value": "1.0.2"
+      },
+      "valueType": "STRING"
+    },
+    "widget_location_enable": {
+      "defaultValue": {
+        "value": "false"
+      },
+      "valueType": "BOOLEAN"
+    }
+  },
+  "version": {
+    "versionNumber": "10",
+    "updateTime": "2026-03-14T08:14:01.414850Z",
+    "updateUser": {
+      "email": "carik.bot@gmail.com"
+    },
+    "updateOrigin": "CONSOLE",
+    "updateType": "INCREMENTAL_UPDATE"
+  }
+}
