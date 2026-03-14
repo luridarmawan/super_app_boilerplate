@@ -20,6 +20,45 @@ Saat `false`: Firebase **tidak** diinisialisasi sama sekali. Semua getter mengem
 
 ---
 
+## Custom Remote Config
+
+Selain menggunakan Firebase Console, Anda dapat menggunakan **Custom API** sebagai sumber konfigurasi. Ini berguna jika Anda ingin mengelola parameter secara mandiri tanpa bergantung pada Firebase.
+
+### Konfigurasi `.env`
+
+Aktifkan dengan mengisi URL API pada variable berikut:
+
+```env
+REMOTE_CONFIG_CUSTOM_URL="https://your-api.com/remote-config.json"
+```
+
+### Prioritas Penggunaan
+1. Jika `REMOTE_CONFIG_CUSTOM_URL` **diisi**, app akan mengambil data dari URL tersebut.
+2. Jika `REMOTE_CONFIG_CUSTOM_URL` **kosong**, app akan menggunakan Firebase Remote Config.
+3. Jika `REMOTE_CONFIG_ENABLE=false`, semua Remote Config dinonaktifkan.
+
+### Format Response API
+Referensi struktur JSON untuk Custom API dapat dilihat pada:
+`docs/remote_config/remote_config.json`
+
+Struktur dasarnya adalah sebagai berikut:
+
+```json
+{
+  "parameters": {
+    "key_name": {
+      "defaultValue": { "value": "default_val" },
+      "valueType": "STRING"
+    }
+  }
+}
+```
+
+*Note: App akan mencoba mengambil nilai dari field `value` atau `defaultValue.value` di dalam setiap parameter.*
+
+
+---
+
 ## Parameter yang Tersedia
 
 Daftarkan parameter di [Firebase Console](https://console.firebase.google.com/) → **Remote Config**.
@@ -30,6 +69,10 @@ Daftarkan parameter di [Firebase Console](https://console.firebase.google.com/) 
 | `latest_version` | String | `""` | Versi terbaru app, e.g. `"1.2.0"`. Untuk notifikasi update. |
 | `widget_location_enable` | Bool | `true` | Enable/disable widget lokasi di workspace. |
 | `maintenance_mode` | Bool | `false` | Enable/disable maintenance mode. ⚠️ Gunakan `fetchMaintenanceMode()` agar realtime. |
+
+> [!NOTE]
+> Jika menggunakan **Custom Remote Config**, pastikan parameter yang Anda definisikan di API sesuai dengan key yang ada di tabel di atas. Contoh response lengkap ada di [remote_config.json](file:///d:/garapan/MobileTemplate/git/super_app_boilerplate/docs/remote_config/remote_config.json).
+
 
 > Untuk menambah parameter baru, lihat bagian [Menambah Parameter Baru](#menambah-parameter-baru).
 
