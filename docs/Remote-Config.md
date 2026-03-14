@@ -29,7 +29,7 @@ Daftarkan parameter di [Firebase Console](https://console.firebase.google.com/) 
 | `ai_provider` | String | `"carik"` | AI provider: `"gemini"`, `"openai"`, dll. |
 | `latest_version` | String | `""` | Versi terbaru app, e.g. `"1.2.0"`. Untuk notifikasi update. |
 | `widget_location_enable` | Bool | `true` | Enable/disable widget lokasi di workspace. |
-| `maintenance_mode` | Bool | `false` | Enable/disable maintenance mode. |
+| `maintenance_mode` | Bool | `false` | Enable/disable maintenance mode. ⚠️ Gunakan `fetchMaintenanceMode()` agar realtime. |
 
 > Untuk menambah parameter baru, lihat bagian [Menambah Parameter Baru](#menambah-parameter-baru).
 
@@ -63,6 +63,30 @@ final count = RemoteConfigService.getInt('max_retry');
 final score = RemoteConfigService.getDouble('threshold');
 ```
 
+### Realtime Fetch (Tanpa Cache)
+
+Gunakan saat parameter **harus selalu mencerminkan nilai terkini** dari Firebase Console,
+tanpa menunggu cache expired (misal: `maintenance_mode`, kill-switch fitur).
+
+```dart
+// Named shortcut — paling umum dipakai
+final isMaintenance = await RemoteConfigService.fetchMaintenanceMode();
+
+// Generic fetch by key
+final flag   = await RemoteConfigService.fetchBool('maintenance_mode');
+final text   = await RemoteConfigService.fetchString('ai_provider');
+final count  = await RemoteConfigService.fetchInt('max_retry');
+final score  = await RemoteConfigService.fetchDouble('threshold');
+
+// Low-level: hanya fetch + activate, baca sendiri setelahnya
+final updated = await RemoteConfigService.fetchRealtime();
+final isMaintenance = RemoteConfigService.maintenanceMode; // baca dari cache yg baru di-activate
+```
+
+> ⚠️ **Perhatikan Firebase quota**: Firebase membatasi **5 fetch per jam per device** di production.
+> Gunakan realtime fetch hanya di titik kritis (splash screen, sebelum aksi penting),
+> bukan di setiap build widget.
+
 ---
 
 ## Contoh Penggunaan
@@ -89,6 +113,17 @@ switch (provider) {
     return OpenAiService();
   default:
     return DefaultAiService();
+}
+```
+
+### Maintenance Mode (Realtime)
+
+```dart
+// Di splash screen / router guard
+final isMaintenance = await RemoteConfigService.fetchMaintenanceMode();
+if (isMaintenance) {
+  Navigator.pushReplacementNamed(context, '/maintenance');
+  return;
 }
 ```
 
