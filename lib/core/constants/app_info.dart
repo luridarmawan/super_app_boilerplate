@@ -401,6 +401,7 @@ class AppInfo {
 
   /// Enable/disable Firebase Remote Config
   /// Controlled via REMOTE_CONFIG_ENABLE in .env
-  static bool get remoteConfigEnable =>
-      dotenv.env['REMOTE_CONFIG_ENABLE']?.toLowerCase() == 'true';
+  static bool get remoteConfigEnable => dotenv.env['REMOTE_CONFIG_ENABLE']?.toLowerCase() == 'true';
+  static String get remoteConfigCustomURL => dotenv.env['REMOTE_CONFIG_CUSTOM_URL'] ?? '';
+
 }
