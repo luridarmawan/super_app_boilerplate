@@ -1,7 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../constants/app_info.dart';
+import '../l10n/app_localizations.dart';
 
 /// Service untuk mengelola Remote Config (Firebase atau Custom API).
 ///
@@ -121,6 +124,8 @@ class RemoteConfigService {
   static String get latestVersion => getString('latest_version');
   static bool get widgetLocationEnable => getBool('widget_location_enable');
   static bool get maintenanceMode => getBool('maintenance_mode');
+  static bool get forceUpdate => getBool('force_update');
+  static String get updateUrl => getString('update_url');
 
   // ============================================
   // REALTIME FETCH (TANPA CACHE)
@@ -233,5 +238,72 @@ class RemoteConfigService {
       return def is double ? def : 0.0;
     }
     return _instance!.getDouble(key);
+  }
+
+  // ============================================
+  // UPDATE CHECK
+  // ============================================
+
+  /// Cek apakah ada update aplikasi.
+  /// Jika `latest_version` berbeda dengan versi saat ini,
+  /// tampilkan dialog informasi update.
+  ///
+  /// Panggil dari screen utama (misal: dashboard) setelah init.
+  /// ```dart
+  /// RemoteConfigService.checkForUpdate(context);
+  /// ```
+  static void checkForUpdate(BuildContext context) {
+    if (!AppInfo.remoteConfigEnable) return;
+
+    final latest = latestVersion;
+    if (latest.isEmpty) return;
+
+    // Bandingkan hanya bagian version (sebelum '+') agar build number tidak ikut dibandingkan
+    final currentVersion = AppInfo.version; // e.g. "1.0.3"
+    final latestClean = latest.contains('+') ? latest.split('+').first : latest;
+
+    if (latestClean == currentVersion) return;
+
+    debugPrint('[RemoteConfig] 🔔 Update available: $currentVersion → $latestClean');
+
+    final l10n = AppLocalizations.of(context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: !forceUpdate,
+      builder: (dialogContext) => AlertDialog(
+        icon: const Icon(Icons.system_update_outlined, size: 48),
+        title: Text(l10n.updateAvailableTitle),
+        content: Text(
+          l10n.updateAvailableDescription
+              .replaceAll('{version}', latestClean),
+        ),
+        actions: [
+          // Tombol "Abaikan" — hanya tampil jika bukan force update
+          if (!forceUpdate)
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.updateDismiss),
+            ),
+          // Tombol "Update Aplikasi"
+          FilledButton.icon(
+            onPressed: () {
+              final url = updateUrl;
+              if (url.isNotEmpty) {
+                launchUrl(
+                  Uri.parse(url),
+                  mode: LaunchMode.externalApplication,
+                );
+              }
+              if (!forceUpdate) {
+                Navigator.of(dialogContext).pop();
+              }
+            },
+            icon: const Icon(Icons.download_outlined),
+            label: Text(l10n.updateNow),
+          ),
+        ],
+      ),
+    );
   }
 }

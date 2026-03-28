@@ -358,6 +358,14 @@ class AppLocalizations {
   String get maintenanceTitle => translate('maintenanceTitle');
   String get maintenanceDescription => translate('maintenanceDescription');
   String get maintenanceRetry => translate('maintenanceRetry');
+
+  // ============================================
+  // UPDATE APP STRINGS
+  // ============================================
+  String get updateAvailableTitle => translate('updateAvailableTitle');
+  String get updateAvailableDescription => translate('updateAvailableDescription');
+  String get updateDismiss => translate('updateDismiss');
+  String get updateNow => translate('updateNow');
 }
 
 

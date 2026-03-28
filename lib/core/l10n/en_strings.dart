@@ -273,4 +273,10 @@ const Map<String, String> enStrings = {
   'maintenanceTitle': 'Under Maintenance',
   'maintenanceDescription': 'We are currently performing routine maintenance to improve our services. Please try again in a few moments.',
   'maintenanceRetry': 'Try Again',
+
+  // Update App
+  'updateAvailableTitle': 'Update Available',
+  'updateAvailableDescription': 'A new version ({version}) is available. Update the app to get the latest features and improvements.',
+  'updateDismiss': 'Dismiss',
+  'updateNow': 'Update App',
 };

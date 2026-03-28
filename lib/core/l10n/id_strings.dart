@@ -273,4 +273,10 @@ const Map<String, String> idStrings = {
   'maintenanceTitle': 'Dalam Pemeliharaan',
   'maintenanceDescription': 'Kami sedang melakukan pemeliharaan rutin untuk meningkatkan layanan kami. Silakan coba beberapa saat lagi.',
   'maintenanceRetry': 'Coba Lagi',
+
+  // Update App
+  'updateAvailableTitle': 'Update Tersedia',
+  'updateAvailableDescription': 'Versi terbaru ({version}) telah tersedia. Perbarui aplikasi untuk mendapatkan fitur dan perbaikan terbaru.',
+  'updateDismiss': 'Abaikan',
+  'updateNow': 'Update Aplikasi',
 };
