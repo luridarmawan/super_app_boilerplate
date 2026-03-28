@@ -85,13 +85,13 @@ class RemoteConfigService {
     try {
       final dio = Dio();
       final response = await dio.get(url);
-      
+
       if (response.statusCode == 200) {
         final data = response.data;
         if (data is Map<String, dynamic> && data.containsKey('parameters')) {
           final params = data['parameters'] as Map<String, dynamic>;
           final flattened = <String, dynamic>{};
-          
+
           params.forEach((key, value) {
             if (value is Map<String, dynamic>) {
               // Mencoba mengambil dari 'value' atau 'defaultValue.value'
@@ -102,7 +102,7 @@ class RemoteConfigService {
               }
             }
           });
-          
+
           _customConfig = flattened;
           debugPrint('[RemoteConfig] ✅ Custom config fetched successfully (${_customConfig.length} params).');
         } else {
@@ -274,34 +274,44 @@ class RemoteConfigService {
       builder: (dialogContext) => AlertDialog(
         icon: const Icon(Icons.system_update_outlined, size: 48),
         title: Text(l10n.updateAvailableTitle),
+        contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+        actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
         content: Text(
           l10n.updateAvailableDescription
               .replaceAll('{version}', latestClean),
         ),
         actions: [
-          // Tombol "Abaikan" — hanya tampil jika bukan force update
-          if (!forceUpdate)
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(l10n.updateDismiss),
+          // button "Update App" — dominan
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () {
+                final url = updateUrl;
+                if (url.isNotEmpty) {
+                  launchUrl(
+                    Uri.parse(url),
+                    mode: LaunchMode.externalApplication,
+                  );
+                }
+                if (!forceUpdate) {
+                  Navigator.of(dialogContext).pop();
+                }
+              },
+              icon: const Icon(Icons.download_outlined),
+              label: Text(l10n.updateNow),
             ),
-          // Tombol "Update Aplikasi"
-          FilledButton.icon(
-            onPressed: () {
-              final url = updateUrl;
-              if (url.isNotEmpty) {
-                launchUrl(
-                  Uri.parse(url),
-                  mode: LaunchMode.externalApplication,
-                );
-              }
-              if (!forceUpdate) {
-                Navigator.of(dialogContext).pop();
-              }
-            },
-            icon: const Icon(Icons.download_outlined),
-            label: Text(l10n.updateNow),
           ),
+          // button "Dismiss" — hanya tampil jika bukan force update
+          if (!forceUpdate) ...[
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(l10n.updateDismiss),
+              ),
+            ),
+          ],
         ],
       ),
     );
