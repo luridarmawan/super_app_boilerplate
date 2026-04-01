@@ -8,6 +8,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/config/app_config.dart';
 import 'core/routes/app_router.dart';
 import 'core/l10n/app_localizations.dart';
+// import 'modules/arrow_sense/lib/l10n/arrow_sense_localizations.dart';
 import 'core/constants/app_info.dart';
 import 'core/services/prefs_service.dart';
 import 'core/services/remote_config_service.dart';
@@ -100,9 +101,12 @@ class SuperApp extends ConsumerWidget {
       supportedLocales: const [
         Locale('en', 'US'),
         Locale('id', 'ID'),
+        Locale('tr', 'TR'),
+        Locale('ko', 'KR'),
       ],
       localizationsDelegates: const [
         AppLocalizations.delegate,
+        // ArrowSenseLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

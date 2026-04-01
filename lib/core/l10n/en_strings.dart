@@ -136,6 +136,8 @@ const Map<String, String> enStrings = {
   'selectLanguage': 'Select Language',
   'bahasaIndonesia': 'Bahasa Indonesia',
   'english': 'English',
+  'turkish': 'Turkish',
+  'korean': 'Korean',
   'firebaseAuth': 'Firebase Auth',
   'customApi': 'Custom API',
   'useFirebaseAuth': 'Use Firebase Authentication',

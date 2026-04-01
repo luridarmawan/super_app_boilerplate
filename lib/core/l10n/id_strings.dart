@@ -136,6 +136,8 @@ const Map<String, String> idStrings = {
   'selectLanguage': 'Pilih Bahasa',
   'bahasaIndonesia': 'Bahasa Indonesia',
   'english': 'English',
+  'turkish': 'Turki',
+  'korean': 'Korea',
   'firebaseAuth': 'Firebase Auth',
   'customApi': 'Custom API',
   'useFirebaseAuth': 'Gunakan Firebase Authentication',

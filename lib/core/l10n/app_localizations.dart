@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:super_app/core/l10n/id_strings.dart';
 import 'package:super_app/core/l10n/en_strings.dart';
+import 'package:super_app/core/l10n/tr_strings.dart';
+import 'package:super_app/core/l10n/ko_strings.dart';
 
 /// Delegate untuk AppLocalizations
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
@@ -9,7 +11,7 @@ class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
 
   @override
   bool isSupported(Locale locale) {
-    return ['id', 'en'].contains(locale.languageCode);
+    return ['id', 'en', 'tr', 'ko'].contains(locale.languageCode);
   }
 
   @override
@@ -42,6 +44,8 @@ class AppLocalizations {
   static final Map<String, Map<String, String>> _localizedStrings = {
     'id': idStrings,
     'en': enStrings,
+    'tr': trStrings,
+    'ko': koStrings,
   };
 
   /// Mendapatkan string berdasarkan key
@@ -201,6 +205,8 @@ class AppLocalizations {
   String get selectLanguage => translate('selectLanguage');
   String get bahasaIndonesia => translate('bahasaIndonesia');
   String get english => translate('english');
+  String get turkish => translate('turkish');
+  String get korean => translate('korean');
   String get firebaseAuth => translate('firebaseAuth');
   String get customApi => translate('customApi');
   String get useFirebaseAuth => translate('useFirebaseAuth');
