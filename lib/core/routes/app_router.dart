@@ -6,6 +6,7 @@ import '../constants/app_info.dart';
 import '../services/prefs_service.dart';
 import '../services/remote_config_service.dart';
 import '../../features/splash/splash_screen.dart';
+import '../../features/campaign/campaign_home_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/register_screen.dart';
 import '../../features/auth/forgot_password_screen.dart';
@@ -26,6 +27,7 @@ import '../../modules/module_registry.dart';
 /// Route names
 class AppRoutes {
   static const String splash = '/';
+  static const String campaignHome = '/campaign';
   static const String maintenance = '/maintenance';
   static const String login = '/login';
   static const String register = '/register';
@@ -61,11 +63,12 @@ final routerProvider = Provider<GoRouter>((ref) {
   String initialLocation;
   if (shouldShowSplash) {
     initialLocation = AppRoutes.splash;
-  } else if (prefsService.isLoggedIn) {
-    initialLocation = AppRoutes.dashboard;
   } else {
-    initialLocation = AppRoutes.login;
+    // Always go to campaign first, then campaign will handle navigation to login/dashboard
+    initialLocation = AppRoutes.campaignHome;
   }
+
+  debugPrint('[Router] initialLocation: $initialLocation, shouldShowSplash: $shouldShowSplash');
 
   // Get routes from active modules
   final moduleRoutes = ModuleRegistry.allRoutes;
@@ -79,27 +82,48 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Splash Screen
       GoRoute(
         path: AppRoutes.splash,
-        builder: (context, state) => SplashScreen(
-          onComplete: () async {
-            // Check maintenance mode from RemoteConfig before proceeding
-            final isMaintenance = await RemoteConfigService.fetchMaintenanceMode();
+        builder: (context, state) {
+          debugPrint('[Router] Rendering SplashScreen');
+          return SplashScreen(
+            onComplete: () {
+              debugPrint('[Router] SplashScreen onComplete, going to campaignHome');
+              context.go(AppRoutes.campaignHome);
+            },
+          );
+        },
+      ),
 
-            if (context.mounted) {
-              if (isMaintenance) {
-                context.go(AppRoutes.maintenance);
-                return;
-              }
+      // Campaign Home Screen
+      GoRoute(
+        path: AppRoutes.campaignHome,
+        builder: (context, state) {
+          debugPrint('[Router] Rendering CampaignHomeScreen');
+          return CampaignHomeScreen(
+            onComplete: () async {
+              debugPrint('[Router] CampaignHomeScreen onComplete, checking maintenance mode');
+              // Check maintenance mode from RemoteConfig before proceeding
+              final isMaintenance = await RemoteConfigService.fetchMaintenanceMode();
 
-              // Use cached PrefsService (synchronous, no blocking)
-              final isLoggedIn = prefsService.isLoggedIn;
-              if (isLoggedIn) {
-                context.go(AppRoutes.dashboard);
-              } else {
-                context.go(AppRoutes.login);
+              debugPrint('[Router] Maintenance check result: $isMaintenance');
+
+              if (context.mounted) {
+                if (isMaintenance) {
+                  context.go(AppRoutes.maintenance);
+                  return;
+                }
+
+                // Use cached PrefsService (synchronous, no blocking)
+                final isLoggedIn = prefsService.isLoggedIn;
+                debugPrint('[Router] isLoggedIn: $isLoggedIn');
+                if (isLoggedIn) {
+                  context.go(AppRoutes.dashboard);
+                } else {
+                  context.go(AppRoutes.login);
+                }
               }
-            }
-          },
-        ),
+            },
+          );
+        },
       ),
 
       // Maintenance Mode
