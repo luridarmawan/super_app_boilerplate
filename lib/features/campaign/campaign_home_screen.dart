@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
 import '../../core/constants/app_info.dart';
 import '../../core/network/repository/campaign_home_repository.dart';
@@ -22,6 +23,10 @@ class CampaignHomeScreen extends ConsumerStatefulWidget {
 class _CampaignHomeScreenState extends ConsumerState<CampaignHomeScreen> {
   int _currentIndex = 0;
   VideoPlayerController? _videoController;
+  ChewieController? _chewieController;
+  VideoPlayerController? _preloadController;
+  ChewieController? _preloadChewieController;
+  bool _isVideoLoading = false;
 
   @override
   void initState() {
@@ -39,7 +44,12 @@ class _CampaignHomeScreenState extends ConsumerState<CampaignHomeScreen> {
 
   @override
   void dispose() {
+    _videoController?.removeListener(_onVideoStateChanged);
     _videoController?.dispose();
+    _chewieController?.dispose();
+    _preloadController?.dispose();
+    _preloadChewieController?.dispose();
+    _isVideoLoading = false;
     super.dispose();
   }
 
@@ -48,25 +58,58 @@ class _CampaignHomeScreenState extends ConsumerState<CampaignHomeScreen> {
     campaignState.whenData((items) {
       if (items.isNotEmpty) {
         final nextIndex = _currentIndex + 1;
-        
+
         // If on last item, go to next screen
         if (nextIndex >= items.length) {
           debugPrint('[CampaignScreen] Last item tapped, calling onComplete');
           widget.onComplete?.call();
           return;
         }
-        
+
+        // Use preloaded controller if available
+        if (_preloadController != null && _preloadController!.value.isInitialized) {
+          _videoController?.dispose();
+          _chewieController?.dispose();
+
+          _videoController = _preloadController;
+          _chewieController = _preloadChewieController;
+          _preloadController = null;
+          _preloadChewieController = null;
+
+          _videoController?.setLooping(true);
+          _videoController?.play();
+        } else {
+          _initMediaForIndex(nextIndex, items);
+        }
+
         setState(() {
           _currentIndex = nextIndex;
         });
-        _initMediaForIndex(nextIndex, items);
+
+        // Preload next video after switch
+        _preloadNextVideo(nextIndex, items);
       }
+    });
+  }
+
+  void _initFirstVideo(List<CampaignHomeItem> items) {
+    if (items.isEmpty) return;
+    _initMediaForIndex(0, items);
+    _preloadNextVideo(0, items);
+  }
+
+  void _setVideoLoading(bool loading) {
+    setState(() {
+      _isVideoLoading = loading;
     });
   }
 
   void _initMediaForIndex(int index, List<CampaignHomeItem> items) {
     _videoController?.dispose();
+    _chewieController?.dispose();
     _videoController = null;
+    _chewieController = null;
+    _setVideoLoading(true);
 
     if (index >= 0 && index < items.length) {
       final item = items[index];
@@ -80,13 +123,85 @@ class _CampaignHomeScreenState extends ConsumerState<CampaignHomeScreen> {
         if (isVideo) {
           _videoController = VideoPlayerController.networkUrl(
             Uri.parse(mediaUrl),
-          )..initialize().then((_) {
-              if (mounted) {
-                _videoController?.play();
-                setState(() {});
-              }
-            });
+          );
+
+          _videoController!.addListener(_onVideoStateChanged);
+
+          _videoController!.initialize().then((_) {
+            if (mounted) {
+              _setVideoLoading(false);
+              _chewieController = ChewieController(
+                videoPlayerController: _videoController!,
+                autoPlay: true,
+                looping: true,
+                showControls: false,
+                showOptions: false,
+                allowFullScreen: false,
+                allowMuting: false,
+                allowPlaybackSpeedChanging: false,
+                placeholder: Container(
+                  color: Colors.black,
+                ),
+                aspectRatio: _videoController!.value.aspectRatio,
+              );
+              _videoController?.setLooping(true);
+              _videoController?.play();
+              setState(() {});
+            }
+          }).catchError((_) {
+            if (mounted) {
+              _setVideoLoading(false);
+            }
+          });
+
+          _preloadNextVideo(index, items);
         }
+      }
+    }
+  }
+
+  void _onVideoStateChanged() {
+    if (_videoController != null && !_videoController!.value.isPlaying) {
+      // Auto-resume if paused unexpectedly (not from user interaction)
+      if (mounted && _videoController!.value.isInitialized) {
+        _videoController?.play();
+      }
+    }
+  }
+
+  void _preloadNextVideo(int currentIndex, List<CampaignHomeItem> items) {
+    _preloadController?.dispose();
+    _preloadChewieController?.dispose();
+    _preloadController = null;
+    _preloadChewieController = null;
+
+    final nextIndex = currentIndex + 1;
+    if (nextIndex >= items.length) return;
+
+    final nextItem = items[nextIndex];
+    final mediaUrl = nextItem.mediaUrl;
+
+    if (mediaUrl.isNotEmpty) {
+      final isVideo = mediaUrl.endsWith('.mp4') ||
+          mediaUrl.endsWith('.webm') ||
+          mediaUrl.contains('video');
+
+      if (isVideo) {
+        _preloadController = VideoPlayerController.networkUrl(
+          Uri.parse(mediaUrl),
+        );
+        _preloadController!.initialize().then((_) {
+          if (mounted && _preloadController!.value.isInitialized) {
+            _preloadChewieController = ChewieController(
+              videoPlayerController: _preloadController!,
+              autoPlay: false,
+              looping: true,
+              showControls: false,
+              aspectRatio: _preloadController!.value.aspectRatio,
+            );
+            setState(() {});
+          }
+        });
       }
     }
   }
@@ -131,7 +246,7 @@ class _CampaignHomeScreenState extends ConsumerState<CampaignHomeScreen> {
                 mediaUrl.contains('video');
 
             if (_videoController == null && isVideo && mediaUrl.isNotEmpty) {
-              _initMediaForIndex(_currentIndex, items);
+              _initFirstVideo(items);
             }
 
             return Stack(
@@ -186,20 +301,33 @@ class _CampaignHomeScreenState extends ConsumerState<CampaignHomeScreen> {
   }
 
   Widget _buildVideoBackground() {
-    if (_videoController != null &&
-        _videoController!.value.isInitialized) {
-      return SizedBox.expand(
-        child: FittedBox(
-          fit: BoxFit.cover,
-          child: SizedBox(
-            width: _videoController!.value.size.width,
-            height: _videoController!.value.size.height,
-            child: VideoPlayer(_videoController!),
+    if (_chewieController != null) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Chewie(
+            controller: _chewieController!,
           ),
-        ),
+          if (_isVideoLoading)
+            Container(
+              color: Colors.black54,
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+        ],
       );
     }
-    return Container(color: Colors.black);
+    return Container(
+      color: Colors.black,
+      child: const Center(
+        child: CircularProgressIndicator(
+          color: Colors.white,
+        ),
+      ),
+    );
   }
 
   Widget _buildGradientBackground(BuildContext context) {
