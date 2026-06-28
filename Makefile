@@ -8,6 +8,7 @@ doctor:
 
 analyze:
 	flutter analyze
+
 run:
 	flutter run
 
