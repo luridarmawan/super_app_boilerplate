@@ -6,6 +6,8 @@ clean:
 doctor:
 	flutter doctor
 
+analyze:
+	flutter analyze
 run:
 	flutter run
 
