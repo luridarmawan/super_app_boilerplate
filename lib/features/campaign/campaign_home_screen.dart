@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
+import 'package:palette_generator/palette_generator.dart';
 import '../../core/constants/app_info.dart';
 import '../../core/network/repository/campaign_home_repository.dart';
 
@@ -26,6 +28,7 @@ class _CampaignHomeScreenState extends ConsumerState<CampaignHomeScreen> {
   VideoPlayerController? _preloadController;
   ChewieController? _preloadChewieController;
   bool _isVideoLoading = false;
+  Color? _dominantColor;
 
   @override
   void initState() {
@@ -83,6 +86,7 @@ class _CampaignHomeScreenState extends ConsumerState<CampaignHomeScreen> {
 
         setState(() {
           _currentIndex = nextIndex;
+          _dominantColor = null;
         });
 
         // Preload next video after switch
@@ -248,6 +252,10 @@ class _CampaignHomeScreenState extends ConsumerState<CampaignHomeScreen> {
               _initFirstVideo(items);
             }
 
+            if (!isVideo && mediaUrl.isNotEmpty && _dominantColor == null) {
+              _computeDominantColor(mediaUrl);
+            }
+
             return Stack(
               fit: StackFit.expand,
               children: [
@@ -286,15 +294,41 @@ class _CampaignHomeScreenState extends ConsumerState<CampaignHomeScreen> {
     );
   }
 
+  Future<void> _computeDominantColor(String mediaUrl) async {
+    try {
+      final provider = CachedNetworkImageProvider(mediaUrl);
+      final palette = await PaletteGenerator.fromImageProvider(
+        provider,
+        size: const Size(100, 100),
+        maximumColorCount: 16,
+      );
+      if (mounted) {
+        setState(() {
+          _dominantColor = palette.dominantColor?.color ?? Colors.black;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
   Widget _buildImageBackground(String mediaUrl) {
-    return CachedNetworkImage(
-      imageUrl: mediaUrl,
-      fit: BoxFit.cover,
-      placeholder: (context, url) => Container(
-        color: Colors.black,
-      ),
-      errorWidget: (context, url, error) => Container(
-        color: Colors.black,
+    return ColoredBox(
+      color: _dominantColor ?? Colors.black,
+      child: Center(
+        child: CachedNetworkImage(
+          imageUrl: mediaUrl,
+          width: double.infinity,
+          fit: BoxFit.fitWidth,
+          placeholder: (context, url) => Container(
+            color: Colors.black,
+          ),
+          errorWidget: (context, url, error) => Container(
+            color: Colors.black,
+          ),
+        ),
       ),
     );
   }
