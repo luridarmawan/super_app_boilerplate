@@ -3,6 +3,9 @@
 clean:
 	flutter clean
 
+doctor:
+	flutter doctor
+
 run:
 	flutter run
 
