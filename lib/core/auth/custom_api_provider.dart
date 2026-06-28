@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:module_interface/module_interface.dart';
+import 'package:go_router/go_router.dart';
 import 'auth_interface.dart';
+import 'token_refresh_service.dart';
 import '../constants/app_info.dart';
+import '../routes/app_router.dart';
 
 /// Implementasi Custom API Auth
 /// Gunakan ini untuk backend custom (REST API, GraphQL, dll)
@@ -39,6 +41,43 @@ class CustomApiAuthProvider implements BaseAuthService {
     _initGoogleSignIn();
     // Memuat saved user saat inisialisasi
     _loadSavedUser();
+    // Setup auto-logout ketika token expired permanently
+    _initAutoLogout();
+  }
+
+  /// Setup auto-logout via TokenRefreshService
+  /// Ketika JWT sudah terlalu lama (too old to refresh),
+  /// otomatis signOut dan navigasi ke login screen
+  void _initAutoLogout() {
+    TokenRefreshService.instance.setOnAuthExpired(() {
+      _handleAuthExpired();
+    });
+  }
+
+  /// Handle permanent auth expiration
+  /// Called by TokenRefreshService when JWT is too old to refresh
+  Future<void> _handleAuthExpired() async {
+    debugPrint('[AUTH] ⚠️ AUTO-LOGOUT: Token expired permanently, signing out...');
+
+    // Sign out (clear session data)
+    await signOut();
+
+    // Navigate to login screen via global navigator key
+    final context = rootNavigatorKey.currentContext;
+    if (context != null && context.mounted) {
+      // Show snackbar notification
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Session expired. Please login again.'),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 3),
+        ),
+      );
+      context.go(AppRoutes.login);
+      debugPrint('[AUTH] ✅ AUTO-LOGOUT: Navigated to login screen');
+    } else {
+      debugPrint('[AUTH] ⚠️ AUTO-LOGOUT: No context available for navigation');
+    }
   }
 
   /// Helper untuk mendeteksi apakah API menggunakan WordPress

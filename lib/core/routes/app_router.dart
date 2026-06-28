@@ -41,6 +41,10 @@ class AppRoutes {
   static const String quickActions = '/quick-actions';
 }
 
+/// Global navigator key untuk navigasi dari non-widget context
+/// Digunakan oleh TokenRefreshService untuk auto-logout redirect
+final rootNavigatorKey = GlobalKey<NavigatorState>();
+
 /// Router provider untuk navigasi
 /// Uses cached PrefsService for better performance (no async SharedPreferences calls)
 final routerProvider = Provider<GoRouter>((ref) {
@@ -75,6 +79,8 @@ final routerProvider = Provider<GoRouter>((ref) {
   debugPrint('📍 Loaded ${moduleRoutes.length} routes from modules');
 
   return GoRouter(
+    // Global navigator key for non-widget navigation (auto-logout)
+    navigatorKey: rootNavigatorKey,
     // Start based on splash logic and auth state
     initialLocation: initialLocation,
     debugLogDiagnostics: true,
