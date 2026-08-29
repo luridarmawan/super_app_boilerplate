@@ -277,7 +277,7 @@ const Map<String, String> trStrings = {
 
   // Update App
   'updateAvailableTitle': 'Güncelleme Mevcut',
-  'updateAvailableDescription': 'Yeni bir sürüm ({version}) mevcut. En son özellikleri ve iyileştirmeleri almak için uygulamayı güncelleyin.',
+  'updateAvailableDescription': 'Yeni bir sürüm ({version}) mevcut. Mevcut sürümünüz: {currentVersion}. En son özellikleri ve iyileştirmeleri almak için uygulamayı güncelleyin.',
   'updateDismiss': 'Yoksay',
   'updateNow': 'Uygulamayı Güncelle',
 };

@@ -277,7 +277,8 @@ class RemoteConfigService {
         actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
         content: Text(
           l10n.updateAvailableDescription
-              .replaceAll('{version}', latestClean),
+              .replaceAll('{version}', latestClean)
+              .replaceAll('{currentVersion}', currentVersion),
         ),
         actions: [
           // button "Update App" — dominan

@@ -278,7 +278,7 @@ const Map<String, String> enStrings = {
 
   // Update App
   'updateAvailableTitle': 'Update Available',
-  'updateAvailableDescription': 'A new version ({version}) is available. Update the app to get the latest features and improvements.',
+  'updateAvailableDescription': 'A new version ({version}) is available. Your current version: {currentVersion}. Update the app to get the latest features and improvements.',
   'updateDismiss': 'Dismiss',
   'updateNow': 'Update App',
 };

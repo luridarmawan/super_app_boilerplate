@@ -278,7 +278,7 @@ const Map<String, String> idStrings = {
 
   // Update App
   'updateAvailableTitle': 'Update Tersedia',
-  'updateAvailableDescription': 'Versi terbaru ({version}) telah tersedia. Perbarui aplikasi untuk mendapatkan fitur dan perbaikan terbaru.',
+  'updateAvailableDescription': 'Versi terbaru ({version}) telah tersedia. Versi Anda saat ini: {currentVersion}. Perbarui aplikasi untuk mendapatkan fitur dan perbaikan terbaru.',
   'updateDismiss': 'Abaikan',
   'updateNow': 'Update Aplikasi',
 };
