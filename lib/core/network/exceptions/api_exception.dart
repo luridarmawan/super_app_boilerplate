@@ -34,6 +34,9 @@ class ApiException implements Exception {
       case DioExceptionType.receiveTimeout:
         message = 'Receive timeout. Server took too long to respond.';
         break;
+      case DioExceptionType.transformTimeout:
+        message = 'Transform timeout. Processing the response took too long.';
+        break;
       case DioExceptionType.badResponse:
         message = _parseErrorMessage(error.response);
         errorCode = _parseErrorCode(error.response);

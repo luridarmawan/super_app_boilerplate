@@ -259,6 +259,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ],
                 ),
                 ],
+
+                // Version footer
+                const SizedBox(height: 32),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'v${AppInfo.version} build ${AppInfo.buildNumber}',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      AppInfo.copyright,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                            fontSize: 11,
+                          ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
