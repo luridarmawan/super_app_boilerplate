@@ -21,8 +21,8 @@ Strategi ini menggunakan **git clone biasa** (bukan submodule) untuk modul ekste
 
 ```
 super_app_boilerplate/
-├── .gitignore              # ← modules/ & modules.yaml diabaikan
-├── modules/                # ← TIDAK di-track (gitignored)
+├── .gitignore              # ← modules.yaml diabaikan
+├── modules/                # ← di repo OSA: DI-TRACK (baris `modules/` di .gitignore dinonaktifkan)
 │   ├── sales_module/       # ← Clone dari repo eksternal
 │   └── inventory_module/   # ← Clone dari repo eksternal
 ├── modules.yaml            # ← Manifest lokal (TIDAK di-track)
@@ -402,5 +402,5 @@ class MyScreen extends StatelessWidget {
 
 ---
 
-*Diperbarui: 1 Januari 2026*
-*Versi: 1.2.0*
+*Diperbarui: 28 Agustus 2026*
+*Versi: 1.3.0*

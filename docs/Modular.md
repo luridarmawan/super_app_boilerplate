@@ -63,10 +63,15 @@ lib/
 - Menggunakan Riverpod untuk state management
 - Konfigurasi via `.env` file
 
-### Area Peningkatan
-- Belum ada sistem untuk modul pluggable
-- Routes masih hardcoded di `app_router.dart`
-- Dashboard belum mendukung widget dinamis dari modul
+### Status Implementasi
+Seluruh rancangan pada dokumen ini **sudah diimplementasikan** (lihat
+[Langkah Implementasi](#langkah-implementasi)):
+- ✅ Sistem modul pluggable — `lib/modules/module_base.dart`, `module_registry.dart`
+- ✅ Route dinamis dari modul aktif — `ModuleRegistry.allRoutes` dikonsumsi `app_router.dart`
+- ✅ Dashboard widget slot — `lib/shared/widgets/module_dashboard_slots.dart`
+
+Bagian "Konsep" di bawah tetap dipertahankan sebagai penjelasan desain. Untuk API yang
+sebenarnya, rujuk kode di `lib/modules/`.
 
 ---
 
@@ -177,27 +182,31 @@ ENABLE_NOTIFICATION=true
 ENABLE_GPS=true
 
 # Module Flags
-ENABLE_MODULE_ECOMMERCE=true
+ENABLE_MODULE_ARROW_SENSE=true   # modul inti OSA
 ENABLE_MODULE_NEWS=true
-ENABLE_MODULE_CHAT=false
-ENABLE_MODULE_PAYMENT=true
-ENABLE_MODULE_BOOKING=false
+
+# contoh modul lain
+# ENABLE_MODULE_ECOMMERCE=true
+# ENABLE_MODULE_CHAT=false
 ```
 
 #### Akses di Kode
 
 ```dart
-// lib/core/constants/app_info.dart
-class AppInfo {
-  // ... existing code ...
-  
-  /// Cek apakah modul tertentu diaktifkan
+// lib/modules/module_registry.dart  (BUKAN di AppInfo)
+class ModuleRegistry {
+  /// Cek apakah modul tertentu diaktifkan via .env
   static bool isModuleEnabled(String moduleName) {
     final envKey = 'ENABLE_MODULE_${moduleName.toUpperCase()}';
-    return dotenv.env[envKey]?.toLowerCase() == 'true';
+    final value = dotenv.env[envKey]?.toLowerCase();
+    return value == 'true' || value == '1' || value == 'yes';
   }
 }
 ```
+
+> Nilai yang diterima: `true`, `1`, atau `yes`. Modul yang tidak lolos pengecekan ini
+> **tidak diregistrasi sama sekali** — route, widget dashboard, dan quick action-nya
+> tidak muncul.
 
 #### Keuntungan
 - Toggle fitur tanpa ubah kode
@@ -402,8 +411,14 @@ lib/
 
 #### Konsep Branding Config
 
+> ⚠️ **Tidak diimplementasikan.** `lib/branding/branding_config.dart` tidak pernah dibuat —
+> branding ditangani `AppInfo` (`lib/core/constants/app_info.dart`) yang membaca `.env`,
+> dan tema memakai `THEME_DEFAULT` + seed color pada `AppTemplate`. Akibatnya variabel
+> `PRIMARY_COLOR`, `PRIMARY_COLOR_DARK`, dan `X_COLOR_1..3` yang ada di `.env`
+> **tidak dibaca kode mana pun**. Blok di bawah hanya rancangan awal.
+
 ```dart
-// lib/branding/branding_config.dart
+// lib/branding/branding_config.dart (RANCANGAN — tidak ada di kode)
 class BrandingConfig {
   // App Identity
   static const String appName = 'Super App';
@@ -491,7 +506,7 @@ super_app_boilerplate/
 ├── packages/                     # Shared contracts
 │   └── module_interface/         # Package dasar untuk semua modul (BaseModule, NavItem, dll)
 │
-├── modules/                      # External Modules (GITIGNORED)
+├── modules/                      # External Modules (di repo OSA: DI-TRACK)
 │   ├── .gitkeep                  # Placeholder agar folder tetap ada
 │   └── [external_module]/        # Clone dari repository terpisah via modules.yaml
 │
@@ -534,7 +549,7 @@ super_app_boilerplate/
 | Aspek | Internal Module | External Module |
 |-------|-----------------|------------------|
 | **Lokasi** | `lib/modules/` | `modules/` (root) |
-| **Git tracking** | ✅ Di-track | ❌ Gitignored |
+| **Git tracking** | ✅ Di-track | Tergantung `.gitignore` — di repo OSA baris `modules/` **dinonaktifkan**, jadi `modules/arrow_sense` ikut di-track |
 | **Repository** | Sama dengan app | Terpisah |
 | **Cocok untuk** | Fitur spesifik app ini | Fitur yang di-reuse antar project |
 | **CLI Tool** | `generate_module_internal.dart` | `manage_external_modules.dart` |
@@ -881,5 +896,5 @@ ProviderScope(
 ---
 
 *Dibuat: 20 Desember 2025*
-*Diperbarui: 1 Januari 2026*
-*Versi: 1.2.0*
+*Diperbarui: 28 Agustus 2026*
+*Versi: 1.3.0*

@@ -67,11 +67,19 @@ Daftarkan parameter di [Firebase Console](https://console.firebase.google.com/) 
 |-----------|------|---------|------------|
 | `ai_provider` | String | `"carik"` | AI provider: `"gemini"`, `"openai"`, dll. |
 | `latest_version` | String | `""` | Versi terbaru app, e.g. `"1.2.0"`. Untuk notifikasi update. |
+| `min_version` | String | `""` | Versi minimum yang masih didukung. |
+| `latest_version_number` | Int | `0` | Build number versi terbaru, e.g. `92`. Dipakai untuk deteksi update. |
+| `minimum_version_number` | Int | `0` | Build number minimum. Di bawah nilai ini user **wajib** update. |
+| `force_update` | Bool | `false` | Bila `true`, update jadi **wajib** selama ada versi lebih baru — walau build number masih di atas minimum. |
+| `update_url` | String | `""` | URL halaman update (Play Store / App Store). |
 | `widget_location_enable` | Bool | `true` | Enable/disable widget lokasi di workspace. |
 | `maintenance_mode` | Bool | `false` | Enable/disable maintenance mode. ⚠️ Gunakan `fetchMaintenanceMode()` agar realtime. |
 
+Daftar ini harus selalu sama dengan `_defaults` di
+`lib/core/services/remote_config_service.dart:24`.
+
 > [!NOTE]
-> Jika menggunakan **Custom Remote Config**, pastikan parameter yang Anda definisikan di API sesuai dengan key yang ada di tabel di atas. Contoh response lengkap ada di [remote_config.json](file:///d:/garapan/MobileTemplate/git/super_app_boilerplate/docs/remote_config/remote_config.json).
+> Jika menggunakan **Custom Remote Config**, pastikan parameter yang Anda definisikan di API sesuai dengan key yang ada di tabel di atas. Contoh response lengkap ada di [`docs/remote_config/remote_config.json`](./remote_config/remote_config.json). Salinan yang mencerminkan konfigurasi produksi OSA ada di [`tool/remote_config.json`](../tool/remote_config.json).
 
 
 > Untuk menambah parameter baru, lihat bagian [Menambah Parameter Baru](#menambah-parameter-baru).
@@ -92,9 +100,12 @@ import 'package:super_app/core/services/remote_config_service.dart';
 // String
 final aiProvider    = RemoteConfigService.aiProvider;
 final latestVersion = RemoteConfigService.latestVersion;
+final updateUrl     = RemoteConfigService.updateUrl;
 
 // Bool
-final locationOn = RemoteConfigService.widgetLocationEnable;
+final locationOn      = RemoteConfigService.widgetLocationEnable;
+final isMaintenance   = RemoteConfigService.maintenanceMode;
+final mustForceUpdate = RemoteConfigService.forceUpdate;
 ```
 
 ### Getter Generik
@@ -134,14 +145,40 @@ final isMaintenance = RemoteConfigService.maintenanceMode; // baca dari cache yg
 
 ## Contoh Penggunaan
 
-### Notifikasi Update Aplikasi
+### Cek Update Aplikasi (berbasis build number)
+
+Perbandingan versi memakai **build number** (angka setelah `+` pada `pubspec.yaml`,
+mis. `1.1.5+84` → `84`), bukan string versi.
+
+| Kondisi | Perilaku |
+|---------|----------|
+| `force_update = true` **dan** ada versi lebih baru | Update **wajib** — walau build number masih di atas `minimum_version_number`. |
+| `buildNumber < minimum_version_number` | Update **wajib** — dialog tidak bisa ditutup (barrier & tombol back mati), hanya tombol *Update*. |
+| `buildNumber < latest_version_number` | Update **opsional** — user memilih *Update App* atau *Continue Without Updating* (lanjut memakai aplikasi). |
+| lainnya | Tidak ada dialog. |
+
+Sumber build number terbaru (urut prioritas): parameter `latest_version_number` →
+suffix `+build` pada `latest_version` → `version.versionNumber` di root JSON.
+Sumber build number minimum: parameter `minimum_version_number` (alias
+`min_version_number`) → suffix `+build` pada `min_version` →
+`version.minimumVersionNumber` di root JSON.
+
+> Urutan evaluasi: `force_update` diperiksa lebih dulu, baru `minimum_version_number`.
+> Cukup salah satu terpenuhi untuk membuat update jadi wajib.
 
 ```dart
-final latest = RemoteConfigService.latestVersion;
+// Dashboard — dialog tampil sekali per sesi aplikasi
+RemoteConfigService.checkForUpdate(context);
 
-if (latest.isNotEmpty && latest != AppInfo.version) {
-  showUpdateDialog(context, latestVersion: latest);
-}
+// Paksa tampil lagi, mis. dari menu "Cek pembaruan"
+RemoteConfigService.checkForUpdate(context, force: true);
+
+// Cek manual
+RemoteConfigService.currentVersionNumber;  // build number app saat ini
+RemoteConfigService.latestVersionNumber;   // build number terbaru
+RemoteConfigService.minimumVersionNumber;  // build number minimum
+RemoteConfigService.isUpdateAvailable;     // ada versi lebih baru
+RemoteConfigService.isUpdateRequired;      // wajib update
 ```
 
 ### Pilih AI Provider
@@ -189,9 +226,15 @@ return const SizedBox.shrink();
 
 ```dart
 static const Map<String, dynamic> _defaults = {
-  'ai_provider': '',
+  'ai_provider': 'carik',
   'latest_version': '',
   'widget_location_enable': true,
+  'maintenance_mode': false,
+  'force_update': false,
+  'update_url': '',
+  'min_version': '',
+  'latest_version_number': 0,
+  'minimum_version_number': 0,
   'your_new_param': 'default_value',  // ← tambah di sini
 };
 ```
@@ -226,9 +269,11 @@ debugPrint('[RemoteConfig]    your_new_param = "${getString('your_new_param')}"'
 ```
 [RemoteConfig] ✅ REMOTE_CONFIG_ENABLE=true — starting initialization...
 [RemoteConfig] 📋 Defaults loaded:
-[RemoteConfig]    ai_provider =
+[RemoteConfig]    ai_provider = carik
 [RemoteConfig]    latest_version =
 [RemoteConfig]    widget_location_enable = true
+[RemoteConfig]    maintenance_mode = false
+[RemoteConfig]    force_update = false
 [RemoteConfig] ⏱  Fetch interval: production (1h)
 [RemoteConfig] 🔄 Fetching from Firebase Console...
 [RemoteConfig] 🆕 New values fetched and activated.
@@ -249,3 +294,7 @@ debugPrint('[RemoteConfig]    your_new_param = "${getString('your_new_param')}"'
 | 🔁 | Tidak ada nilai baru, pakai cache |
 | 📦 | Parameter aktif setelah fetch |
 | ❌ | Error (non-fatal, app tetap berjalan) |
+
+---
+
+*Diperbarui: 28 Agustus 2026*

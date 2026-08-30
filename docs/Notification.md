@@ -1,5 +1,21 @@
 # Push Notification
 
+> ## ⚠️ STATUS SAAT INI: NONAKTIF
+>
+> Implementasi **FCM dan OneSignal seluruhnya di-*comment out*** untuk menekan ukuran APK:
+> - `lib/core/notification/fcm_notification_service.dart` — isi file dikomentari
+> - `lib/core/notification/onesignal_notification_service.dart` — isi file dikomentari
+> - `firebase_messaging` & `onesignal_flutter` dinonaktifkan di `pubspec.yaml`
+> - `notification_provider.dart` mengembalikan `MockNotificationService()` untuk **semua** nilai provider
+>
+> Konfigurasi produksi (`.env`): `ENABLE_NOTIFICATION=false`, `NOTIFICATION_PROVIDER="mock"`.
+>
+> **Untuk mengaktifkan kembali:** ikuti
+> [`Notification-Firebase-Restore.md`](./Notification-Firebase-Restore.md) atau
+> [`Notification-Onesignal-Restore.md`](./Notification-Onesignal-Restore.md).
+>
+> Dokumen ini menjelaskan arsitektur dan cara pakai sistem notifikasi setelah diaktifkan kembali.
+
 > **📚 Related Documents:**
 > - **[README.md](../README.md)** - Main project documentation
 > - **[Modular.md](./Modular.md)** - Modular architecture
@@ -35,48 +51,51 @@ UI Layer
 
 ### All Configuration in One Place
 
-No need to modify multiple files! All notification configuration is in **one file**:
+No need to modify multiple files! All notification configuration lives in **`.env`**:
 
-📁 **`lib/core/constants/app_info.dart`**
+📁 **`.env`**
+
+```env
+# Enable/disable entire notification feature
+ENABLE_NOTIFICATION=true
+
+# Choose provider: 'firebase', 'onesignal', 'mock'
+NOTIFICATION_PROVIDER="firebase"
+
+# Optional: in-app notification banner
+ENABLE_NOTIFICATION_BANNER=false
+
+# Required only when NOTIFICATION_PROVIDER=onesignal
+ONESIGNAL_APP_ID="YOUR_ONESIGNAL_APP_ID"
+```
+
+Nilai-nilai tersebut dibaca lewat getter di `lib/core/constants/app_info.dart` — **bukan** konstanta:
 
 ```dart
-class AppInfo {
-  // ... other configs ...
+static bool get enableNotification =>
+    dotenv.env['ENABLE_NOTIFICATION']?.toLowerCase() == 'true';
 
-  // ============================================
-  // NOTIFICATION CONFIGURATION
-  // ============================================
-  
-  /// Enable/disable entire notification feature
-  static const bool enableNotification = true;
-  
-  /// Choose provider: 'firebase', 'onesignal', 'mock'
-  static const String notificationProvider = 'firebase';
-}
+static String get notificationProvider =>
+    dotenv.env['NOTIFICATION_PROVIDER'] ?? 'firebase';
 ```
 
 ### How to Change Provider
 
-Just **change 1 line** in `app_info.dart`:
+Just **change 1 line** in `.env` (tidak perlu menyentuh kode Dart):
 
-```dart
-// For Firebase Cloud Messaging (default)
-static const String notificationProvider = 'firebase';
-
-// For OneSignal
-static const String notificationProvider = 'onesignal';
-
-// For Testing/Development
-static const String notificationProvider = 'mock';
+```env
+NOTIFICATION_PROVIDER="firebase"    # Firebase Cloud Messaging
+NOTIFICATION_PROVIDER="onesignal"   # OneSignal
+NOTIFICATION_PROVIDER="mock"        # Testing / Development
 ```
 
 ### Available Providers
 
 | Value | Provider | Description | When to Use |
 |-------|----------|-------------|-------------|
-| `firebase` / `fcm` | Firebase Cloud Messaging | Push notification from Google | Production (default) |
-| `onesignal` | OneSignal | Alternative push notification | If you need OneSignal features |
-| `mock` / `test` | Mock Service | No server connection | Testing & Development |
+| `firebase` / `fcm` | Firebase Cloud Messaging | Push notification from Google | Production (default) — **perlu di-restore lebih dulu** |
+| `onesignal` | OneSignal | Alternative push notification | If you need OneSignal features — **perlu di-restore lebih dulu** |
+| `mock` / `test` | Mock Service | No server connection | Testing & Development — **nilai aktif saat ini** |
 
 ### Provider Comparison
 
@@ -96,7 +115,7 @@ static const String notificationProvider = 'mock';
 | ❌ Anti-Pattern | ✅ Applied Solution |
 |-----------------|---------------------|
 | `if (provider == 'fcm')` in every screen | Abstraction layer with interface |
-| Configuration scattered across many files | All config in `app_info.dart` |
+| Configuration scattered across many files | All config in `.env` |
 | Hard to test because it needs connection | `MockNotificationService` for testing |
 | Need major refactor to change provider | Change 1 line, done! |
 ---
@@ -105,10 +124,10 @@ static const String notificationProvider = 'mock';
 
 ### 1. Enable/Disable Notification
 
-```dart
-// Set to false to disable entire notification feature
-// UI still runs normally, only notification is off
-static const bool enableNotification = true;
+```env
+# Set to false to disable entire notification feature
+# UI still runs normally, only notification is off
+ENABLE_NOTIFICATION=true
 ```
 
 **What happens if `false`:**
@@ -119,9 +138,9 @@ static const bool enableNotification = true;
 
 ### 2. Choose Provider
 
-```dart
-// Options: 'firebase', 'onesignal', 'mock'
-static const String notificationProvider = 'firebase';
+```env
+# Options: 'firebase', 'onesignal', 'mock'
+NOTIFICATION_PROVIDER="firebase"
 ```
 
 ---
@@ -137,6 +156,7 @@ lib/core/notification/
 ├── fcm_notification_service.dart       # FCM implementation
 ├── onesignal_notification_service.dart # OneSignal implementation
 ├── mock_notification_service.dart      # Mock for testing
+├── notification_test_panel.dart # Debug panel untuk uji notifikasi
 └── README.md                    # Detailed documentation
 ```
 
@@ -206,6 +226,7 @@ ref.listen(foregroundMessageProvider, (prev, next) {
 
 ### Get Device Token
 
+```dart
 // 6. Get device token (to send to backend)
 final state = ref.read(notificationProvider);
 
@@ -230,7 +251,7 @@ if (state.hasPermission && state.deviceToken != null) {
 
 #### Android
 1. Click Android icon in Firebase Console
-2. Enter package name: `id.carik.superapp_demo` (adjust for your app)
+2. Enter package name: `id.ihasa.app` (adjust for your app)
 3. Download `google-services.json`
 4. Place in: `android/app/google-services.json`
 
@@ -278,19 +299,19 @@ apply plugin: 'com.google.gms.google-services'
 
 ### 2. Update App ID
 
-File: `lib/core/constants/app_info.dart`
+File: `.env`
 
-```dart
-// Replace with App ID from OneSignal Dashboard
-static const String oneSignalAppId = 'YOUR_ONESIGNAL_APP_ID';
+```env
+# Replace with App ID from OneSignal Dashboard
+ONESIGNAL_APP_ID="YOUR_ONESIGNAL_APP_ID"
 ```
 
 ### 3. Set Provider to OneSignal
 
-File: `lib/core/constants/app_info.dart`
+File: `.env`
 
-```dart
-static const String notificationProvider = 'onesignal';
+```env
+NOTIFICATION_PROVIDER="onesignal"
 ```
 
 ---
@@ -408,8 +429,7 @@ class NotificationState {
 ## Testing with MockNotificationService
 
 ```dart
-// In app_info.dart, set provider to mock
-static const String notificationProvider = 'mock';
+// Di .env, set provider ke mock:  NOTIFICATION_PROVIDER="mock"
 
 // In test
 void main() {
@@ -468,5 +488,5 @@ void main() {
 
 ---
 
-*Updated: January 1, 2026*
-*Version: 1.0.1*
+*Updated: 28 Agustus 2026*
+*Version: 1.1.0*

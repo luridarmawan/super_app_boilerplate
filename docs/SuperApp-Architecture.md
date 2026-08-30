@@ -1,8 +1,11 @@
 # Super App Architecture Overview
 
-Complete architectural overview of the Super App Boilerplate project.
+Complete architectural overview of the **OSA (One Stop Archery)** application.
+
+> Brief produk dan status fitur ada di [`BRIEF.md`](../BRIEF.md).
 
 > **📚 Related Documents:**
+> - **[BRIEF.md](../BRIEF.md)** - Brief produk (sumber tunggal kebenaran)
 > - **[README.md](../README.md)** - Main project documentation
 > - **[Modular.md](./Modular.md)** - Modular architecture
 > - **[API.md](./API.md)** - Network layer documentation
@@ -23,18 +26,19 @@ Complete architectural overview of the Super App Boilerplate project.
 
 ## Introduction
 
-Super App Boilerplate is a mobile application (Android & iOS) built with Clean Architecture, using Material 3, and supporting multi-language and multi-template configurations.
+OSA (One Stop Archery) is a mobile application (Android & iOS) for the KPBI/IHASA archery community, built with Clean Architecture, using Material 3, and supporting multi-language and multi-template configurations. Archery features live in the external `arrow_sense` module; the app shell provides auth, dashboard, profile, and settings.
 
 ### Key Characteristics
 
 | Aspect | Description |
 |--------|-------------|
-| **Org/Package** | `id.carik.superapp_demo` |
+| **Org/Package** | `id.ihasa.app` |
 | **Framework** | Flutter (Android & iOS) |
 | **UI Standard** | Material 3 (`useMaterial3: true`) |
 | **Architecture** | Clean Architecture + Modular |
 | **State Management** | Flutter Riverpod |
 | **Navigation** | GoRouter |
+| **Modul fitur** | `arrow_sense` (repo terpisah) + `news` (internal) |
 
 ---
 
@@ -152,8 +156,10 @@ BaseAuthService (Interface)
 
 Configurable via `.env`:
 ```env
-AUTH_PROVIDER=firebase  # or 'custom_api'
+AUTH_PROVIDER="customApi"  # or 'firebase'
 ```
+
+> Nilainya camelCase (`customApi`), bukan `custom_api` — lihat [Auth.md](./Auth.md#auth-provider-selection).
 
 ### 4. Theme System
 
@@ -194,6 +200,10 @@ Material 3 with multiple templates:
 | Help | `help_screen.dart` | Help & report |
 | TOS | `tos_screen.dart` | Terms of Service |
 | Privacy | `privacy_screen.dart` | Privacy Policy |
+| Campaign | `campaign_home_screen.dart` | Campaign / promo landing |
+| Maintenance | `maintenance_mode_screen.dart` | Maintenance mode (via Remote Config) |
+| Quick Actions Manager | `quick_actions_manager_screen.dart` | Atur visibilitas quick action |
+| Forgot / Change Password | `forgot_password_screen.dart`, `change_password_screen.dart` | Pemulihan & ganti password |
 
 ---
 
@@ -221,12 +231,22 @@ SPLASH_DURATION=5
 SPLASH_BACKGROUND=https://example.com/bg.jpg
 
 # Quick Actions
+ENABLE_QUICK_ACTION=true
 ENABLE_QUICK_ACTION_DEMO=true
 
 # API
-BASE_URL=https://api.example.com
-API_TIMEOUT=30
+ENVIRONMENT=production
+API_BASE_URL=https://api.example.com/
+API_BASE_URL_DEVELOPMENT=https://staging-api.example.com/
+
+# Modul
+ENABLE_MODULE_ARROW_SENSE=true
+ENABLE_MODULE_NEWS=true
 ```
+
+> Timeout HTTP (30 detik) adalah konstanta di `lib/core/network/api_config.dart` dan tidak
+> dapat diatur lewat `.env`. Daftar lengkap variabel `.env` ada di
+> [Development-and-Build.md](./Development-and-Build.md#2️⃣-konfigurasi-environment-env).
 
 ### AppInfo Properties
 
@@ -256,7 +276,7 @@ lib/
 │   ├── config/                     # App configuration
 │   ├── constants/                  # Constants & app info
 │   ├── gps/                        # GPS & Location services
-│   ├── l10n/                       # Localization (ID & EN)
+│   ├── l10n/                       # Localization (EN, ID, TR, KO)
 │   ├── network/                    # Network layer (Dio + Retrofit)
 │   ├── notification/               # Push notification services
 │   ├── routes/                     # GoRouter navigation
@@ -298,11 +318,11 @@ modules/                            # External modules (SEPARATE REPOS)
 - **[API.md](./API.md)** - Network layer documentation
 - **[Notification.md](./Notification.md)** - Push notification system
 - **[GPS.md](./GPS.md)** - GPS/Location feature
-- **[Localization.md](./Localization.md)** - Multi-language support
+- **[LOCALIZATION.md](./LOCALIZATION.md)** - Multi-language support
 - **[SplashScreen.md](./SplashScreen.md)** - Splash screen configuration
 - **[QuickAction.md](./QuickAction.md)** - Quick actions system
 
 ---
 
-*Updated: January 1, 2026*
-*Version: 2.0.0*
+*Updated: 28 Agustus 2026*
+*Version: 2.1.0*

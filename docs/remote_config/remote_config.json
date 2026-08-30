@@ -44,7 +44,8 @@
     }
   },
   "version": {
-    "versionNumber": "10",
+    "versionNumber": "62",
+    "minimumVersionNumber": "60",
     "updateTime": "2026-03-14T08:14:01.414850Z",
     "updateUser": {
       "email": "carik.bot@gmail.com"

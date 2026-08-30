@@ -35,11 +35,18 @@ Edit file `.env` dan sesuaikan nilai-nilai berikut:
 | `AUTH_LOGIN_URL` | Endpoint login API |
 | `GOOGLE_CLIENT_ID` | Google OAuth Client ID (dari [Google Cloud Console](https://console.cloud.google.com/)) |
 | `ONESIGNAL_APP_ID` | OneSignal App ID (jika menggunakan OneSignal) |
+| `ENABLE_MODULE_ARROW_SENSE` | **Wajib `true`** — tanpa ini modul inti OSA tidak diregistrasi |
+| `ARROW_SENSE_API_BASE_URL` | Base URL API Arrow Sense |
+| `ARROW_SENSE_ENDPOINT_*` | Endpoint equipment, scoring, practice, mastery, horse, event, news |
 | `BANNER_API_URL` | URL API untuk banner |
 | `ARTICLE_API_URL` | URL API untuk artikel |
 | `COMPANY_NAME` | Nama perusahaan |
 | `TERMS_URL` | URL halaman Terms of Service |
 | `PRIVACY_URL` | URL halaman Privacy Policy |
+| `ENVIRONMENT` | `production` untuk memakai `API_BASE_URL`; nilai lain memakai `API_BASE_URL_DEVELOPMENT` |
+| `THEME_DEFAULT` | Tema awal: `defaultBlue`, `modernPurple`, `elegantGreen`, `warmOrange`, `sweetBrown`, `darkMode` |
+
+Seluruh variabel yang dikenali beserta nilai contohnya ada di `.env.example`.
 
 ### 3️⃣ Konfigurasi pubspec.yaml
 
@@ -53,8 +60,8 @@ Edit `pubspec.yaml` untuk menyesuaikan:
 ```yaml
 dependencies:
   # External Modules (dari modules/ folder)
-  super_module:
-    path: modules/super_module
+  arrow_sense:
+    path: modules/arrow_sense
   # Tambahkan modul lain sesuai kebutuhan
   # crm:
   #   path: modules/crm
@@ -74,9 +81,9 @@ Contoh konfigurasi `modules.yaml`:
 
 ```yaml
 modules:
-  - name: super_module
-    url: git@github.com:company/super-module.git
-    branch: main
+  - name: arrow_sense
+    url: git@github.com:ihasa-id/archery_intelligence.git
+    branch: development
     enabled: true
 ```
 
@@ -114,7 +121,7 @@ dart run tool/generate_release_keystore.dart
 |---|------|----------|------|
 | 1 | Copy dan edit `.env` | ✅ Wajib | `.env` |
 | 2 | Copy dan edit `pubspec.yaml` | ✅ Wajib | `pubspec.yaml` |
-| 3 | Copy `modules.yaml` | ⚡ Optional | `modules.yaml` |
+| 3 | Copy dan edit `modules.yaml` | ✅ Wajib untuk OSA | `modules.yaml` |
 | 4 | Copy dan edit `key.properties` | ⚡ Optional* | `android/key.properties` |
 | 5 | Install dependencies | ✅ Wajib | - |
 
@@ -163,6 +170,17 @@ flutter build appbundle
 # Build iOS
 flutter build ios --release
 ```
+
+### Lewat Makefile (disarankan)
+
+```bash
+make analyze   # flutter analyze
+make apk       # clean + pub get + build APK arm64 dengan --analyze-size
+make build     # clean + pub get + naikkan build number + build appbundle --release
+```
+
+> `make build` menjalankan `dart run tool/add_version.dart` lebih dulu, sehingga build
+> number di `pubspec.yaml` ikut naik. Gunakan target ini untuk rilis ke Play Store.
 
 ---
 
