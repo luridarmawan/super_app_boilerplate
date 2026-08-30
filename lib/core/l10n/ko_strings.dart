@@ -280,4 +280,7 @@ const Map<String, String> koStrings = {
   'updateAvailableDescription': '새로운 버전({version})이 출시되었습니다. 현재 버전: {currentVersion}. 최신 기능과 개선 사항을 적용하려면 앱을 업데이트하세요.',
   'updateDismiss': '나중에',
   'updateNow': '앱 업데이트',
+  'updateContinue': '업데이트 없이 계속하기',
+  'updateRequiredTitle': '업데이트 필요',
+  'updateRequiredDescription': '앱을 계속 사용하려면 {version} 버전이 필요합니다. 현재 버전: {currentVersion}. 계속하려면 업데이트해 주세요.',
 };

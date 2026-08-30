@@ -280,4 +280,7 @@ const Map<String, String> trStrings = {
   'updateAvailableDescription': 'Yeni bir sürüm ({version}) mevcut. Mevcut sürümünüz: {currentVersion}. En son özellikleri ve iyileştirmeleri almak için uygulamayı güncelleyin.',
   'updateDismiss': 'Yoksay',
   'updateNow': 'Uygulamayı Güncelle',
+  'updateContinue': 'Güncellemeden Devam Et',
+  'updateRequiredTitle': 'Güncelleme Gerekli',
+  'updateRequiredDescription': 'Uygulamayı kullanmaya devam etmek için {version} sürümü gereklidir. Mevcut sürümünüz: {currentVersion}. Devam etmek için lütfen güncelleyin.',
 };

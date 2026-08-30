@@ -281,4 +281,7 @@ const Map<String, String> idStrings = {
   'updateAvailableDescription': 'Versi terbaru ({version}) telah tersedia. Versi Anda saat ini: {currentVersion}. Perbarui aplikasi untuk mendapatkan fitur dan perbaikan terbaru.',
   'updateDismiss': 'Abaikan',
   'updateNow': 'Update Aplikasi',
+  'updateContinue': 'Lanjutkan Tanpa Update',
+  'updateRequiredTitle': 'Update Wajib',
+  'updateRequiredDescription': 'Versi {version} wajib digunakan untuk melanjutkan. Versi Anda saat ini: {currentVersion}. Silakan perbarui aplikasi terlebih dahulu.',
 };

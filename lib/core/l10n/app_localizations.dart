@@ -372,6 +372,9 @@ class AppLocalizations {
   String get updateAvailableDescription => translate('updateAvailableDescription');
   String get updateDismiss => translate('updateDismiss');
   String get updateNow => translate('updateNow');
+  String get updateContinue => translate('updateContinue');
+  String get updateRequiredTitle => translate('updateRequiredTitle');
+  String get updateRequiredDescription => translate('updateRequiredDescription');
 }
 
 
