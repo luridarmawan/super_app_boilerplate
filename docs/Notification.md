@@ -251,7 +251,7 @@ if (state.hasPermission && state.deviceToken != null) {
 
 #### Android
 1. Click Android icon in Firebase Console
-2. Enter package name: `id.ihasa.app` (adjust for your app)
+2. Enter package name: `id.carik.superapp_demo` (adjust for your app)
 3. Download `google-services.json`
 4. Place in: `android/app/google-services.json`
 

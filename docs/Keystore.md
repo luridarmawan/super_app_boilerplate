@@ -49,7 +49,7 @@ keytool -genkey -v -keystore android/keystores/debug.keystore \
 Salin nilai **SHA1** dari output `keytool -list`, lalu tambahkan ke:
 
 1. **Google Cloud Console** → *APIs & Services* → *Credentials* → OAuth Client ID (Android)
-   — isi package name `id.ihasa.app` dan SHA-1 tersebut.
+   — isi package name `id.carik.superapp_demo` dan SHA-1 tersebut.
 2. **Firebase Console** → *Project settings* → aplikasi Android → *Add fingerprint*
    (bila Firebase digunakan).
 

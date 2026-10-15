@@ -1,12 +1,8 @@
-# OSA by KPBI
+# Super App Boilerplate
 
-**One Stop Archery** Super App dari [KPBI/IHASA](https://ihasa.id/osa/).
+Super App adalah aplikasi mobile (Android & iOS) yang dibangun dengan arsitektur Clean Architecture, menggunakan Material 3, dan mendukung multi-bahasa serta multi-template.
 
-Dibangun dengan arsitektur Clean Architecture, menggunakan Material 3, dan mendukung multi-bahasa serta multi-template. Menggunakan [Boilerplate Super App](https://github.com/luridarmawan/super_app_module).
-
-**Org:** id.ihasa.app
-
-[![img](docs/images/play-store.png)](https://play.google.com/store/apps/details?id=id.ihasa.app)
+**Org (default):** `id.carik.superapp_demo` — ganti dengan milik Anda, lihat [Ubah Application ID](#ubah-application-id).
 
 ## Screenshot
 
@@ -38,8 +34,15 @@ cp android/key.properties.example android/key.properties
 Kemudian edit `.env`, `pubspec.yaml`, dan `modules.yaml` sesuai kebutuhan proyek Anda.
 `android/key.properties` hanya wajib untuk release build.
 
-> **Penting:** pastikan `ENABLE_MODULE_ARROW_SENSE=true` dan seluruh `ARROW_SENSE_*` terisi di `.env`.
-> Tanpa itu modul inti OSA tidak diregistrasi sama sekali.
+### Ubah Application ID
+
+Boilerplate ini memakai Application ID default `id.carik.superapp_demo`. Sebelum build pertama, ganti dengan package name milik Anda. Satu perintah ini mengubah `namespace` dan `applicationId` di Android, memindahkan `MainActivity.kt` ke package yang baru, memperbarui bundle identifier iOS, serta dokumentasi terkait:
+
+```bash
+dart run tool/change_app_id.dart com.company.myapp
+```
+
+Detail dan langkah lanjutan (Firebase, Google Sign-In) ada di [`docs/Change-Application-Id.md`](docs/Change-Application-Id.md).
 
 📚 **Dokumentasi lengkap:** [`docs/Development-and-Build.md`](docs/Development-and-Build.md)
 
@@ -48,7 +51,7 @@ Kemudian edit `.env`, `pubspec.yaml`, dan `modules.yaml` sesuai kebutuhan proyek
 ## 🚀 Cara Menjalankan
 
 ```bash
-# Clone modul eksternal yang terdaftar di modules.yaml (arrow_sense)
+# Clone modul eksternal yang terdaftar di modules.yaml
 dart run tool/sync_modules.dart
 
 # Install dependencies
@@ -73,7 +76,6 @@ make build
 
 | Document | Description |
 |----------|-------------|
-| [BRIEF.md](BRIEF.md) | **Brief produk — sumber tunggal kebenaran** |
 | [SuperApp-Architecture.md](docs/SuperApp-Architecture.md) | Architecture overview & design |
 | [docs/adr/](docs/adr/README.md) | **Architecture Decision Records** — keputusan arsitektur & alasannya |
 | [Development-and-Build.md](docs/Development-and-Build.md) | Setup environment & build |
@@ -94,10 +96,6 @@ make build
 | [Change-Application-Id.md](docs/Change-Application-Id.md) | Change app ID tool |
 | [Release.md](docs/Release.md) | Release keystore & signing guide |
 | [Keystore.md](docs/Keystore.md) | Perintah keytool (debug keystore & SHA-1) |
-
-**Dokumentasi modul Arrow Sense** (fitur panahan) ada di
-[`modules/arrow_sense/docs/`](modules/arrow_sense/docs/) — mulai dari
-[Features.md](modules/arrow_sense/docs/Features.md).
 
 ## 📋 TODO (Pengembangan Lanjut)
 

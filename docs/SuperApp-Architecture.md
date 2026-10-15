@@ -32,7 +32,7 @@ OSA (One Stop Archery) is a mobile application (Android & iOS) for the KPBI/IHAS
 
 | Aspect | Description |
 |--------|-------------|
-| **Org/Package** | `id.ihasa.app` |
+| **Org/Package** | `id.carik.superapp_demo` |
 | **Framework** | Flutter (Android & iOS) |
 | **UI Standard** | Material 3 (`useMaterial3: true`) |
 | **Architecture** | Clean Architecture + Modular |
