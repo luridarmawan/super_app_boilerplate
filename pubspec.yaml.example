@@ -77,11 +77,18 @@ dependencies:
   image_picker: ^1.0.7
   geolocator: ^13.0.2  # GPS & Location
   url_launcher: ^6.2.5  # Open URLs (Google Maps, etc.)
-  font_awesome_flutter: ^10.8.0
+  font_awesome_flutter: ^11.0.0
   flutter_svg: ^2.0.23
 
+  # Video Player
+  video_player: ^2.9.2
+  chewie: ^1.8.5
+
+ # Firebase
+  firebase_core: ^3.13.0
+  firebase_remote_config: ^5.4.0
+
   # Push Notifications
-  # firebase_core: ^4.3.0  # Disabled to reduce APK size
   # firebase_messaging: ^16.1.0  # Disabled to reduce APK size
   flutter_local_notifications: ^19.5.0
   # onesignal_flutter: ^5.2.7  # Disabled to reduce APK size
@@ -103,6 +110,8 @@ dependencies:
   # External Modules (from modules/ folder) - Example
   super_module:
     path: modules/super_module
+
+  palette_generator: ^0.3.3+7
 
   # crm:
   #   path: modules/crm

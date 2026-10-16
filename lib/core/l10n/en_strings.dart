@@ -136,6 +136,8 @@ const Map<String, String> enStrings = {
   'selectLanguage': 'Select Language',
   'bahasaIndonesia': 'Bahasa Indonesia',
   'english': 'English',
+  'turkish': 'Turkish',
+  'korean': 'Korean',
   'firebaseAuth': 'Firebase Auth',
   'customApi': 'Custom API',
   'useFirebaseAuth': 'Use Firebase Authentication',
@@ -268,4 +270,18 @@ const Map<String, String> enStrings = {
   'failedToLoadNews': 'Failed to load news',
   'noNewsAvailable': 'No news available',
   'tryAgain': 'Try Again',
+  
+  // Maintenance Mode
+  'maintenanceTitle': 'Under Maintenance',
+  'maintenanceDescription': 'We are currently performing routine maintenance to improve our services. Please try again in a few moments.',
+  'maintenanceRetry': 'Try Again',
+
+  // Update App
+  'updateAvailableTitle': 'Update Available',
+  'updateAvailableDescription': 'A new version ({version}) is available. Your current version: {currentVersion}. Update the app to get the latest features and improvements.',
+  'updateDismiss': 'Dismiss',
+  'updateNow': 'Update App',
+  'updateContinue': 'Continue Without Updating',
+  'updateRequiredTitle': 'Update Required',
+  'updateRequiredDescription': 'Version {version} is required to keep using the app. Your current version: {currentVersion}. Please update to continue.',
 };

@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-// import 'package:firebase_core/firebase_core.dart';  // Disabled to reduce APK size
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'core/config/app_config.dart';
 import 'core/routes/app_router.dart';
 import 'core/l10n/app_localizations.dart';
+// import 'modules/arrow_sense/lib/l10n/arrow_sense_localizations.dart';
 import 'core/constants/app_info.dart';
 import 'core/services/prefs_service.dart';
+import 'core/services/remote_config_service.dart';
 import 'core/network/cookie/cookie_manager.dart';
 
 // Modular Architecture
@@ -35,11 +37,9 @@ void main() async {
     ),
   );
 
-  // Firebase disabled to reduce APK size
-  // Uncomment below to re-enable Firebase
-  // final shouldInitFirebase = AppInfo.enableNotification &&
-  //     (AppInfo.notificationProvider.toLowerCase() == 'firebase' ||
-  //      AppInfo.notificationProvider.toLowerCase() == 'fcm');
+  // Firebase & Remote Config
+  // Aktifkan dengan REMOTE_CONFIG_ENABLE=true di .env
+  // Firebase.initializeApp() dipanggil otomatis saat REMOTE_CONFIG_ENABLE=true
 
   // ============================================
   // REGISTER MODULES
@@ -65,12 +65,11 @@ void main() async {
     AppInfo.initialize(),
     // Initialize all active modules
     ModuleRegistry.initializeAll(),
-    // Firebase initialization disabled
-    // if (shouldInitFirebase)
-    //   Firebase.initializeApp().catchError((e) {
-    //     debugPrint('Firebase initialization error: $e');
-    //     return Firebase.app(); // Return existing app or handle gracefully
-    //   }),
+    // Firebase & Remote Config (diaktifkan via REMOTE_CONFIG_ENABLE=true di .env)
+    if (AppInfo.remoteConfigEnable)
+      Firebase.initializeApp().then((_) => RemoteConfigService.initialize()).catchError((e) {
+        debugPrint('[Main] Firebase initialization error (non-fatal): $e');
+      }),
   ]);
 
   runApp(
@@ -102,9 +101,12 @@ class SuperApp extends ConsumerWidget {
       supportedLocales: const [
         Locale('en', 'US'),
         Locale('id', 'ID'),
+        Locale('tr', 'TR'),
+        Locale('ko', 'KR'),
       ],
       localizationsDelegates: const [
         AppLocalizations.delegate,
+        // ArrowSenseLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

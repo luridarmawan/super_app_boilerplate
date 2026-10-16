@@ -264,6 +264,10 @@ class SettingScreen extends ConsumerWidget {
         return l10n.bahasaIndonesia;
       case 'en':
         return l10n.english;
+      case 'tr':
+        return l10n.turkish;
+      case 'ko':
+        return l10n.korean;
       default:
         return locale.languageCode;
     }
@@ -340,6 +344,14 @@ class SettingScreen extends ConsumerWidget {
               RadioListTile<Locale>.adaptive(
                 title: Text(l10n.english),
                 value: const Locale('en', 'US'),
+              ),
+              RadioListTile<Locale>.adaptive(
+                title: Text(l10n.turkish),
+                value: const Locale('tr', 'TR'),
+              ),
+              RadioListTile<Locale>.adaptive(
+                title: Text(l10n.korean),
+                value: const Locale('ko', 'KR'),
               ),
             ],
           ),

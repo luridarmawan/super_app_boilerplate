@@ -1,12 +1,12 @@
 # WordPress API Support
 
-Boilerplate ini memiliki **dukungan penuh untuk WordPress REST API**, termasuk autentikasi dengan **JWT (JSON Web Token)**.
+Aplikasi ini memiliki **dukungan penuh untuk WordPress REST API**, termasuk autentikasi dengan **JWT (JSON Web Token)**. OSA sendiri memakai backend WordPress di `app.ihasa.id` dengan plugin **JWT Login**.
 
 ## ✨ Fitur Utama
 
 | Fitur | Deskripsi |
 |-------|-----------|
-| **Auto-Detection** | Otomatis mendeteksi apakah backend adalah WordPress melalui endpoint `/wp-json/` |
+| **Auto-Detection** | Otomatis mendeteksi backend WordPress dari URL login: mengandung `/wp-json/`, `rest_route=/jwt-login`, atau `rest_route=/simple-jwt-login` |
 | **JWT Authentication** | Support login via WordPress JWT Auth plugin |
 | **User Profile Sync** | Otomatis mengambil profil user dari `/wp-json/wp/v2/users/me` |
 | **Avatar Support** | Mapping avatar URL dari WordPress Gravatar/avatar_urls |
@@ -20,8 +20,22 @@ Boilerplate ini memiliki **dukungan penuh untuk WordPress REST API**, termasuk a
 Untuk menggunakan WordPress sebagai backend, konfigurasikan di `.env`:
 
 ```env
-# WordPress REST API
-AUTH_API_URL=https://yourdomain.com/wp-json/jwt-auth/v1/token
+# WordPress REST API — gunakan AUTH_LOGIN_URL (bukan AUTH_API_URL)
+AUTH_LOGIN_URL="https://yourdomain.com/wp-json/jwt-login/v1/auth/"
+
+# Nama field pada payload login, menyesuaikan plugin yang dipakai
+AUTH_USERNAME_FIELD_NAME="email"
+AUTH_PASSWORD_FIELD_NAME="password"
+```
+
+Konfigurasi OSA saat ini (plugin **JWT Login**):
+
+```env
+AUTH_LOGIN_URL="https://app.ihasa.id/wp-json/jwt-login/v1/auth/"
+AUTH_REGISTER_URL="https://app.ihasa.id/?rest_route=/jwt-login/v1/users"
+AUTH_FORGOT_PASSWORD_URL="https://app.ihasa.id/?rest_route=/jwt-login/v1/user/reset_password"
+AUTH_TOKEN_REFRESH_URL="https://app.ihasa.id/?rest_route=/jwt-login/v1/auth/refresh&JWT={JWT}"
+AUTH_USERNAME_FIELD_NAME="email"
 ```
 
 ---
@@ -30,11 +44,16 @@ AUTH_API_URL=https://yourdomain.com/wp-json/jwt-auth/v1/token
 
 Untuk autentikasi JWT, install salah satu plugin berikut di WordPress:
 
-| Plugin | Deskripsi |
-|--------|-----------|
-| **Simple JWT Login** | [Simple JWT Login](https://wordpress.org/plugins/simple-jwt-login/) |
-| **JWT Auth** | [JWT Authentication for WP REST API](https://wordpress.org/plugins/jwt-auth/) |
-| **JWT Auth (Tmeister)** | [JWT Authentication for WP-API](https://github.com/Tmeister/wp-api-jwt-auth) |
+| Plugin | Endpoint login | Deskripsi |
+|--------|----------------|-----------|
+| **JWT Login** ✅ | `/wp-json/jwt-login/v1/auth/` | [JWT Login](https://wordpress.org/plugins/jwt-login/) — **dipakai OSA** |
+| **Simple JWT Login** | `?rest_route=/simple-jwt-login/v1/auth` | [Simple JWT Login](https://wordpress.org/plugins/simple-jwt-login/) |
+| **JWT Auth** | `/wp-json/jwt-auth/v1/token` | [JWT Authentication for WP REST API](https://wordpress.org/plugins/jwt-auth/) |
+| **JWT Auth (Tmeister)** | `/wp-json/jwt-auth/v1/token` | [JWT Authentication for WP-API](https://github.com/Tmeister/wp-api-jwt-auth) |
+
+Ketiga pola URL di atas dikenali otomatis oleh `_isWordPressApi()`
+(`lib/core/auth/custom_api_provider.dart:85`). Contoh di dokumen ini memakai
+`jwt-auth/v1/token`; sesuaikan dengan plugin yang Anda pasang.
 
 ---
 

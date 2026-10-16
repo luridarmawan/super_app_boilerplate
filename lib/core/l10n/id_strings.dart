@@ -136,6 +136,8 @@ const Map<String, String> idStrings = {
   'selectLanguage': 'Pilih Bahasa',
   'bahasaIndonesia': 'Bahasa Indonesia',
   'english': 'English',
+  'turkish': 'Turki',
+  'korean': 'Korea',
   'firebaseAuth': 'Firebase Auth',
   'customApi': 'Custom API',
   'useFirebaseAuth': 'Gunakan Firebase Authentication',
@@ -268,4 +270,18 @@ const Map<String, String> idStrings = {
   'failedToLoadNews': 'Gagal memuat berita',
   'noNewsAvailable': 'Belum ada berita',
   'tryAgain': 'Coba Lagi',
+  
+  // Maintenance Mode
+  'maintenanceTitle': 'Dalam Pemeliharaan',
+  'maintenanceDescription': 'Kami sedang melakukan pemeliharaan rutin untuk meningkatkan layanan kami. Silakan coba beberapa saat lagi.',
+  'maintenanceRetry': 'Coba Lagi',
+
+  // Update App
+  'updateAvailableTitle': 'Update Tersedia',
+  'updateAvailableDescription': 'Versi terbaru ({version}) telah tersedia. Versi Anda saat ini: {currentVersion}. Perbarui aplikasi untuk mendapatkan fitur dan perbaikan terbaru.',
+  'updateDismiss': 'Abaikan',
+  'updateNow': 'Update Aplikasi',
+  'updateContinue': 'Lanjutkan Tanpa Update',
+  'updateRequiredTitle': 'Update Wajib',
+  'updateRequiredDescription': 'Versi {version} wajib digunakan untuk melanjutkan. Versi Anda saat ini: {currentVersion}. Silakan perbarui aplikasi terlebih dahulu.',
 };

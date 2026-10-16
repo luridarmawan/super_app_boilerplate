@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/config/app_config.dart';
 import '../../core/constants/app_info.dart';
+import '../../core/services/remote_config_service.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/network/repository/article_repository.dart';
 import '../../core/network/repository/banner_repository.dart';
@@ -61,6 +62,8 @@ class _MainDashboardState extends ConsumerState<MainDashboard> {
     // This prevents "Tried to modify a provider while the widget tree was building" error
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeNotifications();
+      // Cek update aplikasi
+      RemoteConfigService.checkForUpdate(context);
     });
   }
 

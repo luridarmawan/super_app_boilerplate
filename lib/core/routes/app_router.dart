@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../constants/app_info.dart';
 import '../services/prefs_service.dart';
+import '../services/remote_config_service.dart';
 import '../../features/splash/splash_screen.dart';
+import '../../features/campaign/campaign_home_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/register_screen.dart';
 import '../../features/auth/forgot_password_screen.dart';
@@ -14,6 +16,7 @@ import '../../features/profile/profile_screen.dart';
 import '../../shared/info/help_screen.dart';
 import '../../shared/info/tos_screen.dart';
 import '../../shared/info/privacy_screen.dart';
+import '../../features/maintenance/maintenance_mode_screen.dart';
 import '../../features/dashboard/screens/quick_actions_manager_screen.dart';
 import '../../modules/news/screens/article_screen.dart';
 
@@ -24,6 +27,8 @@ import '../../modules/module_registry.dart';
 /// Route names
 class AppRoutes {
   static const String splash = '/';
+  static const String campaignHome = '/campaign';
+  static const String maintenance = '/maintenance';
   static const String login = '/login';
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
@@ -35,6 +40,10 @@ class AppRoutes {
   static const String privacy = '/privacy';
   static const String quickActions = '/quick-actions';
 }
+
+/// Global navigator key untuk navigasi dari non-widget context
+/// Digunakan oleh TokenRefreshService untuk auto-logout redirect
+final rootNavigatorKey = GlobalKey<NavigatorState>();
 
 /// Router provider untuk navigasi
 /// Uses cached PrefsService for better performance (no async SharedPreferences calls)
@@ -58,17 +67,20 @@ final routerProvider = Provider<GoRouter>((ref) {
   String initialLocation;
   if (shouldShowSplash) {
     initialLocation = AppRoutes.splash;
-  } else if (prefsService.isLoggedIn) {
-    initialLocation = AppRoutes.dashboard;
   } else {
-    initialLocation = AppRoutes.login;
+    // Always go to campaign first, then campaign will handle navigation to login/dashboard
+    initialLocation = AppRoutes.campaignHome;
   }
+
+  debugPrint('[Router] initialLocation: $initialLocation, shouldShowSplash: $shouldShowSplash');
 
   // Get routes from active modules
   final moduleRoutes = ModuleRegistry.allRoutes;
   debugPrint('📍 Loaded ${moduleRoutes.length} routes from modules');
 
   return GoRouter(
+    // Global navigator key for non-widget navigation (auto-logout)
+    navigatorKey: rootNavigatorKey,
     // Start based on splash logic and auth state
     initialLocation: initialLocation,
     debugLogDiagnostics: true,
@@ -76,19 +88,55 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Splash Screen
       GoRoute(
         path: AppRoutes.splash,
-        builder: (context, state) => SplashScreen(
-          onComplete: () {
-            // Use cached PrefsService (synchronous, no blocking)
-            final isLoggedIn = prefsService.isLoggedIn;
+        builder: (context, state) {
+          debugPrint('[Router] Rendering SplashScreen');
+          return SplashScreen(
+            onComplete: () {
+              debugPrint('[Router] SplashScreen onComplete, going to campaignHome');
+              context.go(AppRoutes.campaignHome);
+            },
+          );
+        },
+      ),
 
-            if (context.mounted) {
-              if (isLoggedIn) {
-                context.go(AppRoutes.dashboard);
-              } else {
-                context.go(AppRoutes.login);
+      // Campaign Home Screen
+      GoRoute(
+        path: AppRoutes.campaignHome,
+        builder: (context, state) {
+          debugPrint('[Router] Rendering CampaignHomeScreen');
+          return CampaignHomeScreen(
+            onComplete: () async {
+              debugPrint('[Router] CampaignHomeScreen onComplete, checking maintenance mode');
+              // Check maintenance mode from RemoteConfig before proceeding
+              final isMaintenance = await RemoteConfigService.fetchMaintenanceMode();
+
+              debugPrint('[Router] Maintenance check result: $isMaintenance');
+
+              if (context.mounted) {
+                if (isMaintenance) {
+                  context.go(AppRoutes.maintenance);
+                  return;
+                }
+
+                // Use cached PrefsService (synchronous, no blocking)
+                final isLoggedIn = prefsService.isLoggedIn;
+                debugPrint('[Router] isLoggedIn: $isLoggedIn');
+                if (isLoggedIn) {
+                  context.go(AppRoutes.dashboard);
+                } else {
+                  context.go(AppRoutes.login);
+                }
               }
-            }
-          },
+            },
+          );
+        },
+      ),
+
+      // Maintenance Mode
+      GoRoute(
+        path: AppRoutes.maintenance,
+        builder: (context, state) => MaintenanceModeScreen(
+          onRetry: () => context.go(AppRoutes.splash),
         ),
       ),
 

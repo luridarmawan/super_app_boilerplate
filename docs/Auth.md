@@ -1,6 +1,6 @@
 # Authentication Documentation
 
-Complete documentation for authentication system in Super App Boilerplate.
+Complete documentation for the OSA authentication system.
 
 > **📚 Related Documents:**
 > - **[README.md](../README.md)** - Main project documentation
@@ -27,7 +27,7 @@ Complete documentation for authentication system in Super App Boilerplate.
 
 ## Overview
 
-Super App Boilerplate supports multiple authentication providers through an abstraction layer:
+OSA supports multiple authentication providers through an abstraction layer:
 
 ```
 BaseAuthService (Interface)
@@ -43,7 +43,7 @@ BaseAuthService (Interface)
 | Email/Password Register | ✅ | ✅ |
 | Google Sign-In | ✅ | ✅ |
 | Persistent Session | ✅ | ✅ |
-| Token Refresh | ✅ | Automatic |
+| Token Refresh | ✅ Otomatis via `TokenRefreshService` | Automatic |
 | Password Reset | ✅ | ✅ |
 | Email Verification | ⏳ TODO | ✅ |
 
@@ -54,16 +54,21 @@ BaseAuthService (Interface)
 Configure the auth provider in `.env` file:
 
 ```env
-# Auth Provider: 'firebase' or 'custom_api'
-AUTH_PROVIDER=custom_api
+# Auth Provider: 'firebase' or 'customApi'
+AUTH_PROVIDER="customApi"
 ```
+
+> **Penting:** nilainya `customApi` (camelCase), bukan `custom_api`. `app_config.dart`
+> mencocokkan string persis; nilai lain jatuh ke `default:` yang juga menghasilkan
+> `AuthStrategy.customApi`, sehingga kesalahan penulisan tidak terlihat sampai
+> Anda mencoba memilih `firebase`.
 
 ### Custom API Provider
 
 Use this when you have your own backend REST API:
 
 ```env
-AUTH_PROVIDER=custom_api
+AUTH_PROVIDER="customApi"
 API_BASE_URL=https://api.yourdomain.com/
 ```
 
@@ -108,6 +113,21 @@ AUTH_VERIFY_TOKEN_URL=https://api.yourdomain.com/o/auth/verify-token/
 
 > **Note:** All auth endpoints use full URLs. Adjust according to your backend structure.
 
+### Opsi Auth Tambahan
+
+Variabel berikut ikut memengaruhi perilaku autentikasi:
+
+| Variabel | Default | Keterangan |
+|----------|---------|------------|
+| `AUTH_LOGIN_WITH_USERNAME_AND_PASSWORD_ENABLE` | `false` | Tampilkan form login email/password |
+| `AUTH_USERNAME_FIELD_NAME` | `username` | **Nama field** username pada payload login. OSA memakai `email` |
+| `AUTH_PASSWORD_FIELD_NAME` | `password` | Nama field password pada payload login & ganti password |
+| `AUTH_TOKEN_NAME` | `token` | Nama field token yang dikirim saat verifikasi Google ID Token |
+| `AUTH_KEY` | *(kosong)* | Dikirim sebagai header **`AUTH_CODE`** pada register, forgot & reset password |
+| `AUTH_AUTO_CREATE_USER` | `false` | Buat user otomatis bila belum ada saat login Google |
+| `AUTH_USE_COOKIE` | `false` | Cookie-based auth — lihat peringatan di [API.md](./API.md#-cookie-management-opsional) |
+| `AUTH_TOKEN_REFRESH_METHOD` | `POST` | Metode HTTP untuk refresh token |
+
 ---
 
 ## Login
@@ -141,6 +161,11 @@ Content-Type is configured via `AUTH_LOGIN_CONTENT_TYPE` in the `.env` file.
 | `application/x-www-form-urlencoded` | Form URL encoded |
 
 #### Payload
+
+> **Nama field dapat dikonfigurasi.** Kunci pada payload diambil dari
+> `AUTH_USERNAME_FIELD_NAME` dan `AUTH_PASSWORD_FIELD_NAME`
+> (`custom_api_provider.dart:284`). Contoh di bawah memakai default `username`/`password`;
+> OSA sendiri memakai `email`/`password`.
 
 **JSON Format** (`application/json`):
 ```json
@@ -316,24 +341,24 @@ POST {AUTH_LOGOUT_URL}
 
 Endpoint to refresh access token.
 
+Ditangani oleh `TokenRefreshService` (`lib/core/auth/token_refresh_service.dart`) —
+singleton dengan mutex agar tidak ada refresh paralel, plus auto-logout bila token sudah
+terlalu lama untuk di-refresh.
+
 ### Endpoint
 ```
-POST {AUTH_TOKEN_REFRESH_URL}
+{AUTH_TOKEN_REFRESH_METHOD} {AUTH_TOKEN_REFRESH_URL}
 ```
 
-### Request
+URL boleh memuat placeholder **`{JWT}`**, yang diganti dengan token aktif sebelum request
+dikirim (`token_refresh_service.dart:84`). Pola inilah yang dipakai OSA:
 
-#### Headers
-| Header | Value |
-|--------|-------|
-| Content-Type | application/json |
-
-#### Payload
-```json
-{
-    "refresh_token": "your_refresh_token_here"
-}
+```env
+AUTH_TOKEN_REFRESH_URL="https://app.ihasa.id/?rest_route=/jwt-login/v1/auth/refresh&JWT={JWT}"
+AUTH_TOKEN_REFRESH_METHOD="POST"
 ```
+
+> **Catatan:** token dikirim melalui URL, **bukan** melalui body `{"refresh_token": "..."}`.
 
 ### Response
 
@@ -341,8 +366,7 @@ POST {AUTH_TOKEN_REFRESH_URL}
 ```json
 {
     "code": 0,
-    "token": "new_access_token_here",
-    "refresh_token": "new_refresh_token_here"
+    "jwt": "new_jwt_here"
 }
 ```
 
@@ -475,11 +499,10 @@ curl -X POST https://api.yourdomain.com/v1/auth/logout/ \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
-**Refresh Token Request:**
+**Refresh Token Request** (token dikirim lewat URL, sesuai placeholder `{JWT}`):
 ```bash
-curl -X POST https://api.yourdomain.com/v1/auth/refresh-token/ \
-  -H "Content-Type: application/json" \
-  -d '{"refresh_token":"YOUR_REFRESH_TOKEN"}'
+curl -X POST "https://app.ihasa.id/?rest_route=/jwt-login/v1/auth/refresh&JWT=YOUR_JWT" \
+  -H "Content-Type: application/json"
 ```
 
 ### Demo Credentials
@@ -502,6 +525,7 @@ PASSWORD_DEFAULT=admin123
 | `lib/core/auth/auth_interface.dart` | BaseAuthService abstract class + AuthUser model |
 | `lib/core/auth/custom_api_provider.dart` | Custom API implementation |
 | `lib/core/auth/firebase_provider.dart` | Firebase Auth implementation |
+| `lib/core/auth/token_refresh_service.dart` | Singleton refresh JWT + auto-logout |
 
 ### AuthUser Model
 
@@ -544,7 +568,7 @@ abstract class BaseAuthService {
 | ✅ Persistent login (session saved) | Implemented |
 | ✅ Logout with clear session | Implemented |
 | ✅ Update Profile | Implemented |
-| ⏳ Refresh Token | In Progress |
+| ✅ Refresh Token (+ auto-logout) | Implemented — `token_refresh_service.dart` |
 | ⏳ Email Verification | In Progress |
 
 ---
@@ -557,5 +581,5 @@ abstract class BaseAuthService {
 
 ---
 
-*Updated: January 5, 2026*
-*Version: 2.1.0*
+*Updated: 28 Agustus 2026*
+*Version: 2.2.0*

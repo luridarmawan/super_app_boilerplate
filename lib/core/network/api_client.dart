@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../constants/app_info.dart';
@@ -134,8 +135,10 @@ final apiClientProvider = Provider<ApiClient>((ref) {
   return ApiClient(
     baseUrl: EnvironmentConfig.current.baseUrl,
     onUnauthorized: () {
-      // Handle unauthorized - typically navigate to login
-      // You can use ref.read to access other providers here
+      // Handle unauthorized - auto-logout and navigate to login
+      debugPrint('[ApiClient] 401 Unauthorized detected - triggering auto-logout');
+      // TokenRefreshService will handle the actual logout via onAuthExpired callback
+      // This is a fallback for core API calls that go through ApiClient
     },
   );
 });

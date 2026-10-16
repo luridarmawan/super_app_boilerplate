@@ -13,6 +13,8 @@ lib/core/network/
 ├── network.dart                 # Barrel export untuk kemudahan import
 ├── connectivity/
 │   └── connectivity_provider.dart # Network connectivity monitoring
+├── cookie/
+│   └── cookie_manager.dart      # Cookie jar & interceptor (opsional)
 ├── exceptions/
 │   └── api_exception.dart       # Penanganan exception terpadu
 ├── interceptors/
@@ -49,25 +51,44 @@ import 'package:super_app/core/network/repository/base_repository.dart';
 
 ### 2. Konfigurasi Base URL
 
-Base URL dikonfigurasi otomatis berdasarkan environment di `lib/core/constants/app_info.dart`:
+Base URL **sepenuhnya dikonfigurasi lewat `.env`** — tidak ada URL yang di-hardcode di kode:
+
+```env
+# Menentukan environment aktif. Hanya nilai persis "production" yang dianggap produksi.
+ENVIRONMENT=production
+
+API_BASE_URL="https://api.carik.id/"                 # dipakai saat ENVIRONMENT=production
+API_BASE_URL_DEVELOPMENT="https://staging-api.carik.id/"  # dipakai selain itu
+```
+
+Nilai tersebut dibaca sebagai **getter** (bukan konstanta) di `lib/core/constants/app_info.dart`:
 
 ```dart
 class AppInfo {
-  /// Environment flag: Set to true for production, false for development
-  /// - false (default): Uses development API (https://staging-api.carik.id/)
-  /// - true: Uses production API (https://api.carik.id/)
-  static const bool isProduction = false;
+  /// Environment flag: dibaca dari ENVIRONMENT di .env
+  static bool get isProduction => dotenv.env['ENVIRONMENT'] == 'production';
+
+  static String get apiBaseUrl =>
+      dotenv.env['API_BASE_URL'] ?? 'https://api.example.com/';
+  static String get apiBaseUrlDevelopment =>
+      dotenv.env['API_BASE_URL_DEVELOPMENT'] ?? 'https://demo-api.example.com/';
+
+  /// Base URL aktif sesuai environment
+  static String get activeApiBaseUrl => isProduction ? apiBaseUrl : apiBaseUrlDevelopment;
 }
 ```
 
 ### 3. Environment Configuration
 
-Konfigurasi environment otomatis berdasarkan flag `AppInfo.isProduction`:
+`EnvironmentConfig` memilih konfigurasi berdasarkan `AppInfo.isProduction`:
 
 | Environment | Base URL | Logging | Kapan Digunakan |
 |-------------|----------|---------|-----------------|
-| Development | `https://staging-api.carik.id/` | ✅ Enabled | Saat `isProduction = false` |
-| Production | `https://api.carik.id/` | ❌ Disabled | Saat `isProduction = true` |
+| Development | `API_BASE_URL_DEVELOPMENT` | ✅ Enabled | Saat `ENVIRONMENT` ≠ `production` |
+| Production | `API_BASE_URL` | ❌ Disabled | Saat `ENVIRONMENT=production` |
+
+> **Catatan:** timeout (connect/receive/send, masing-masing 30 detik) adalah konstanta di
+> `api_config.dart` dan **tidak** dapat diatur lewat `.env`.
 
 ```dart
 // Cek environment saat ini
@@ -177,6 +198,16 @@ Cookie management dapat diaktifkan melalui environment variable:
 # Di file .env
 AUTH_USE_COOKIE=true
 ```
+
+> ⚠️ **Diketahui tidak konsisten.** `AppInfo.authUseCookie`
+> (`lib/core/constants/app_info.dart:259`) saat ini membandingkan dengan string `'false'`:
+> ```dart
+> static bool get authUseCookie => dotenv.env['AUTH_USE_COOKIE']?.toLowerCase() == 'false';
+> ```
+> Akibatnya `AUTH_USE_COOKIE=true` justru **mematikan** cookie interceptor, dan `=false`
+> mengaktifkannya — kebalikan dari yang dijelaskan di bawah. Konfigurasi produksi saat ini
+> (`AUTH_USE_COOKIE=true`) berarti cookie management **tidak aktif**. Perbaikannya perlu
+> keputusan produk lebih dulu; lihat backlog di [`BRIEF.md`](../BRIEF.md).
 
 Ketika diaktifkan:
 - Cookies akan otomatis disimpan saat server mengirim `Set-Cookie` header
@@ -1228,6 +1259,6 @@ testWidgets('should display user profile', (tester) async {
 ---
 
 *Dibuat: 4 Mei 2025*
-*Diperbarui: 23 Januari 2026*
-*Versi: 1.5.0*
+*Diperbarui: 28 Agustus 2026*
+*Versi: 1.6.0*
 

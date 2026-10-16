@@ -126,6 +126,8 @@ class AppInfo {
   /// Splash gradient end color (bottom) - hex format e.g. #90CAF9
   static String? get splashGradientEnd => dotenv.env['SPLASH_GRADIENT_END'];
 
+  static String get maintenanceModeBackground => dotenv.env['MAINTENANCE_MODE_BACKGROUND'] ?? 'https://picsum.photos/800/1600';
+
   /// Parse hex color string to Color, returns null if invalid
   static Color? parseHexColor(String? hexString) {
     if (hexString == null || hexString.isEmpty) return null;
@@ -291,6 +293,7 @@ class AppInfo {
   static String get themeDefault => dotenv.env['THEME_DEFAULT'] ?? '';
 
   // CONTENT LINK
+  static String get campaignApiURL => dotenv.env['CAMPAIGN_API_URL'] ?? 'https://api.carik.id/dummy/campaign.json';
   static String get bannerApiURL => dotenv.env['BANNER_API_URL'] ?? 'https://api.carik.id/dummy/banner.json';
   static String get articleApiURL => dotenv.env['ARTICLE_API_URL'] ?? 'https://api.carik.id/dummy/article.json?slug={slug}';
   static String get articleLastApiURL => dotenv.env['ARTICLE_LAST_API_URL'] ?? 'https://api.carik.id/dummy/articles.json';
@@ -392,4 +395,14 @@ class AppInfo {
   /// Default avatar/placeholder image
   static String get defaultAvatarPath =>
       dotenv.env['DEFAULT_AVATAR'] ?? 'assets/images/default_avatar.png';
+
+  // ============================================
+  // FIREBASE REMOTE CONFIG
+  // ============================================
+
+  /// Enable/disable Firebase Remote Config
+  /// Controlled via REMOTE_CONFIG_ENABLE in .env
+  static bool get remoteConfigEnable => dotenv.env['REMOTE_CONFIG_ENABLE']?.toLowerCase() == 'true';
+  static String get remoteConfigCustomURL => dotenv.env['REMOTE_CONFIG_CUSTOM_URL'] ?? '';
+
 }

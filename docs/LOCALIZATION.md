@@ -6,9 +6,20 @@
 
 ## 📖 Overview
 
-Super App supports multi-language with two languages:
-- **Bahasa Indonesia (id)** - Default
-- **English (en)**
+OSA supports multi-language with **four languages**:
+
+| Locale | Bahasa | File string |
+|--------|--------|-------------|
+| `en_US` | **English** — *default* | `lib/core/l10n/en_strings.dart` |
+| `id_ID` | Bahasa Indonesia | `lib/core/l10n/id_strings.dart` |
+| `tr_TR` | Türkçe | `lib/core/l10n/tr_strings.dart` |
+| `ko_KR` | 한국어 | `lib/core/l10n/ko_strings.dart` |
+
+Locale default aplikasi adalah `en_US` (`AppConfigState.selectedLocale`), dan English juga
+menjadi fallback ketika sebuah key tidak tersedia di bahasa aktif.
+
+> Modul `arrow_sense` memiliki set string sendiri di
+> `modules/arrow_sense/lib/l10n/` dengan empat bahasa yang sama.
 
 ## 🏗️ Struktur File
 
@@ -16,7 +27,11 @@ Super App supports multi-language with two languages:
 lib/
 └── core/
     └── l10n/
-        └── app_localizations.dart   # File utama lokalisasi
+        ├── app_localizations.dart   # Delegate, getter, dan fungsi translate()
+        ├── en_strings.dart          # enStrings — English (default & fallback)
+        ├── id_strings.dart          # idStrings — Bahasa Indonesia
+        ├── tr_strings.dart          # trStrings — Türkçe
+        └── ko_strings.dart          # koStrings — 한국어
 ```
 
 ## 🚀 Cara Penggunaan
@@ -24,7 +39,7 @@ lib/
 ### 1. Import di File yang Membutuhkan
 
 ```dart
-import 'package:super_app_boilerplate/core/l10n/app_localizations.dart';
+import 'package:super_app/core/l10n/app_localizations.dart';
 ```
 
 ### 2. Menggunakan String Terjemahan
@@ -155,27 +170,33 @@ User dapat mengganti bahasa melalui Settings Screen:
 // Menggunakan provider
 ref.read(appConfigProvider.notifier).setLocale(const Locale('en', 'US'));
 ref.read(appConfigProvider.notifier).setLocale(const Locale('id', 'ID'));
+ref.read(appConfigProvider.notifier).setLocale(const Locale('tr', 'TR'));
+ref.read(appConfigProvider.notifier).setLocale(const Locale('ko', 'KR'));
 ```
 
 ## ➕ Menambah String Baru
 
-1. Tambahkan string ke `_idStrings` (Bahasa Indonesia):
-```dart
-const Map<String, String> _idStrings = {
-  // ... existing strings
-  'newString': 'Teks baru dalam Bahasa Indonesia',
-};
-```
+1. Tambahkan string ke **setiap** file bahasa (`en_strings.dart` wajib, karena jadi fallback):
 
-2. Tambahkan string ke `_enStrings` (English):
 ```dart
-const Map<String, String> _enStrings = {
+// lib/core/l10n/en_strings.dart
+const Map<String, String> enStrings = {
   // ... existing strings
   'newString': 'New text in English',
 };
 ```
 
-3. Tambahkan getter di class `AppLocalizations`:
+```dart
+// lib/core/l10n/id_strings.dart
+const Map<String, String> idStrings = {
+  // ... existing strings
+  'newString': 'Teks baru dalam Bahasa Indonesia',
+};
+```
+
+Ulangi untuk `tr_strings.dart` dan `ko_strings.dart`.
+
+2. Tambahkan getter di class `AppLocalizations` (`app_localizations.dart`):
 ```dart
 String get newString => translate('newString');
 ```
@@ -186,32 +207,36 @@ String get newString => translate('newString');
 ```dart
 @override
 bool isSupported(Locale locale) {
-  return ['id', 'en', 'zh'].contains(locale.languageCode); // Tambah 'zh'
+  return ['id', 'en', 'tr', 'ko', 'zh'].contains(locale.languageCode); // Tambah 'zh'
 }
 ```
 
-2. Buat map string untuk bahasa baru:
+2. Buat file string baru `lib/core/l10n/zh_strings.dart`:
 ```dart
-const Map<String, String> _zhStrings = {
+const Map<String, String> zhStrings = {
   'appName': '超级应用',
   // ... tambahkan semua string
 };
 ```
 
-3. Daftarkan di `_localizedStrings`:
+3. Import file tersebut lalu daftarkan di `_localizedStrings`:
 ```dart
 static final Map<String, Map<String, String>> _localizedStrings = {
-  'id': _idStrings,
-  'en': _enStrings,
-  'zh': _zhStrings, // Tambah ini
+  'id': idStrings,
+  'en': enStrings,
+  'tr': trStrings,
+  'ko': koStrings,
+  'zh': zhStrings, // Tambah ini
 };
 ```
 
 4. Update `supportedLocales` di `main.dart`:
 ```dart
 supportedLocales: const [
-  Locale('id', 'ID'),
   Locale('en', 'US'),
+  Locale('id', 'ID'),
+  Locale('tr', 'TR'),
+  Locale('ko', 'KR'),
   Locale('zh', 'CN'), // Tambah ini
 ],
 ```
@@ -253,7 +278,7 @@ class ExampleScreen extends StatelessWidget {
 1. **Selalu gunakan lokalisasi** - Jangan hardcode string dalam UI
 2. **Gunakan key yang deskriptif** - `loginButton` lebih baik dari `btn1`
 3. **Grouping yang jelas** - Kelompokkan string berdasarkan fitur/screen
-4. **Fallback ke English** - Jika key tidak ditemukan, gunakan English
+4. **Fallback ke English** - Jika key tidak ditemukan di bahasa aktif, `translate()` mengambil dari `enStrings`; jika tetap tidak ada, key-nya sendiri yang ditampilkan
 5. **Konsisten** - Gunakan pola penamaan yang sama
 
 ## 🔍 Testing
@@ -292,5 +317,5 @@ testWidgets('should display correct localized text', (tester) async {
 
 ---
 
-*Updated: January 1, 2026*
-*Version: 1.0.1*
+*Updated: 28 Agustus 2026*
+*Version: 2.0.0*

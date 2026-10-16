@@ -122,6 +122,8 @@ Tool ini mengubah file-file berikut:
 | `android/app/build.gradle.kts` | `namespace` dan `applicationId` |
 | `android/app/src/main/kotlin/.../MainActivity.kt` | Package declaration dan file location |
 
+> Tool ini juga membereskan project yang sempat tidak sinkron, misalnya `applicationId` sudah diganti manual tetapi `MainActivity.kt` dan bundle ID iOS masih memakai ID lama. Semua `MainActivity.kt` di package lain dihapus, dan ID lama yang ditemukan di sana ikut dipakai untuk mengganti referensi di iOS dan dokumentasi.
+
 ### iOS Files
 
 | File | Perubahan |
@@ -137,6 +139,7 @@ Tool ini mengubah file-file berikut:
 | `docs/Notification.md` | Package reference |
 | `docs/Auth.md` | Package reference (jika ada) |
 | `docs/API.md` | Package reference (jika ada) |
+| `docs/Keystore.md` | Package reference (jika ada) |
 
 ---
 
@@ -532,8 +535,9 @@ Script tersedia di: `tool/change_app_id.dart`
 |----------|-------------|
 | `_isValidAppId()` | Validasi format Application ID |
 | `_detectCurrentAppId()` | Deteksi app ID saat ini dari build.gradle.kts |
+| `_detectMainActivityPackages()` | Kumpulkan package dari MainActivity.kt yang ada (untuk project tidak sinkron) |
 | `_updateBuildGradleKts()` | Update namespace dan applicationId |
-| `_updateMainActivity()` | Buat MainActivity.kt baru dan hapus yang lama |
+| `_updateMainActivity()` | Buat MainActivity.kt baru dan hapus semua MainActivity.kt lama di package lain |
 | `_updateIosProjectPbxproj()` | Update bundle identifier di Xcode project |
 | `_updateDocumentation()` | Update referensi di file dokumentasi |
 

@@ -23,9 +23,18 @@ class TokenRefreshService {
   // Callback untuk update token di auth provider
   void Function(String newJwt)? _onTokenRefreshed;
 
+  // Callback ketika token sudah expired permanen (too old to refresh)
+  VoidCallback? _onAuthExpired;
+
   /// Set callback yang dipanggil ketika token berhasil di-refresh
   void setOnTokenRefreshed(void Function(String newJwt) callback) {
     _onTokenRefreshed = callback;
+  }
+
+  /// Set callback yang dipanggil ketika token sudah tidak bisa di-refresh
+  /// (JWT too old / expired permanently). Biasanya trigger auto-logout.
+  void setOnAuthExpired(VoidCallback callback) {
+    _onAuthExpired = callback;
   }
 
   /// Cek apakah sedang dalam proses refresh
@@ -152,6 +161,13 @@ class TokenRefreshService {
         debugPrint('[TOKEN-REFRESH] Status: ${e.response?.statusCode}');
         debugPrint('[TOKEN-REFRESH] Data: ${e.response?.data}');
       }
+
+      // Detect permanent auth failure: JWT too old to be refreshed
+      if (_isAuthExpiredPermanently(e)) {
+        debugPrint('[TOKEN-REFRESH] ⚠️ TOKEN EXPIRED PERMANENTLY - triggering auto-logout');
+        _onAuthExpired?.call();
+      }
+
       return null;
     } catch (e) {
       debugPrint('[TOKEN-REFRESH] ERROR: $e');
@@ -159,6 +175,38 @@ class TokenRefreshService {
     } finally {
       _isRefreshing = false;
     }
+  }
+
+  /// Check if the DioException indicates a permanent auth failure
+  /// (token can never be refreshed, user must re-login)
+  bool _isAuthExpiredPermanently(DioException e) {
+    final response = e.response;
+    if (response == null) return false;
+
+    // Server returns 400 with errorCode 50 when JWT is too old
+    if (response.statusCode == 400 && response.data is Map<String, dynamic>) {
+      final data = response.data as Map<String, dynamic>;
+
+      // Check nested data.errorCode
+      final nestedData = data['data'];
+      if (nestedData is Map<String, dynamic>) {
+        final errorCode = nestedData['errorCode'];
+        if (errorCode == 50) return true;
+
+        final message = nestedData['message']?.toString().toLowerCase() ?? '';
+        if (message.contains('too old') || message.contains('expired')) {
+          return true;
+        }
+      }
+
+      // Check top-level message
+      final message = data['message']?.toString().toLowerCase() ?? '';
+      if (message.contains('too old') || message.contains('expired')) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /// Get stored JWT from SharedPreferences
