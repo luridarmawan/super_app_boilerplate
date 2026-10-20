@@ -242,10 +242,14 @@ class AppInfo {
   // AUTH CONFIGURATION
   // ============================================
 
-  /// Auth provider strategy: 'firebase' or 'customApi'
-  /// - 'firebase': Use Firebase Auth + Google Sign-In (requires firebase configuration)
-  /// - 'customApi': Use Google Sign-In + Custom Backend API (no Firebase needed)
+  /// Auth provider, dipilih developer saat build (lihat lib/core/auth/auth_providers.dart):
+  /// - 'customApi' / 'simpleJwtLogin' (baku): backend dengan format WordPress Simple JWT Login
+  /// - 'carik': backend Carik (dashboard boilerplate), token Bearer dari /v1/auth/token
+  /// - 'firebase': Firebase Auth + Google Sign-In (mock, butuh konfigurasi Firebase)
   static String get authProvider => dotenv.env['AUTH_PROVIDER'] ?? 'customApi';
+
+  /// Origin backend Carik, mis. "https://app.example.com" (tanpa /v1). Dipakai bila AUTH_PROVIDER=carik.
+  static String get carikApiBaseUrl => dotenv.env['CARIK_API_BASE_URL'] ?? '';
 
   /// Google Web Client ID - get from Google Cloud Console
   /// This is the Web Client ID (not Android Client ID)

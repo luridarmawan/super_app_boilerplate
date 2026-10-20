@@ -3,8 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
 import '../auth/auth_interface.dart';
-import '../auth/firebase_provider.dart';
-import '../auth/custom_api_provider.dart';
+import '../auth/auth_providers.dart';
 import '../constants/app_info.dart';
 import '../services/prefs_service.dart';
 
@@ -18,27 +17,11 @@ class _PrefsKeys {
   static const String showQuickActions = 'app_show_quick_actions';
 }
 
-/// Enum untuk menentukan strategi autentikasi
-enum AuthStrategy { firebase, customApi }
-
 /// Enum untuk posisi Sidebar
 enum SidebarPosition { left, right }
 
-/// Helper untuk mendapatkan default auth strategy dari AppInfo
-AuthStrategy _getDefaultAuthStrategy() {
-  switch (AppInfo.authProvider) {
-    case 'firebase':
-      return AuthStrategy.firebase;
-    case 'customApi':
-      return AuthStrategy.customApi;
-    default:
-      return AuthStrategy.customApi;
-  }
-}
-
 /// State class untuk konfigurasi aplikasi
 class AppConfigState {
-  final AuthStrategy authStrategy;
   final SidebarPosition sidebarPosition;
   final Locale selectedLocale;
   final AppTemplate currentTemplate;
@@ -46,16 +29,14 @@ class AppConfigState {
   final bool showQuickActions;
 
   AppConfigState({
-    AuthStrategy? authStrategy,
     this.sidebarPosition = SidebarPosition.left,
     this.selectedLocale = const Locale('en', 'US'),
     this.currentTemplate = AppTemplate.defaultBlue,
     this.isDarkMode = false,
     this.showQuickActions = true,
-  }) : authStrategy = authStrategy ?? _getDefaultAuthStrategy();
+  });
 
   AppConfigState copyWith({
-    AuthStrategy? authStrategy,
     SidebarPosition? sidebarPosition,
     Locale? selectedLocale,
     AppTemplate? currentTemplate,
@@ -63,7 +44,6 @@ class AppConfigState {
     bool? showQuickActions,
   }) {
     return AppConfigState(
-      authStrategy: authStrategy ?? this.authStrategy,
       sidebarPosition: sidebarPosition ?? this.sidebarPosition,
       selectedLocale: selectedLocale ?? this.selectedLocale,
       currentTemplate: currentTemplate ?? this.currentTemplate,
@@ -178,21 +158,15 @@ final appConfigProvider = StateNotifierProvider<AppConfigNotifier, AppConfigStat
   (ref) => AppConfigNotifier(),
 );
 
-/// Provider untuk Auth Service - Using keepAlive for singleton behavior
+/// Provider untuk Auth Service - Using keepAlive for singleton behavior.
+/// Provider dipilih dari `AUTH_PROVIDER` di `.env` lewat registry [AuthProviders]; tidak
+/// bergantung pada pengaturan tampilan, jadi mengganti tema/bahasa tidak membuat ulang auth.
 final authServiceProvider = Provider<BaseAuthService>((ref) {
   // Keep this provider alive to maintain singleton instance
   ref.keepAlive();
-
-  final config = ref.watch(appConfigProvider);
-
-  switch (config.authStrategy) {
-    case AuthStrategy.firebase:
-      return FirebaseAuthProvider();
-    case AuthStrategy.customApi:
-      return CustomApiAuthProvider(
-        baseUrl: 'https://api.example.com',
-      );
-  }
+  final service = AuthProviders.create(AppInfo.authProvider);
+  ref.onDispose(service.dispose);
+  return service;
 });
 
 /// Auth State Notifier untuk mengelola state user secara reactive

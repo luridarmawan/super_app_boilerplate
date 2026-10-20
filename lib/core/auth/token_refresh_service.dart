@@ -26,6 +26,16 @@ class TokenRefreshService {
   // Callback ketika token sudah expired permanen (too old to refresh)
   VoidCallback? _onAuthExpired;
 
+  // Refresh milik provider aktif (mis. CarikAuthProvider). Bila diset, dipakai
+  // menggantikan AUTH_TOKEN_REFRESH_URL sehingga modul tetap cukup memanggil refreshToken().
+  Future<String?> Function(String currentJwt)? _refreshHandler;
+
+  /// Set cara refresh milik provider. Handler mengembalikan token yang berlaku, atau null bila
+  /// gagal; handler sendiri yang memutuskan kapan sesi berakhir permanen (auto-logout).
+  void setRefreshHandler(Future<String?> Function(String currentJwt)? handler) {
+    _refreshHandler = handler;
+  }
+
   /// Set callback yang dipanggil ketika token berhasil di-refresh
   void setOnTokenRefreshed(void Function(String newJwt) callback) {
     _onTokenRefreshed = callback;
@@ -67,6 +77,19 @@ class TokenRefreshService {
       if (jwt == null || jwt.isEmpty) {
         debugPrint('[TOKEN-REFRESH] ERROR: No current JWT token to refresh');
         return null;
+      }
+
+      final handler = _refreshHandler;
+      if (handler != null) {
+        final newJwt = await handler(jwt);
+        if (newJwt == null || newJwt.isEmpty) {
+          debugPrint('[TOKEN-REFRESH] Provider refresh failed');
+          return null;
+        }
+        await _updateStoredToken(newJwt);
+        _onTokenRefreshed?.call(newJwt);
+        debugPrint('[TOKEN-REFRESH] <<< Token refresh SUCCESS (provider)');
+        return newJwt;
       }
 
       // Build URL - support both AppInfo constant and env variable

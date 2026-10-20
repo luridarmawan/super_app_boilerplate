@@ -103,6 +103,13 @@ abstract class BaseAuthService {
   /// User yang sedang login saat ini
   AuthUser? get currentUser;
 
+  /// Token yang dikirim sebagai `Authorization: Bearer` ke API; null bila belum login.
+  String? get accessToken;
+
+  /// Perpanjang token yang (hampir) kedaluwarsa.
+  /// Mengembalikan token yang berlaku (bisa sama dengan yang lama), atau null bila gagal.
+  Future<String?> refreshAccessToken();
+
   /// Login dengan email dan password
   Future<AuthResult> signInWithEmailAndPassword({
     required String email,
