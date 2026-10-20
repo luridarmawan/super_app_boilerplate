@@ -8,9 +8,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Singleton service untuk refresh JWT token
 /// Bisa diakses dari mana saja (main app, modules, dll)
 ///
-/// Konfigurasi melalui environment variables:
-/// - AUTH_TOKEN_REFRESH_URL: URL untuk refresh token (bisa mengandung {JWT} placeholder)
-/// - AUTH_TOKEN_REFRESH_METHOD: HTTP method (GET atau POST, default: POST)
+/// Satu-satunya instance di aplikasi: `lib/core/auth/token_refresh_service.dart` meng-export kelas
+/// ini, sehingga refresh yang dipicu modul dan aplikasi utama memakai cara refresh, callback, dan
+/// auto-logout yang sama.
+///
+/// Cara refresh, berurutan:
+/// 1. Handler milik auth provider aktif ([setRefreshHandler]), mis. `CarikAuthProvider`.
+/// 2. URL dari [configure], atau environment variables:
+///    - AUTH_TOKEN_REFRESH_URL: URL untuk refresh token (bisa mengandung {JWT} placeholder)
+///    - AUTH_TOKEN_REFRESH_METHOD: HTTP method (GET atau POST, default: POST)
 class TokenRefreshService {
   // Singleton instance
   static final TokenRefreshService _instance = TokenRefreshService._internal();
@@ -23,6 +29,13 @@ class TokenRefreshService {
 
   // Callback untuk update token di auth provider
   void Function(String newJwt)? _onTokenRefreshed;
+
+  // Callback ketika token sudah expired permanen (too old to refresh)
+  VoidCallback? _onAuthExpired;
+
+  // Refresh milik provider aktif (mis. CarikAuthProvider). Bila diset, dipakai
+  // menggantikan URL refresh sehingga modul tetap cukup memanggil refreshToken().
+  Future<String?> Function(String currentJwt)? _refreshHandler;
 
   // Custom refresh URL (dapat di-set dari main app jika menggunakan AppInfo)
   String? _customRefreshUrl;
@@ -38,6 +51,18 @@ class TokenRefreshService {
   /// Set callback yang dipanggil ketika token berhasil di-refresh
   void setOnTokenRefreshed(void Function(String newJwt) callback) {
     _onTokenRefreshed = callback;
+  }
+
+  /// Set callback yang dipanggil ketika token sudah tidak bisa di-refresh
+  /// (JWT too old / expired permanently). Biasanya trigger auto-logout.
+  void setOnAuthExpired(VoidCallback callback) {
+    _onAuthExpired = callback;
+  }
+
+  /// Set cara refresh milik provider. Handler mengembalikan token yang berlaku, atau null bila
+  /// gagal; handler sendiri yang memutuskan kapan sesi berakhir permanen (auto-logout).
+  void setRefreshHandler(Future<String?> Function(String currentJwt)? handler) {
+    _refreshHandler = handler;
   }
 
   /// Cek apakah sedang dalam proses refresh
@@ -70,6 +95,19 @@ class TokenRefreshService {
       if (jwt == null || jwt.isEmpty) {
         debugPrint('[TOKEN-REFRESH] ERROR: No current JWT token to refresh');
         return null;
+      }
+
+      final handler = _refreshHandler;
+      if (handler != null) {
+        final newJwt = await handler(jwt);
+        if (newJwt == null || newJwt.isEmpty) {
+          debugPrint('[TOKEN-REFRESH] Provider refresh failed');
+          return null;
+        }
+        await _updateStoredToken(newJwt);
+        _onTokenRefreshed?.call(newJwt);
+        debugPrint('[TOKEN-REFRESH] <<< Token refresh SUCCESS (provider)');
+        return newJwt;
       }
 
       // Get refresh URL - prioritize custom config, then env variable
@@ -164,6 +202,12 @@ class TokenRefreshService {
         debugPrint('[TOKEN-REFRESH] Status: ${e.response?.statusCode}');
         debugPrint('[TOKEN-REFRESH] Data: ${e.response?.data}');
       }
+
+      // Detect permanent auth failure: JWT too old to be refreshed
+      if (_isAuthExpiredPermanently(e)) {
+        debugPrint('[TOKEN-REFRESH] TOKEN EXPIRED PERMANENTLY - triggering auto-logout');
+        _onAuthExpired?.call();
+      }
       return null;
     } catch (e) {
       debugPrint('[TOKEN-REFRESH] ERROR: $e');
@@ -171,6 +215,38 @@ class TokenRefreshService {
     } finally {
       _isRefreshing = false;
     }
+  }
+
+  /// Check if the DioException indicates a permanent auth failure
+  /// (token can never be refreshed, user must re-login)
+  bool _isAuthExpiredPermanently(DioException e) {
+    final response = e.response;
+    if (response == null) return false;
+
+    // Server returns 400 with errorCode 50 when JWT is too old
+    if (response.statusCode == 400 && response.data is Map<String, dynamic>) {
+      final data = response.data as Map<String, dynamic>;
+
+      // Check nested data.errorCode
+      final nestedData = data['data'];
+      if (nestedData is Map<String, dynamic>) {
+        final errorCode = nestedData['errorCode'];
+        if (errorCode == 50) return true;
+
+        final message = nestedData['message']?.toString().toLowerCase() ?? '';
+        if (message.contains('too old') || message.contains('expired')) {
+          return true;
+        }
+      }
+
+      // Check top-level message
+      final message = data['message']?.toString().toLowerCase() ?? '';
+      if (message.contains('too old') || message.contains('expired')) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /// Get stored JWT from SharedPreferences

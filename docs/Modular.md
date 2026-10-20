@@ -863,6 +863,22 @@ class ModuleA extends BaseModule {
 }
 ```
 
+### Q: Bagaimana modul tahu user berganti?
+
+**A:** Pantau `sessionUserIdProvider` dari `module_interface` di setiap provider yang menyimpan data
+milik user. Aplikasi utama mengisinya dengan id user yang login (`moduleSessionOverride` di
+`ProviderScope`), sehingga setelah logout lalu login sebagai akun lain provider itu dimuat ulang:
+
+```dart
+final myItemsProvider = FutureProvider<List<Item>>((ref) async {
+  ref.watch(sessionUserIdProvider); // null saat belum login
+  return repository.fetchMyItems();
+});
+```
+
+Tanpa ini, `FutureProvider` yang tidak `autoDispose` tetap menyimpan data user sebelumnya
+sampai aplikasi ditutup.
+
 ### Q: Bagaimana cara share widget antar modul?
 
 **A:** Letakkan widget yang reusable di `lib/shared/widgets/`. Modul-modul bisa mengimport dari sana.

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:module_interface/module_interface.dart' show sessionUserIdProvider;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
 import '../auth/auth_interface.dart';
@@ -209,6 +210,14 @@ final authStateProvider = StreamProvider<AuthUser?>((ref) {
 final currentUserProvider = Provider<AuthUser?>((ref) {
   // Use StateNotifier for more reliable updates
   return ref.watch(authStateNotifierProvider);
+});
+
+/// Override untuk `ProviderScope` (lihat `main.dart`): modul membaca user yang login lewat
+/// `sessionUserIdProvider` di module_interface, sehingga data per-user yang mereka simpan dimuat
+/// ulang saat user berganti (logout lalu login sebagai akun lain).
+final moduleSessionOverride = sessionUserIdProvider.overrideWith((ref) {
+  final user = ref.watch(currentUserProvider);
+  return user == null || user.isEmpty ? null : user.uid;
 });
 
 /// Provider untuk cek apakah user sudah login
