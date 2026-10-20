@@ -80,6 +80,12 @@ Setiap provider mengimplementasikan `BaseAuthService`, termasuk `accessToken` (t
 untuk API) dan `refreshAccessToken()`. Modul yang memanggil
 `TokenRefreshService.instance.refreshToken()` otomatis memakai cara refresh provider aktif bila
 provider mendaftarkannya lewat `TokenRefreshService.instance.setRefreshHandler(...)`.
+`TokenRefreshService` hanya ada **satu instance** (implementasi di `package:module_interface`,
+di-export ulang oleh `lib/core/auth/token_refresh_service.dart`), jadi modul dan aplikasi utama
+berbagi handler refresh dan auto-logout yang sama.
+
+Modul yang menyimpan data milik user memantau `sessionUserIdProvider` (module_interface) agar
+datanya dimuat ulang saat user berganti — lihat [Modular.md](./Modular.md#q-bagaimana-modul-tahu-user-berganti).
 
 ### Custom API Provider
 
