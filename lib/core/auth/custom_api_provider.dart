@@ -20,6 +20,12 @@ class CustomApiAuthProvider implements BaseAuthService {
   /// Get current JWT token
   String? get token => _currentUser?.jwt;
 
+  @override
+  String? get accessToken => _currentUser?.jwt;
+
+  @override
+  Future<String?> refreshAccessToken() => refreshToken();
+
   // Configuration
   final String? baseUrl;
   final Map<String, String>? headers;

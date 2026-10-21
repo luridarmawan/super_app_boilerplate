@@ -100,6 +100,13 @@ class FirebaseAuthProvider implements BaseAuthService {
   AuthUser? get currentUser => _currentUser;
 
   @override
+  String? get accessToken => _currentUser?.jwt;
+
+  /// Mock: token Firebase belum dipakai, jadi tidak ada yang perlu diperpanjang.
+  @override
+  Future<String?> refreshAccessToken() async => _currentUser?.jwt;
+
+  @override
   Future<AuthResult> signInWithEmailAndPassword({
     required String email,
     required String password,

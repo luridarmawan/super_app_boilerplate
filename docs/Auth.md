@@ -54,14 +54,38 @@ BaseAuthService (Interface)
 Configure the auth provider in `.env` file:
 
 ```env
-# Auth Provider: 'firebase' or 'customApi'
+# Auth Provider: 'customApi' (= 'simpleJwtLogin', default), 'carik', or 'firebase'
 AUTH_PROVIDER="customApi"
 ```
 
-> **Penting:** nilainya `customApi` (camelCase), bukan `custom_api`. `app_config.dart`
-> mencocokkan string persis; nilai lain jatuh ke `default:` yang juga menghasilkan
-> `AuthStrategy.customApi`, sehingga kesalahan penulisan tidak terlihat sampai
-> Anda mencoba memilih `firebase`.
+Provider dipilih developer saat build; tidak ada pilihan di UI. Pemetaan id → kelas ada di
+registry `lib/core/auth/auth_providers.dart`:
+
+| `AUTH_PROVIDER` | Kelas | Backend |
+|---|---|---|
+| `customApi` (baku), `simpleJwtLogin` | `CustomApiAuthProvider` | WordPress + plugin Simple JWT Login, atau API kustom berformat serupa |
+| `carik` | `CarikAuthProvider` | Backend Carik (dashboard boilerplate), lihat [Carik Provider](#carik-provider) |
+| `firebase` | `FirebaseAuthProvider` | Firebase Auth (mock) |
+
+> **Penting:** id dicocokkan persis (camelCase). Id yang tidak dikenal jatuh ke `customApi`
+> dengan peringatan di log debug.
+
+Provider baru cukup didaftarkan sebelum `runApp`, tanpa mengubah layar login maupun modul:
+
+```dart
+AuthProviders.register('myBackend', () => MyBackendAuthProvider());
+```
+
+Setiap provider mengimplementasikan `BaseAuthService`, termasuk `accessToken` (token Bearer
+untuk API) dan `refreshAccessToken()`. Modul yang memanggil
+`TokenRefreshService.instance.refreshToken()` otomatis memakai cara refresh provider aktif bila
+provider mendaftarkannya lewat `TokenRefreshService.instance.setRefreshHandler(...)`.
+`TokenRefreshService` hanya ada **satu instance** (implementasi di `package:module_interface`,
+di-export ulang oleh `lib/core/auth/token_refresh_service.dart`), jadi modul dan aplikasi utama
+berbagi handler refresh dan auto-logout yang sama.
+
+Modul yang menyimpan data milik user memantau `sessionUserIdProvider` (module_interface) agar
+datanya dimuat ulang saat user berganti — lihat [Modular.md](./Modular.md#q-bagaimana-modul-tahu-user-berganti).
 
 ### Custom API Provider
 
@@ -84,6 +108,45 @@ AUTH_PROVIDER=firebase
 > - Add `google-services.json` for Android
 > - Add `GoogleService-Info.plist` for iOS
 > - Enable Firebase packages in `pubspec.yaml`
+
+### Carik Provider
+
+Untuk backend [Carik](https://github.com/luridarmawan/dashboard-ai-boilerplate-ssr) (API `/v1`):
+
+```env
+AUTH_PROVIDER="carik"
+CARIK_API_BASE_URL="https://app.example.com"   # origin, tanpa /v1
+GOOGLE_CLIENT_ID="xxxx.apps.googleusercontent.com"  # client id web, sama dengan di server
+```
+
+Endpoint yang dipakai (tetap, tidak perlu `AUTH_*_URL`):
+
+| Aksi | Endpoint | Catatan |
+|---|---|---|
+| Login | `POST /v1/auth/token` `{ email, password, device }` | Token Bearer di body, bukan cookie |
+| Login Google | `POST /v1/auth/token/google` `{ idToken, device }` | ID token dari `google_sign_in`; audiens = client id web atau "Client id Google aplikasi" di server |
+| Refresh | `POST /v1/auth/token/refresh` + `Authorization: Bearer` | Token boleh sudah kedaluwarsa, selama masih di jendela refresh; memperpanjang token yang **sama** |
+| Logout | `DELETE /v1/auth/token` + Bearer | Mencabut token di server |
+| Registrasi | `POST /v1/auth/register` lalu login | Mengikuti pengaturan pendaftaran mandiri di server |
+| Lupa sandi | `POST /v1/auth/reset-password/request` | Email berisi tautan ke halaman web |
+| Ganti sandi | `PUT /v1/users/profile/password` + Bearer | `{ currentPassword, newPassword }` |
+| Ubah profil | `PUT /v1/users/profile/me` + Bearer | `{ name, avatarUrl }` |
+
+Hal yang perlu diketahui:
+
+- **CSRF.** Rute masuk, registrasi, dan lupa sandi tidak membawa Bearer, jadi tetap dilindungi
+  CSRF. Provider mengambil token dari `GET /v1/auth/csrf-token` lalu mengirimnya sebagai cookie
+  `crk_csrf` dan header `x-csrf-token`, bersama `Origin` = `CARIK_API_BASE_URL`. Rute ber-Bearer
+  bebas CSRF.
+- **Umur token** diatur di server (Pengaturan → Keamanan): baku berlaku 60 menit, jendela refresh
+  2160 menit (36 jam) setelah kedaluwarsa. Di luar jendela server menjawab `401 token_expired`;
+  provider lalu logout otomatis dan membuka layar login.
+- **2FA.** Akun dengan 2FA aktif menerima tantangan (`mfaRequired`); layar kode 2FA belum ada,
+  jadi provider menolak dengan pesan yang jelas. Endpoint langkah keduanya sudah tersedia:
+  `POST /v1/auth/token/mfa { challenge, code }`.
+- **Perangkat.** `device` (nama aplikasi, versi, platform) tampil di Profil → Token API di web,
+  tempat user bisa mencabut token tiap perangkat.
+- Verifikasi email dikirim server saat registrasi; kirim ulang dari aplikasi belum tersedia.
 
 ---
 
@@ -523,9 +586,11 @@ PASSWORD_DEFAULT=admin123
 | File | Description |
 |------|-------------|
 | `lib/core/auth/auth_interface.dart` | BaseAuthService abstract class + AuthUser model |
-| `lib/core/auth/custom_api_provider.dart` | Custom API implementation |
+| `lib/core/auth/auth_providers.dart` | Registry `AUTH_PROVIDER` → provider |
+| `lib/core/auth/custom_api_provider.dart` | Custom API / Simple JWT Login implementation |
+| `lib/core/auth/carik_auth_provider.dart` | Backend Carik (token Bearer `/v1/auth/token`) |
 | `lib/core/auth/firebase_provider.dart` | Firebase Auth implementation |
-| `lib/core/auth/token_refresh_service.dart` | Singleton refresh JWT + auto-logout |
+| `lib/core/auth/token_refresh_service.dart` | Singleton refresh JWT + auto-logout; bisa memakai refresh milik provider |
 
 ### AuthUser Model
 
@@ -546,6 +611,8 @@ class AuthUser {
 abstract class BaseAuthService {
   Stream<AuthUser?> get authStateChanges;
   AuthUser? get currentUser;
+  String? get accessToken;              // token Bearer untuk API
+  Future<String?> refreshAccessToken(); // token yang berlaku, atau null bila gagal
 
   Future<AuthResult> signInWithEmailAndPassword({...});
   Future<AuthResult> createUserWithEmailAndPassword({...});

@@ -73,8 +73,9 @@ void main() async {
   ]);
 
   runApp(
-    const ProviderScope(
-      child: SuperApp(),
+    ProviderScope(
+      overrides: [moduleSessionOverride],
+      child: const SuperApp(),
     ),
   );
 }
