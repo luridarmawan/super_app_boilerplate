@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:module_interface/module_interface.dart';
 
 import '../../modules/module_registry.dart';
+
+/// Dashboard widgets of the active modules, without [ConditionalDashboardWidget]s that are
+/// hidden right now.
+List<Widget> visibleDashboardWidgets(WidgetRef ref) => ModuleRegistry.dashboardWidgets
+    .where((w) => w is! ConditionalDashboardWidget || (w as ConditionalDashboardWidget).isVisible(ref))
+    .toList();
 
 /// A widget that displays dashboard widgets from all active modules.
 ///
@@ -54,7 +61,7 @@ class ModuleDashboardSlots extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final widgets = ModuleRegistry.dashboardWidgets;
+    final widgets = visibleDashboardWidgets(ref);
 
     // Return empty if no widgets and showEmptyState is false
     if (widgets.isEmpty && !showEmptyState) {
@@ -155,7 +162,7 @@ class ModuleWidgetsList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final widgets = ModuleRegistry.dashboardWidgets;
+    final widgets = visibleDashboardWidgets(ref);
 
     if (widgets.isEmpty) {
       return const SizedBox.shrink();

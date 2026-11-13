@@ -54,6 +54,14 @@ abstract class BaseModule {
   int get hashCode => name.hashCode;
 }
 
+/// A dashboard widget that is shown only while it has something to show (e.g. a card for
+/// event officials, only for users with an assignment). The dashboard leaves hidden widgets
+/// out of the grid, so they leave no empty cell.
+abstract interface class ConditionalDashboardWidget {
+  /// Watch providers through [ref] so the dashboard rebuilds when visibility changes.
+  bool isVisible(WidgetRef ref);
+}
+
 class DashboardWidgetConfig {
   final int columnSpan;
   final int rowSpan;
