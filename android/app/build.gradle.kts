@@ -47,8 +47,17 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+    buildFeatures {
+        // AGP 9 disables resValues by default; required for resValue("string", "app_name", ...)
+        resValues = true
+    }
+
+    androidResources {
+        // Default AGP pattern contains ".*", which drops dot-files from the APK assets.
+        // Since Flutter 3.50 flutter_assets is merged by AGP like any other assets source,
+        // so flutter_assets/.env gets dropped, dotenv.load() fails and the app never leaves
+        // the native splash. Same as the default, minus ".*" and "<dir>_*".
+        ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~"
     }
 
     defaultConfig {
@@ -123,6 +132,12 @@ android {
 dependencies {
     // Core library desugaring for Java 8+ APIs on older Android versions
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+    }
 }
 
 flutter {
