@@ -73,4 +73,32 @@ void main() {
     // A module calls the module_interface instance; the app's provider registered the handler.
     expect(await modules.TokenRefreshService.instance.refreshToken(currentJwt: 'tok'), 'tok-fresh');
   });
+
+  test('concurrent refreshes share one request instead of failing the latecomer', () async {
+    final service = modules.TokenRefreshService.instance;
+    var calls = 0;
+    final gate = Completer<void>();
+    service.setRefreshHandler((jwt) async {
+      calls++;
+      await gate.future;
+      return '$jwt-fresh';
+    });
+    addTearDown(() => service.setRefreshHandler(null));
+
+    final first = service.refreshToken(currentJwt: 'tok');
+    final second = service.refreshToken(currentJwt: 'tok');
+    expect(service.isRefreshing, isTrue);
+    gate.complete();
+    expect(await Future.wait([first, second]), ['tok-fresh', 'tok-fresh']);
+    expect(calls, 1);
+    expect(service.isRefreshing, isFalse);
+  });
+
+  test('expireSession runs the auto-logout callback', () {
+    var expired = 0;
+    modules.TokenRefreshService.instance.setOnAuthExpired(() => expired++);
+    addTearDown(() => modules.TokenRefreshService.instance.setOnAuthExpired(() {}));
+    expect(modules.TokenRefreshService.instance.expireSession(), isTrue);
+    expect(expired, 1);
+  });
 }

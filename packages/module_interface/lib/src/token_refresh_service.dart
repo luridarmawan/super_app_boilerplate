@@ -24,8 +24,8 @@ class TokenRefreshService {
 
   TokenRefreshService._internal();
 
-  // Mutex flag untuk mencegah concurrent refresh
-  bool _isRefreshing = false;
+  // Refresh yang sedang berjalan; pemanggil lain ikut menunggu hasil yang sama.
+  Future<String?>? _inFlight;
 
   // Callback untuk update token di auth provider
   void Function(String newJwt)? _onTokenRefreshed;
@@ -65,8 +65,18 @@ class TokenRefreshService {
     _refreshHandler = handler;
   }
 
+  /// Akhiri sesi secara paksa: jalankan callback auto-logout (sign-out lalu ke layar login).
+  /// Dipakai layar modul saat request tetap ditolak 401 walau sudah mencoba refresh.
+  /// Mengembalikan false bila belum ada callback terpasang.
+  bool expireSession() {
+    final callback = _onAuthExpired;
+    if (callback == null) return false;
+    callback();
+    return true;
+  }
+
   /// Cek apakah sedang dalam proses refresh
-  bool get isRefreshing => _isRefreshing;
+  bool get isRefreshing => _inFlight != null;
 
   /// Refresh JWT token yang sudah expired
   ///
@@ -74,14 +84,14 @@ class TokenRefreshService {
   ///
   /// Parameter [currentJwt] adalah token yang akan di-refresh.
   /// Jika null, akan mencoba mengambil dari SharedPreferences.
-  Future<String?> refreshToken({String? currentJwt}) async {
-    // Mutex protection: prevent concurrent token refresh
-    if (_isRefreshing) {
-      debugPrint('[TOKEN-REFRESH] Token refresh already in progress, skipping...');
-      return null;
-    }
+  ///
+  /// Pemanggilan bersamaan (beberapa request kena 401 sekaligus) berbagi satu refresh, sehingga
+  /// tidak ada pemanggil yang mendapat null — dan mengira sesi berakhir — hanya karena kalah cepat.
+  Future<String?> refreshToken({String? currentJwt}) {
+    return _inFlight ??= _refresh(currentJwt).whenComplete(() => _inFlight = null);
+  }
 
-    _isRefreshing = true;
+  Future<String?> _refresh(String? currentJwt) async {
     debugPrint('[TOKEN-REFRESH] ============================================');
     debugPrint('[TOKEN-REFRESH] >>> Starting Token Refresh');
 
@@ -212,8 +222,6 @@ class TokenRefreshService {
     } catch (e) {
       debugPrint('[TOKEN-REFRESH] ERROR: $e');
       return null;
-    } finally {
-      _isRefreshing = false;
     }
   }
 
