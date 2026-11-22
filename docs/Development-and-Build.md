@@ -182,6 +182,13 @@ make build     # clean + pub get + naikkan build number + build appbundle --rele
 > `make build` menjalankan `dart run tool/add_version.dart` lebih dulu, sehingga build
 > number di `pubspec.yaml` ikut naik. Gunakan target ini untuk rilis ke Play Store.
 
+> `make apk` dan `make build` memanggil `flutter build` lewat `tool/build_release.dart`.
+> `.env` ikut di-bundle sebagai asset, jadi script ini menghapus sementara baris
+> `USERNAME_DEFAULT` / `PASSWORD_DEFAULT` (termasuk yang di-comment) sebelum build dan
+> mengembalikan `.env` setelahnya, juga ketika build gagal. Build `flutter build ...`
+> langsung tetap mengosongkan form login di mode release, tapi nilai tersebut masih
+> terbawa di dalam bundle.
+
 ---
 
 ## 📱 Menjalankan di Emulator

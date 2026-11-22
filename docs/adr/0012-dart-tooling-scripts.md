@@ -24,7 +24,7 @@ Semua otomasi ditulis sebagai program Dart mandiri di `tool/`, dijalankan dengan
 | `generate_launcher_icons.dart` | Membungkus `flutter_launcher_icons` |
 | `generate_release_keystore.dart` | Membuat keystore rilis |
 
-`Makefile` hanya menjadi pembungkus tipis untuk urutan yang sering dipakai — misalnya `make build` = `flutter clean` → `flutter pub get` → `dart run tool/add_version.dart` → `flutter build appbundle --release`.
+`Makefile` hanya menjadi pembungkus tipis untuk urutan yang sering dipakai — misalnya `make build` = `flutter clean` → `flutter pub get` → `dart run tool/add_version.dart` → `dart run tool/build_release.dart appbundle --release` (membungkus `flutter build` dan membuang kredensial demo dari `.env` selama build).
 
 **Registrasi modul adalah kode hasil generate.** `sync_modules.dart` mencari pola `class <X> extends BaseModule` dengan regex, lalu menulis ulang `all_modules.dart` beserta header `/// Auto-generated file. Do not edit manually.`
 

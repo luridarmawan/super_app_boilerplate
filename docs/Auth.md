@@ -577,6 +577,15 @@ USERNAME_DEFAULT=admin@yourdomain.com
 PASSWORD_DEFAULT=admin123
 ```
 
+These values only prefill the login form in debug/profile builds. In release builds
+`AppInfo.usernameDefault` / `AppInfo.passwordDefault` always return an empty string.
+
+Because `.env` is bundled as an asset, build store releases through `make build`
+(or `dart run tool/build_release.dart appbundle --release`). The script removes every
+`USERNAME_DEFAULT` / `PASSWORD_DEFAULT` line, commented ones included, from `.env`
+before `flutter build` and restores the file afterwards, so the credentials never
+ship inside the APK/AAB.
+
 ---
 
 ## Client Implementation

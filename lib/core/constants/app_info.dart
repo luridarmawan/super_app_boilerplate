@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -309,11 +310,15 @@ class AppInfo {
   // DEMO/TESTING CONFIGURATION
   // ============================================
 
-  /// Default username for demo/testing purposes
-  static String get usernameDefault => _cleanEnvValue(dotenv.env['USERNAME_DEFAULT']);
+  /// Default username for demo/testing purposes.
+  /// Always empty in release builds so store builds never prefill credentials.
+  static String get usernameDefault =>
+      kReleaseMode ? '' : _cleanEnvValue(dotenv.env['USERNAME_DEFAULT']);
 
-  /// Default password for demo/testing purposes
-  static String get passwordDefault => _cleanEnvValue(dotenv.env['PASSWORD_DEFAULT']);
+  /// Default password for demo/testing purposes.
+  /// Always empty in release builds so store builds never prefill credentials.
+  static String get passwordDefault =>
+      kReleaseMode ? '' : _cleanEnvValue(dotenv.env['PASSWORD_DEFAULT']);
 
   /// Helper to clean env values (remove surrounding quotes and handle empty)
   static String _cleanEnvValue(String? value) {
