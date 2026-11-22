@@ -176,8 +176,18 @@ flutter build ios --release
 ```bash
 make analyze   # flutter analyze
 make apk       # clean + pub get + build APK arm64 dengan --analyze-size
+make apk-run   # make apk, lalu pasang dan jalankan di HP (sama dengan: make apk RUN=1)
+make install   # pasang dan jalankan APK hasil build terakhir tanpa build ulang
 make build     # clean + pub get + naikkan build number + build appbundle --release
 ```
+
+> `make apk-run` dan `make install` memakai `tool/install_apk.dart`: mencari `adb` dari
+> `ANDROID_HOME`, `ANDROID_SDK_ROOT`, `sdk.dir` di `android/local.properties`, lalu PATH;
+> memasang `build/app/outputs/flutter-apk/app-release.apk` dengan `adb install -r`; lalu
+> membuka aplikasi (`applicationId` dibaca dari `android/app/build.gradle.kts`). Bila ada
+> lebih dari satu perangkat tersambung, pilih dengan `DEVICE=<serial>`, misalnya
+> `make apk-run DEVICE=emulator-5554`. File `.aab` dari `make build` tidak bisa dipasang
+> langsung ke HP.
 
 > `make build` menjalankan `dart run tool/add_version.dart` lebih dulu, sehingga build
 > number di `pubspec.yaml` ikut naik. Gunakan target ini untuk rilis ke Play Store.
