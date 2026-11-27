@@ -166,8 +166,12 @@ Sumber build number minimum: parameter `minimum_version_number` (alias
 > Urutan evaluasi: `force_update` diperiksa lebih dulu, baru `minimum_version_number`.
 > Cukup salah satu terpenuhi untuk membuat update jadi wajib.
 
+Pengecekan berjalan otomatis di dua tempat: di router setelah cek maintenance (sebelum
+diarahkan ke Login atau Dashboard), sehingga pengguna yang **belum login** pun terkena
+update wajib, dan di Dashboard. Dialog hanya tampil sekali per sesi, jadi tidak muncul dua kali.
+
 ```dart
-// Dashboard — dialog tampil sekali per sesi aplikasi
+// Dialog tampil sekali per sesi aplikasi
 RemoteConfigService.checkForUpdate(context);
 
 // Paksa tampil lagi, mis. dari menu "Cek pembaruan"

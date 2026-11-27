@@ -126,6 +126,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                 } else {
                   context.go(AppRoutes.login);
                 }
+
+                // Update prompt on every start-up path, signed in or not: a forced update
+                // must also stop users who never reach the dashboard. Shown once per
+                // session, so the dashboard's own check does not show it twice.
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  final navContext = rootNavigatorKey.currentContext;
+                  if (navContext != null && navContext.mounted) {
+                    RemoteConfigService.checkForUpdate(navContext);
+                  }
+                });
               }
             },
           );
