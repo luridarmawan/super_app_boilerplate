@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:super_app/core/network/connectivity/connectivity_provider.dart';
 import 'package:super_app/core/notification/notification_provider.dart';
@@ -132,7 +132,7 @@ class CustomHeader extends ConsumerWidget implements PreferredSizeWidget {
             ),
             onPressed: onNotificationTap,
           ),
-        if (actions != null) ...actions!,
+        ...?actions,
         const SizedBox(width: 8),
       ],
     );
@@ -253,7 +253,7 @@ class CustomSliverHeader extends ConsumerWidget {
             ),
             onPressed: onNotificationTap,
           ),
-        if (actions != null) ...actions!,
+        ...?actions,
         const SizedBox(width: 8),
       ],
     );

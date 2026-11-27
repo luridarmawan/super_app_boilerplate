@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:super_app/core/l10n/id_strings.dart';
 import 'package:super_app/core/l10n/en_strings.dart';

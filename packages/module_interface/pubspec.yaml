@@ -13,3 +13,4 @@ dependencies:
   dio: ^5.4.0
   shared_preferences: ^2.3.5
   flutter_dotenv: ^5.2.1
+  material_ui: ^1.11.1

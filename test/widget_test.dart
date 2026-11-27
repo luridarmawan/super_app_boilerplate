@@ -3,7 +3,7 @@
 // To perform an interaction with a widget in your test, use the WidgetTester
 // utility in the flutter_test package.
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -50,7 +50,7 @@ dependencies:
   go_router: ^17.0.1
 
   # UI Components
-  google_fonts: ^6.2.1
+  google_fonts: ^9.0.0
   carousel_slider: ^5.0.0
   cached_network_image: ^3.4.1
 
@@ -112,6 +112,10 @@ dependencies:
     path: modules/super_module
 
   palette_generator: ^0.3.3+7
+
+  # Material & Cupertino (dipisah dari Flutter SDK sejak 3.47)
+  material_ui: ^1.11.1
+  cupertino_ui: ^1.1.7
 
   # crm:
   #   path: modules/crm

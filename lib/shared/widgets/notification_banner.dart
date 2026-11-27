@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// In-app notification banner that slides down from the top
 class NotificationBanner extends StatefulWidget {

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:super_app/core/constants/app_info.dart';
 
 /// Terms of Service Screen

@@ -12,6 +12,7 @@ analyzer:
     - build/**
     - android/**
     - ios/**
+    - "**/*.g.dart"
 include: package:flutter_lints/flutter.yaml
 
 linter:

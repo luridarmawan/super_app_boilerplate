@@ -115,8 +115,8 @@ class UserRepository extends BaseRepository {
     return patch<User>(
       '/users/me',
       data: {
-        if (name != null) 'name': name,
-        if (avatar != null) 'avatar': avatar,
+        'name': ?name,
+        'avatar': ?avatar,
       },
       parser: User.fromJson,
     );
