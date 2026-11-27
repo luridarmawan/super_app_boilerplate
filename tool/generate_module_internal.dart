@@ -175,7 +175,7 @@ String _toPascalCase(String s) {
 }
 
 String _generateModuleCode(String moduleName, String moduleNamePascal) {
-  return '''import 'package:flutter/material.dart';
+  return '''import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 
 import '../module_base.dart';
@@ -299,7 +299,7 @@ class ${moduleNamePascal}Module extends BaseModule {
 }
 
 String _generateScreenCode(String moduleName, String moduleNamePascal, String moduleNameCapitalized) {
-  return '''import 'package:flutter/material.dart';
+  return '''import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 
 /// Main screen for the $moduleNamePascal module
@@ -361,7 +361,7 @@ class ${moduleNamePascal}Screen extends StatelessWidget {
 }
 
 String _generateDashboardCardCode(String moduleName, String moduleNamePascal, String moduleNameCapitalized) {
-  return '''import 'package:flutter/material.dart';
+  return '''import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/widgets/workspace_icon.dart';
 

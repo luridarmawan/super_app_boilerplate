@@ -613,7 +613,7 @@ class ${workspacePascal}DashboardCard extends StatelessWidget {
 ''';
   }).join('\n');
   
-  return '''import 'package:flutter/material.dart';
+  return '''import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:module_interface/module_interface.dart';
 
@@ -686,7 +686,7 @@ String _generateListScreenCode({
   required String workspaceDisplay,
 }) {
   final l10nExtName = _toCamelCase(moduleNameSnake);
-  return '''import 'package:flutter/material.dart';
+  return '''import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../l10n/${moduleNameSnake}_localizations.dart';
@@ -802,7 +802,7 @@ String _generateFormScreenCode({
   required String workspaceDisplay,
 }) {
   final l10nExtName = _toCamelCase(moduleNameSnake);
-  return '''import 'package:flutter/material.dart';
+  return '''import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../l10n/${moduleNameSnake}_localizations.dart';
@@ -1040,6 +1040,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  material_ui: ^1.11.1
   go_router: ^17.0.0
   # REQUIRED: Depends on interface, not the main app
   module_interface:
@@ -1347,7 +1348,7 @@ String _generateLocalizationsCode({
   String get ${snake}Deleted => translate('${snake}Deleted');''';
   }).join('\n');
 
-  return '''import 'package:flutter/material.dart';
+  return '''import 'package:material_ui/material_ui.dart';
 
 import 'strings/en_strings.dart';
 import 'strings/id_strings.dart';
