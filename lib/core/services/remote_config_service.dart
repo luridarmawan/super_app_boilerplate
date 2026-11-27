@@ -372,6 +372,17 @@ class RemoteConfigService {
     _updateDialogShown = true;
     final l10n = AppLocalizations.of(context);
 
+    // Both buttons share one height and padding; a label too long for the width
+    // shrinks to fit on one centred line instead of wrapping into a taller button.
+    const buttonHeight = 52.0;
+    const buttonStyle = ButtonStyle(
+      padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 16)),
+    );
+    Widget oneLine(String text) => FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(text, maxLines: 1, softWrap: false, textAlign: TextAlign.center),
+        );
+
     showDialog(
       context: context,
       barrierDismissible: !mandatory,
@@ -392,7 +403,9 @@ class RemoteConfigService {
             // button "Update App" — dominan
             SizedBox(
               width: double.infinity,
+              height: buttonHeight,
               child: FilledButton.icon(
+                style: buttonStyle,
                 onPressed: () {
                   final url = updateUrl;
                   if (url.isNotEmpty) {
@@ -407,7 +420,7 @@ class RemoteConfigService {
                   }
                 },
                 icon: const Icon(Icons.download_outlined),
-                label: Text(l10n.updateNow),
+                label: oneLine(l10n.updateNow),
               ),
             ),
             // button "lanjut tanpa update" — hanya untuk update opsional
@@ -415,9 +428,11 @@ class RemoteConfigService {
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
+                height: buttonHeight,
                 child: OutlinedButton(
+                  style: buttonStyle,
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: Text(l10n.updateContinue),
+                  child: oneLine(l10n.updateContinue),
                 ),
               ),
             ],
